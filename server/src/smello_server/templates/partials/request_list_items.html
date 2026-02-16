@@ -1,0 +1,23 @@
+{% for req in requests %}
+<div class="list-item{% if req.id | string == selected_id %} selected{% endif %}"
+     hx-get="/requests/{{ req.id }}/partial"
+     hx-target="#detail-panel"
+     hx-push-url="false"
+     onclick="selectItem(this, '{{ req.id }}')">
+    <div class="list-item-top">
+        <span class="list-item-method"><strong>{{ req.method }}</strong></span>
+        <span class="status-badge
+            {% if req.status_code >= 500 %}status-5xx
+            {% elif req.status_code >= 400 %}status-4xx
+            {% elif req.status_code >= 300 %}status-3xx
+            {% else %}status-2xx{% endif %}">
+            {{ req.status_code }}
+        </span>
+    </div>
+    <div class="list-item-url" title="{{ req.url }}">{{ req.host }}{{ req.url | replace('https://' ~ req.host, '') | replace('http://' ~ req.host, '') | truncate(55) }}</div>
+    <div class="list-item-meta">
+        <span>{{ req.timestamp.strftime('%H:%M:%S') }}</span>
+        <span>{{ req.duration_ms }}ms</span>
+    </div>
+</div>
+{% endfor %}

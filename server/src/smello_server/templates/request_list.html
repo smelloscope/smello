@@ -2,82 +2,90 @@
 
 {% block title %}Smello - Requests{% endblock %}
 
-{% block content %}
-<h2>Captured Requests</h2>
+{% block main_class %}split-layout{% endblock %}
 
-<form method="get" action="/" class="filters" role="group">
-    <input type="search" name="search" placeholder="Search URL..." value="{{ filter_search }}">
-    <select name="host">
-        <option value="">All hosts</option>
-        {% for h in hosts %}
-        <option value="{{ h }}" {% if h == filter_host %}selected{% endif %}>{{ h }}</option>
-        {% endfor %}
-    </select>
-    <select name="method">
-        <option value="">All methods</option>
-        {% for m in methods %}
-        <option value="{{ m }}" {% if m == filter_method %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Filter</button>
-</form>
+{% block content %}
+<div class="split-header">
+    <h3>Smello <small>HTTP Request Inspector</small></h3>
+    <form method="get" action="/" class="filters" role="group">
+        <input type="search" name="search" placeholder="Search URL..." value="{{ filter_search }}">
+        <select name="host">
+            <option value="">All hosts</option>
+            {% for h in hosts %}
+            <option value="{{ h }}" {% if h == filter_host %}selected{% endif %}>{{ h }}</option>
+            {% endfor %}
+        </select>
+        <select name="method">
+            <option value="">All methods</option>
+            {% for m in methods %}
+            <option value="{{ m }}" {% if m == filter_method %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+</div>
+
+<div class="split-container">
+    <div class="list-panel"
+         id="list-panel"
+         hx-get="/?_partial=list"
+         hx-trigger="every 3s"
+         hx-swap="innerHTML">
+        {% if requests %}
+        {% include "partials/request_list_items.html" %}
+        {% else %}
+        <div class="list-empty">
+            <p>No captured requests yet.</p>
+            <p><small>Add <code>import smello; smello.init()</code> to your Python code.</small></p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-placeholder">
+            <p>Select a request to view details</p>
+        </div>
+    </div>
+</div>
 
 {% if requests %}
-<figure>
-<table class="striped">
-    <thead>
-        <tr>
-            <th>Time</th>
-            <th>Method</th>
-            <th>URL</th>
-            <th>Status</th>
-            <th>Duration</th>
-        </tr>
-    </thead>
-    <tbody hx-get="/api/requests" hx-trigger="every 3s" hx-swap="none">
-        {% for req in requests %}
-        <tr class="clickable-row" onclick="window.location='/requests/{{ req.id }}'">
-            <td><small>{{ req.timestamp.strftime('%H:%M:%S') }}</small></td>
-            <td><strong>{{ req.method }}</strong></td>
-            <td class="url-cell" title="{{ req.url }}">{{ req.host }}{{ req.url | replace('https://' ~ req.host, '') | replace('http://' ~ req.host, '') | truncate(60) }}</td>
-            <td>
-                <span class="status-badge
-                    {% if req.status_code >= 500 %}status-5xx
-                    {% elif req.status_code >= 400 %}status-4xx
-                    {% elif req.status_code >= 300 %}status-3xx
-                    {% else %}status-2xx{% endif %}">
-                    {{ req.status_code }}
-                </span>
-            </td>
-            <td><small>{{ req.duration_ms }}ms</small></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</figure>
 <div class="clear-all-row">
     <button class="outline secondary clear-all-btn" hx-delete="/api/requests" hx-swap="none"
             hx-on::after-request="window.location.reload()">Clear All</button>
 </div>
-{% else %}
-<article>
-    <p>No captured requests yet. Add <code>import smello; smello.init()</code> to your Python code and make some HTTP requests.</p>
-</article>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Auto-reload the page every 3 seconds to show new requests
-let lastCount = {{ requests | length }};
-setInterval(async () => {
-    try {
-        const resp = await fetch('/api/requests');
-        const data = await resp.json();
-        if (data.length !== lastCount) {
-            window.location.reload();
+function copyText(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.textContent);
+}
+
+function selectItem(el, id) {
+    document.querySelectorAll('.list-item.selected').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    window.location.hash = id;
+}
+
+// After HTMX swaps in new detail content, init JSON viewers
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'detail-panel') {
+        evt.detail.target.querySelectorAll('.json-viewer').forEach(initJsonViewer);
+    }
+    // After list refresh, re-apply selected class from hash
+    if (evt.detail.target.id === 'list-panel') {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            evt.detail.target.querySelectorAll('.list-item').forEach(item => {
+                if (item.getAttribute('hx-get') === '/requests/' + hash + '/partial') {
+                    item.classList.add('selected');
+                }
+            });
+            htmx.process(evt.detail.target);
         }
-    } catch(e) {}
-}, 3000);
+    }
+});
 </script>
 {% endblock %}

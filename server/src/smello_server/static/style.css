@@ -1,28 +1,171 @@
 /* Smello custom styles (on top of Pico CSS) */
 
+/* Compact base sizing */
+:root {
+    --pico-font-size: 14px;
+}
+
+body {
+    font-size: 14px;
+}
+
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+h4 { font-size: 1rem; }
+
+/* Split layout */
+.split-layout {
+    max-width: 100%;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+}
+
+.split-header {
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+}
+
+.split-header h3 {
+    margin-bottom: 0.3rem;
+}
+
+.split-header h3 small {
+    font-weight: normal;
+    color: var(--pico-muted-color);
+    margin-left: 0.5rem;
+}
+
+.split-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 1px;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    overflow: hidden;
+}
+
+.list-panel {
+    width: 380px;
+    min-width: 380px;
+    overflow-y: auto;
+    border-right: 1px solid var(--pico-muted-border-color);
+    background: var(--pico-background-color);
+}
+
+.detail-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+    background: var(--pico-background-color);
+}
+
+/* List items */
+.list-item {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.list-item:hover {
+    background-color: var(--pico-secondary-hover-background);
+}
+
+.list-item.selected {
+    background-color: var(--pico-primary-background);
+    border-left: 3px solid var(--pico-primary);
+    padding-left: calc(0.6rem - 3px);
+}
+
+.list-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.1rem;
+}
+
+.list-item-method {
+    font-family: var(--pico-font-family-monospace);
+    font-size: 0.85em;
+}
+
+.list-item-url {
+    font-family: var(--pico-font-family-monospace);
+    font-size: 0.78em;
+    color: var(--pico-muted-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-item-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72em;
+    color: var(--pico-muted-color);
+    margin-top: 0.15rem;
+}
+
+.list-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--pico-muted-color);
+}
+
+.detail-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--pico-muted-color);
+}
+
+/* Detail content within split view */
+.detail-content article {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+}
+
+.detail-content hgroup {
+    margin-bottom: 0.75rem;
+}
+
+.detail-content hgroup h3 {
+    font-size: 1rem;
+    word-break: break-all;
+}
+
+.detail-content hgroup p {
+    font-size: 0.85em;
+}
+
+/* Existing styles */
 .clear-all-row {
     display: flex;
     justify-content: flex-end;
-    margin-top: -0.5rem;
-    margin-bottom: 1rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
 }
 
 .clear-all-btn {
     width: auto;
-    padding: 0.3em 1em;
-    font-size: 0.85em;
+    padding: 0.2em 0.8em;
+    font-size: 0.8em;
 }
 
 .filters {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-.clickable-row {
-    cursor: pointer;
-}
-
-.clickable-row:hover {
-    background-color: var(--pico-secondary-hover-background);
+.filters input,
+.filters select,
+.filters button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85em;
 }
 
 .url-cell {
@@ -36,10 +179,10 @@
 
 .status-badge {
     display: inline-block;
-    padding: 0.15em 0.5em;
-    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
     font-weight: bold;
-    font-size: 0.85em;
+    font-size: 0.78em;
     font-family: var(--pico-font-family-monospace);
 }
 
@@ -49,28 +192,28 @@
 .status-5xx { background-color: #f8d7da; color: #721c24; }
 
 .headers-table {
-    font-size: 0.85em;
+    font-size: 0.82em;
 }
 
 .headers-table td {
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     word-break: break-all;
 }
 
 .json-viewer {
-    max-height: 500px;
+    max-height: 400px;
     overflow: auto;
     white-space: pre-wrap;
     word-break: break-word;
-    font-size: 0.85em;
+    font-size: 0.8em;
     background: var(--pico-code-background-color);
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: var(--pico-border-radius);
 }
 
 .copy-btn {
     font-size: 0.7em;
-    padding: 0.2em 0.5em;
+    padding: 0.15em 0.4em;
     margin-left: 0.5em;
     display: inline;
     width: auto;

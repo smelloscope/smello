@@ -1,0 +1,73 @@
+<div class="detail-content">
+    <hgroup>
+        <h3>{{ captured.method }} {{ captured.url | truncate(80) }}</h3>
+        <p>
+            <span class="status-badge
+                {% if captured.status_code >= 500 %}status-5xx
+                {% elif captured.status_code >= 400 %}status-4xx
+                {% elif captured.status_code >= 300 %}status-3xx
+                {% else %}status-2xx{% endif %}">
+                {{ captured.status_code }}
+            </span>
+            &middot; {{ captured.duration_ms }}ms
+            &middot; {{ captured.library }}
+            &middot; {{ captured.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+        </p>
+    </hgroup>
+
+    <article>
+        <header>
+            <strong>Request</strong>
+            {% if captured.request_body_size %}
+            <small>({{ captured.request_body_size }} bytes)</small>
+            {% endif %}
+        </header>
+
+        <h4>Headers</h4>
+        <table class="headers-table">
+            {% for key, value in captured.request_headers.items() %}
+            <tr>
+                <td><strong>{{ key }}</strong></td>
+                <td><code>{{ value }}</code></td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% if captured.request_body %}
+        <h4>Body
+            <button class="outline secondary copy-btn" onclick="copyText('req-body')">Copy</button>
+        </h4>
+        <pre id="req-body" class="json-viewer" data-json="{{ captured.request_body | e }}">{{ captured.request_body }}</pre>
+        {% else %}
+        <p><small>No request body</small></p>
+        {% endif %}
+    </article>
+
+    <article>
+        <header>
+            <strong>Response</strong>
+            {% if captured.response_body_size %}
+            <small>({{ captured.response_body_size }} bytes)</small>
+            {% endif %}
+        </header>
+
+        <h4>Headers</h4>
+        <table class="headers-table">
+            {% for key, value in captured.response_headers.items() %}
+            <tr>
+                <td><strong>{{ key }}</strong></td>
+                <td><code>{{ value }}</code></td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% if captured.response_body %}
+        <h4>Body
+            <button class="outline secondary copy-btn" onclick="copyText('resp-body')">Copy</button>
+        </h4>
+        <pre id="resp-body" class="json-viewer" data-json="{{ captured.response_body | e }}">{{ captured.response_body }}</pre>
+        {% else %}
+        <p><small>No response body</small></p>
+        {% endif %}
+    </article>
+</div>

@@ -66,5 +66,5 @@ smello.init(
 
 ## Links
 
-- [Documentation & Source](https://github.com/imankulov/smello)
+- [Documentation & Source](https://github.com/smelloscope/smello)
 - [smello-server on PyPI](https://pypi.org/project/smello-server/)

@@ -18,7 +18,7 @@ smello-server run
 Or with Docker:
 
 ```bash
-docker run -p 5110:5110 ghcr.io/imankulov/smello
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
 ### 2. Add to your code
@@ -120,7 +120,7 @@ curl -X DELETE http://localhost:5110/api/requests
 Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/imankulov/smello.git
+git clone https://github.com/smelloscope/smello.git
 cd smello
 uv sync
 

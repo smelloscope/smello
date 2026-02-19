@@ -14,7 +14,7 @@ The dashboard opens at `http://localhost:5110`.
 Or with Docker:
 
 ```bash
-docker run -p 5110:5110 ghcr.io/imankulov/smello
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
 Then add the client SDK to your Python code:
@@ -60,5 +60,5 @@ smello-server run --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
 
 ## Links
 
-- [Documentation & Source](https://github.com/imankulov/smello)
+- [Documentation & Source](https://github.com/smelloscope/smello)
 - [smello client SDK on PyPI](https://pypi.org/project/smello/)

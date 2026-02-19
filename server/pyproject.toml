@@ -25,9 +25,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/imankulov/smello"
-Repository = "https://github.com/imankulov/smello"
-Issues = "https://github.com/imankulov/smello/issues"
+Homepage = "https://github.com/smelloscope/smello"
+Repository = "https://github.com/smelloscope/smello"
+Issues = "https://github.com/smelloscope/smello/issues"
 
 [project.scripts]
 smello-server = "smello_server.__main__:main"

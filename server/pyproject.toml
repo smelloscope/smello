@@ -4,6 +4,18 @@ version = "0.1.0"
 description = "A local web dashboard for inspecting outgoing HTTP requests from your code"
 license = "MIT"
 requires-python = ">=3.14"
+readme = "README.md"
+authors = [{ name = "Roman Imankulov", email = "roman.imankulov@gmail.com" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Framework :: FastAPI",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Networking :: Monitoring",
+]
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.34.0",
@@ -11,6 +23,11 @@ dependencies = [
     "tortoise-orm>=0.22.0",
     "aiosqlite>=0.20.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/imankulov/smello"
+Repository = "https://github.com/imankulov/smello"
+Issues = "https://github.com/imankulov/smello/issues"
 
 [project.scripts]
 smello-server = "smello_server.__main__:main"

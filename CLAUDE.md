@@ -47,3 +47,4 @@ This is a **uv workspace monorepo** with two packages:
 - **Client SDK has no dependencies**: Transport uses `urllib.request` directly to avoid patching recursion. The server's own hostname is auto-added to `ignore_hosts`.
 - **Server tests** use `FastAPI.TestClient` with a fresh SQLite DB per test (see `server/tests/conftest.py`). Tortoise ORM global context is reset between tests via `_reset_tortoise_global_context()`.
 - **E2E tests** spin up a real uvicorn server and a mock HTTP target, then verify the full capture-to-rendering pipeline.
+- **Three README files** must stay in sync: `README.md` (root), `clients/python/README.md` (PyPI page for smello), and `server/README.md` (PyPI page for smello-server). After significant changes, review and update all three.

@@ -1,0 +1,48 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "smello/v*"
+      - "smello-server/v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Determine package from tag
+        id: package
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == smello-server/v* ]]; then
+            echo "name=smello-server" >> "$GITHUB_OUTPUT"
+          elif [[ "$TAG" == smello/v* ]]; then
+            echo "name=smello" >> "$GITHUB_OUTPUT"
+          else
+            echo "Unknown tag format: $TAG" >&2
+            exit 1
+          fi
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Build
+        run: uv build --package ${{ steps.package.outputs.name }}
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

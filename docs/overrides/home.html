@@ -131,7 +131,7 @@
 
   <section class="hero">
     <h1>Smello</h1>
-    <p class="tagline">Capture outgoing HTTP requests from your Python code and browse them in a local web dashboard.</p>
+    <p class="tagline">Capture outgoing HTTP and gRPC requests from your Python code and browse them in a local web dashboard.</p>
     <div class="hero-buttons">
       <a href="getting-started/" class="primary">Get Started</a>
       <a href="https://github.com/smelloscope/smello" class="secondary">GitHub</a>
@@ -153,8 +153,8 @@
         <p>Inspect method, URL, headers, body, status code, and duration for every captured call. Sensitive headers like <code>Authorization</code> are redacted automatically.</p>
       </div>
       <div class="feature">
-        <h3>requests &amp; httpx</h3>
-        <p>Smello patches both libraries automatically, including async httpx. Your existing code stays unchanged.</p>
+        <h3>requests, httpx &amp; gRPC</h3>
+        <p>Smello patches requests and httpx automatically, including async httpx. gRPC calls (used by Google Cloud libraries like BigQuery and Firestore) are captured too.</p>
       </div>
     </div>
   </section>

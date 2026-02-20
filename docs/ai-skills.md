@@ -26,7 +26,7 @@ Skills are placed in your project's `.claude/skills/` directory (or equivalent f
 Explores your codebase and proposes a plan to integrate Smello. The skill:
 
 1. Detects your package manager (pip, uv, poetry, pipenv)
-2. Finds HTTP library usage (`requests`, `httpx`)
+2. Finds HTTP and gRPC library usage (`requests`, `httpx`, `grpc`, Google Cloud libraries)
 3. Locates the application entrypoint (Django, Flask, FastAPI, CLI, etc.)
 4. Checks for Docker Compose files
 5. Presents a step-by-step integration plan
@@ -41,7 +41,7 @@ The skill does **not** make any changes — it only proposes. You approve each s
 
 ### `/http-debugger` — Traffic inspection
 
-Helps you debug HTTP traffic captured by a running Smello instance. The skill queries the Smello API to:
+Helps you debug traffic captured by a running Smello instance (HTTP and gRPC). The skill queries the Smello API to:
 
 - List recent requests with filtering (host, method, status code, URL search)
 - Fetch full request/response details (headers, bodies, timing)

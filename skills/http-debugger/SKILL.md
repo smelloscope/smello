@@ -1,12 +1,12 @@
 ---
 name: http-debugger
-description: Debug HTTP requests captured by Smello. Use when the user asks to inspect HTTP traffic, debug API calls, troubleshoot failed requests, analyze response bodies, or understand what HTTP requests their code is making. Requires a running Smello server.
+description: Debug HTTP requests captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, or understand what requests their code is making. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
 allowed-tools: Bash(curl *), Read, Grep, Glob
 ---
 
 # HTTP Debugger (Smello)
 
-You are an HTTP debugging assistant. The user has [Smello](https://github.com/smelloscope/smello) set up to capture outgoing HTTP traffic from their Python application. Use the Smello API to inspect captured requests and help diagnose issues.
+You are an HTTP debugging assistant. The user has [Smello](https://github.com/smelloscope/smello) set up to capture outgoing traffic from their Python application. Use the Smello API to inspect captured requests and help diagnose issues. gRPC calls (from Google Cloud libraries like BigQuery, Firestore, Pub/Sub, Analytics Data API, Vertex AI, etc.) appear with `grpc://` URLs and protobuf bodies serialized as JSON.
 
 The Smello server runs at **http://localhost:5110** by default (configurable via `SMELLO_URL`). If $ARGUMENTS contains a URL, use that as the server URL instead. Otherwise, check if `SMELLO_URL` is set in the environment and use that.
 
@@ -111,7 +111,7 @@ curl -s 'http://localhost:5110/api/requests?search=/v1/charges'
 
 - Headers named `Authorization` and `X-Api-Key` are redacted by default — values show as `[REDACTED]`. This is expected behavior, not an error. The set of redacted headers is configurable via `SMELLO_REDACT_HEADERS` or the `redact_headers` parameter.
 - Request/response bodies are stored as strings. JSON bodies can be parsed with `python -m json.tool` or `jq`.
-- The `library` field tells you whether the request came from `requests` or `httpx`.
+- The `library` field tells you whether the request came from `requests`, `httpx`, or `grpc`.
 - If no requests appear, check: (1) `smello.init()` is called **before** HTTP libraries are imported/used, (2) `SMELLO_ENABLED` is not set to `false`, (3) the target host is not in `SMELLO_IGNORE_HOSTS`.
 - The web dashboard at http://localhost:5110 provides a visual interface. Suggest the user open it in a browser for a Gmail-style two-panel view.
 - Smello is configured via `SMELLO_*` environment variables: `SMELLO_ENABLED`, `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`.

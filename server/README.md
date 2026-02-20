@@ -1,6 +1,6 @@
 # Smello Server
 
-A local web dashboard for inspecting outgoing HTTP requests captured by the [smello](https://pypi.org/project/smello/) client SDK.
+A local web dashboard for inspecting outgoing HTTP requests captured by the [smello](https://pypi.org/project/smello/) client SDK — including gRPC calls made by Google Cloud libraries.
 
 ## Setup
 
@@ -27,7 +27,7 @@ pip install smello
 import smello
 smello.init()
 
-# All outgoing requests via requests/httpx are now captured
+# All outgoing requests are now captured (HTTP and gRPC)
 ```
 
 ## API

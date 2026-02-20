@@ -38,11 +38,11 @@ just bump-server minor   # smello-server
 
 This is a **uv workspace monorepo** with two packages:
 
-- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send` and `httpx.Client.send`/`AsyncClient.send` to intercept outgoing HTTP traffic. Serializes request/response pairs and sends them to the server via a background thread using `urllib` (to avoid triggering its own patches).
+- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, and `grpc.insecure_channel`/`grpc.secure_channel` to intercept outgoing traffic. Serializes request/response pairs and sends them to the server via a background thread using `urllib` (to avoid triggering its own patches).
 
 - **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured data at `POST /api/capture`, stores it, and serves both a JSON API (`/api/*`) and a web dashboard (`/`) with Jinja2 templates + HTMX.
 
-**Data flow:** Patched HTTP library → `smello.capture.serialize_request_response` → background queue (`smello.transport`) → `POST /api/capture` → Tortoise ORM → SQLite → Web UI / JSON API.
+**Data flow:** Patched library (requests/httpx/grpc) → `smello.capture.serialize_request_response` → background queue (`smello.transport`) → `POST /api/capture` → Tortoise ORM → SQLite → Web UI / JSON API.
 
 ## Key Patterns
 

@@ -1,6 +1,6 @@
 ---
 name: setup-smello
-description: Explore a Python codebase and propose a plan to integrate Smello HTTP traffic capture. Use when the user wants to add Smello to their project, set up HTTP request monitoring, or capture outgoing API calls for debugging.
+description: Explore a Python codebase and propose a plan to integrate Smello traffic capture (HTTP and gRPC). Use when the user wants to add Smello to their project, set up request monitoring, or capture outgoing API calls for debugging.
 argument-hint: "[server_url]"
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(pip *), Bash(uv *), Bash(cat *), Bash(ls *), Bash(python *), Bash(docker *)
@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash(pip *), Bash(uv *), Bash(cat *), Bash(ls *
 
 # Setup Smello
 
-You are helping the user integrate [Smello](https://github.com/smelloscope/smello) into their Python project. Smello captures outgoing HTTP requests (via `requests` and `httpx`) and displays them in a local web dashboard at http://localhost:5110.
+You are helping the user integrate [Smello](https://github.com/smelloscope/smello) into their Python project. Smello captures outgoing HTTP requests (via `requests` and `httpx`) and gRPC calls (via `grpc`) and displays them in a local web dashboard at http://localhost:5110. Google Cloud libraries (BigQuery, Firestore, Pub/Sub, Analytics Data API, Vertex AI, etc.) use gRPC under the hood and are captured automatically.
 
 **Your job is to explore the codebase, then present a plan. Do NOT make any changes until the user approves.**
 
@@ -17,7 +17,7 @@ You are helping the user integrate [Smello](https://github.com/smelloscope/smell
 Investigate the project to understand:
 
 1. **Package manager**: Is the project using `pip` + `requirements.txt`, `pip` + `pyproject.toml`, `uv`, `poetry`, `pipenv`, or something else?
-2. **HTTP libraries**: Does the project use `requests`, `httpx`, both, or neither? Search for `import requests`, `import httpx`, `from requests`, `from httpx`.
+2. **HTTP/gRPC libraries**: Does the project use `requests`, `httpx`, `grpc`, or Google Cloud client libraries? Search for `import requests`, `import httpx`, `from requests`, `from httpx`, `import grpc`, `from google.cloud`, `from google.analytics`.
 3. **Application entrypoint**: Find where the app starts. Look for:
    - `if __name__ == "__main__":` blocks
    - Framework-specific entrypoints: Django (`manage.py`, `wsgi.py`, `asgi.py`), Flask (`app = Flask(...)`, `create_app()`), FastAPI (`app = FastAPI()`), etc.
@@ -149,7 +149,7 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 - Smello client SDK: `pip install smello` (Python >= 3.10, zero dependencies)
 - Smello server: `pip install smello-server` (Python >= 3.14) or Docker `ghcr.io/smelloscope/smello`
 - Dashboard: http://localhost:5110
-- Supported libraries: `requests` (patches `Session.send()`) and `httpx` (patches `Client.send()` and `AsyncClient.send()`)
+- Supported libraries: `requests` (patches `Session.send()`), `httpx` (patches `Client.send()` and `AsyncClient.send()`), and `grpc` (patches `insecure_channel()` and `secure_channel()`)
 - Default redacted headers: `Authorization`, `X-Api-Key`
 - Default server URL: `http://localhost:5110`
 

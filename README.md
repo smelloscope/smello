@@ -1,6 +1,6 @@
 # Smello
 
-Capture outgoing HTTP requests from your Python code and browse them in a local web dashboard.
+Capture outgoing HTTP requests from your Python code and browse them in a local web dashboard — including gRPC calls made by Google Cloud libraries.
 
 Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lines to your code, and Smello captures every request/response at `http://localhost:5110`.
 
@@ -27,12 +27,17 @@ docker run -p 5110:5110 ghcr.io/smelloscope/smello
 import smello
 smello.init()
 
-# Smello now captures all outgoing requests via requests and httpx
+# Smello now captures all outgoing requests — HTTP and gRPC
 import requests
 resp = requests.get("https://api.stripe.com/v1/charges")
 
 import httpx
 resp = httpx.get("https://api.openai.com/v1/models")
+
+# Google Cloud libraries use gRPC under the hood — Smello captures those too
+from google.cloud import bigquery
+client = bigquery.Client()
+rows = client.query("SELECT 1").result()
 
 # Browse captured requests at http://localhost:5110
 ```
@@ -50,16 +55,18 @@ npx skills add smelloscope/smello
 | Skill | Install individually | Description |
 |-------|---------------------|-------------|
 | `/setup-smello` | `npx skills add smelloscope/smello --skill setup-smello` | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval. |
-| `/http-debugger` | `npx skills add smelloscope/smello --skill http-debugger` | Queries the Smello API to inspect captured HTTP traffic, debug failed API calls, and analyze request/response details. Also activates automatically when you ask about HTTP debugging. |
+| `/http-debugger` | `npx skills add smelloscope/smello --skill http-debugger` | Queries the Smello API to inspect captured traffic, debug failed API calls, and analyze request/response details. Also activates automatically when you ask about HTTP debugging. |
 
 ## What Smello Captures
 
-For every outgoing HTTP request:
+For every outgoing request:
 
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- HTTP library used (requests or httpx)
+- Library used (requests, httpx, or grpc)
+
+gRPC calls are displayed with a `grpc://` URL scheme (e.g. `grpc://bigquery.googleapis.com:443/...`). Protobuf request and response bodies are automatically serialized to JSON.
 
 Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default.
 
@@ -140,6 +147,25 @@ curl -X DELETE http://localhost:5110/api/requests
 
 - **requests** — patches `Session.send()`
 - **httpx** — patches `Client.send()` and `AsyncClient.send()`
+- **grpc** — patches `insecure_channel()` and `secure_channel()` to intercept unary-unary calls
+
+### Google Cloud libraries
+
+Many Google Cloud Python libraries use gRPC under the hood. Smello automatically captures these calls with zero additional configuration:
+
+- **Google BigQuery** (`google-cloud-bigquery`)
+- **Google Cloud Firestore** (`google-cloud-firestore`)
+- **Google Cloud Pub/Sub** (`google-cloud-pubsub`)
+- **Google Analytics Data API** (`google-analytics-data`) — GA4 reporting
+- **Google Cloud Vertex AI** (`google-cloud-aiplatform`)
+- **Google Cloud Speech-to-Text** (`google-cloud-speech`)
+- **Google Cloud Vision** (`google-cloud-vision`)
+- **Google Cloud Translation** (`google-cloud-translate`)
+- **Google Cloud Secret Manager** (`google-cloud-secret-manager`)
+- **Google Cloud Spanner** (`google-cloud-spanner`)
+- **Google Cloud Bigtable** (`google-cloud-bigtable`)
+
+Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is automatically captured.
 
 ## Development
 
@@ -164,7 +190,7 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 (smello.init())     (FastAPI+SQLite)   (localhost:5110)
 ```
 
-- **smello** (client SDK): Monkey-patches `requests` and `httpx` to capture traffic. Sends data to the server in a background thread.
+- **smello** (client SDK): Monkey-patches `requests`, `httpx`, and `grpc` to capture traffic. Sends data to the server in a background thread.
 - **smello-server**: FastAPI app with Jinja2 templates and SQLite. Receives captured data and serves the dashboard.
 
 ## Project Structure

@@ -32,7 +32,7 @@ import smello
 smello.init()
 ```
 
-That's it. Smello monkey-patches `requests` and `httpx` to capture all outgoing HTTP traffic.
+That's it. Smello monkey-patches `requests`, `httpx`, and `grpc` to capture all outgoing traffic.
 
 ```python
 import requests
@@ -44,23 +44,43 @@ resp = httpx.get("https://api.openai.com/v1/models")
 # Browse captured requests at http://localhost:5110
 ```
 
+### Google Cloud libraries
+
+Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically — no extra setup needed:
+
+```python
+import smello
+smello.init()
+
+# BigQuery, Firestore, Pub/Sub, Analytics (GA4), Vertex AI,
+# Speech-to-Text, Vision, Translation — all captured via gRPC
+from google.cloud import bigquery
+client = bigquery.Client()
+rows = client.query("SELECT 1").result()
+```
+
+Any Python library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is captured.
+
 ## What Smello captures
 
-For every outgoing HTTP request:
+For every outgoing request:
 
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- HTTP library used (requests or httpx)
+- Library used (requests, httpx, or grpc)
+
+gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
 
 Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default.
 
 ## Supported libraries
 
-| Library      | What Smello patches                      |
-| ------------ | ---------------------------------------- |
-| **requests** | `Session.send()`                         |
-| **httpx**    | `Client.send()` and `AsyncClient.send()` |
+| Library      | What Smello patches                                    |
+| ------------ | ------------------------------------------------------ |
+| **requests** | `Session.send()`                                       |
+| **httpx**    | `Client.send()` and `AsyncClient.send()`               |
+| **grpc**     | `insecure_channel()` and `secure_channel()` (unary-unary) |
 
 ## Python version support
 

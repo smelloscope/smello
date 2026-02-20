@@ -654,6 +654,10 @@ requires-dist = [
 name = "smello-workspace"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "smello" },
+    { name = "smello-server" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -668,6 +672,10 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "smello", editable = "clients/python" },
+    { name = "smello-server", editable = "server" },
+]
 
 [package.metadata.requires-dev]
 dev = [

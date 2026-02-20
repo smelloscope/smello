@@ -3,6 +3,7 @@ name = "smello-workspace"
 version = "0.1.0"
 description = "Smello monorepo workspace"
 requires-python = ">=3.10"
+dependencies = ["smello", "smello-server"]
 
 [tool.uv.workspace]
 members = ["server", "clients/python"]

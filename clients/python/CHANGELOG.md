@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+- gRPC interception support for unary-unary calls via `grpc.insecure_channel()` and `grpc.secure_channel()`.
 - Environment variable configuration: all `init()` parameters now fall back to `SMELLO_*` env vars when not passed explicitly (`SMELLO_ENABLED`, `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`).
 
 ### Changed

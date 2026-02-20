@@ -14,7 +14,7 @@
             {{ req.status_code }}
         </span>
     </div>
-    <div class="list-item-url" title="{{ req.url }}">{{ req.host }}{{ req.url | replace('https://' ~ req.host, '') | replace('http://' ~ req.host, '') | truncate(55) }}</div>
+    <div class="list-item-url" title="{{ req.url }}">{{ req.host }}{{ req.url | replace('https://' ~ req.host, '') | replace('http://' ~ req.host, '') | replace('grpc://' ~ req.host, '') | truncate(55) }}</div>
     <div class="list-item-meta">
         <span>{{ req.timestamp.strftime('%H:%M:%S') }}</span>
         <span>{{ req.duration_ms }}ms</span>

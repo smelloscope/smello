@@ -27,3 +27,9 @@ repos:
         types: [python]
         pass_filenames: false
         args: [server/src, clients/python/src]
+      - id: uv-lock
+        name: uv lock check
+        language: system
+        entry: uv lock --check
+        files: (pyproject\.toml|uv\.lock)$
+        pass_filenames: false

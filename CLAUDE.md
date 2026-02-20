@@ -51,4 +51,6 @@ This is a **uv workspace monorepo** with two packages:
 - **Client SDK has no dependencies**: Transport uses `urllib.request` directly to avoid patching recursion. The server's own hostname is auto-added to `ignore_hosts`.
 - **Server tests** use `FastAPI.TestClient` with a fresh SQLite DB per test (see `server/tests/conftest.py`). Tortoise ORM global context is reset between tests via `_reset_tortoise_global_context()`.
 - **E2E tests** spin up a real uvicorn server and a mock HTTP target, then verify the full capture-to-rendering pipeline.
-- **Three README files** must stay in sync: `README.md` (root), `clients/python/README.md` (PyPI page for smello), and `server/README.md` (PyPI page for smello-server). After significant changes, review and update all three.
+- **Three README files** must stay in sync: `README.md` (root), `clients/python/README.md` (PyPI page for smello), and `server/README.md` (PyPI page for smello-server). Update all three after significant changes.
+- **Changelogs**: Each package has its own `CHANGELOG.md` — `server/CHANGELOG.md` and `clients/python/CHANGELOG.md`. Follow [Keep a Changelog](https://keepachangelog.com/) format. Update the `[Unreleased]` section in every commit that introduces a user-facing or changelog-worthy change. Bumping versions moves `[Unreleased]` entries to a versioned section automatically via bump-my-version.
+- **Documentation site** (`docs/`): After significant changes to client or server logic, update the relevant pages (`docs/getting-started.md`, `docs/configuration.md`, `docs/api.md`).

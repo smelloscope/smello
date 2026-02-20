@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-20
+
 ### Added
 
 - `flush()` and `shutdown()` functions to drain the capture queue before exit.

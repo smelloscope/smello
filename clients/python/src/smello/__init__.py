@@ -7,7 +7,7 @@ from smello.config import SmelloConfig
 
 logging.getLogger("smello").addHandler(logging.NullHandler())
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 _config: SmelloConfig | None = None
 _atexit_registered: bool = False

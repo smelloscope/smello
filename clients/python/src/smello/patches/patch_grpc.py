@@ -31,7 +31,7 @@ _GRPC_STATUS_TO_HTTP = {
 def patch_grpc(config: SmelloConfig) -> None:
     """Patch grpc.insecure_channel and grpc.secure_channel to capture unary-unary calls."""
     try:
-        import grpc
+        import grpc  # type: ignore[unresolved-import]
     except ImportError:
         return  # grpc not installed, skip
 
@@ -52,8 +52,8 @@ def patch_grpc(config: SmelloConfig) -> None:
         )
         return grpc.intercept_channel(channel, Interceptor(config, target))
 
-    grpc.insecure_channel = patched_insecure_channel  # type: ignore[assignment]
-    grpc.secure_channel = patched_secure_channel  # type: ignore[assignment]
+    grpc.insecure_channel = patched_insecure_channel
+    grpc.secure_channel = patched_secure_channel
 
 
 def _grpc_status_to_http(code_value: int) -> int:
@@ -80,18 +80,38 @@ def _extract_host(target: str) -> str:
 
 
 def _metadata_to_dict(metadata) -> dict:
-    """Convert gRPC metadata (list of tuples) to a dict."""
+    """Convert gRPC metadata (list of tuples) to a dict.
+
+    Binary metadata values (keys ending with ``-bin``) are base64-encoded
+    so the dict is always JSON-serializable.
+    """
     if metadata is None:
         return {}
-    return {k: v for k, v in metadata}
+    result = {}
+    for k, v in metadata:
+        if isinstance(v, bytes):
+            import base64
+
+            v = base64.b64encode(v).decode("ascii")
+        result[k] = v
+    return result
 
 
 def _proto_to_json(message) -> str:
-    """Convert a protobuf message to JSON string, falling back to str()."""
-    try:
-        from google.protobuf.json_format import MessageToJson
+    """Convert a protobuf message to JSON string, falling back to str().
 
-        return MessageToJson(message)
+    Handles both raw protobuf messages and proto-plus wrappers (used by
+    Google Cloud client libraries).  Proto-plus objects expose the
+    underlying protobuf via a ``_pb`` attribute.
+    """
+    try:
+        from google.protobuf.json_format import (  # type: ignore[unresolved-import]
+            MessageToJson,
+        )
+
+        # proto-plus wraps protobuf messages; unwrap before serializing.
+        pb = getattr(message, "_pb", message)
+        return MessageToJson(pb)
     except Exception:
         return str(message)
 

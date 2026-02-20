@@ -3,38 +3,80 @@
 import atexit
 import logging
 
+from smello._env import _env_bool, _env_list, _env_str
 from smello.config import SmelloConfig
 
 logging.getLogger("smello").addHandler(logging.NullHandler())
 
 __version__ = "0.2.0"
 
+_DEFAULT_SERVER_URL = "http://localhost:5110"
+_DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
+
 _config: SmelloConfig | None = None
 _atexit_registered: bool = False
 
 
 def init(
-    server_url: str = "http://localhost:5110",
+    server_url: str | None = None,
     capture_hosts: list[str] | None = None,
-    capture_all: bool = True,
+    capture_all: bool | None = None,
     ignore_hosts: list[str] | None = None,
     redact_headers: list[str] | None = None,
-    enabled: bool = True,
+    enabled: bool | None = None,
 ) -> None:
-    """Initialize Smello. Patches requests and httpx to capture outgoing HTTP traffic."""
+    """Initialize Smello. Patches requests and httpx to capture outgoing HTTP traffic.
+
+    Each parameter falls back to a ``SMELLO_*`` environment variable when
+    not passed explicitly, then to a hardcoded default:
+
+    ================  ==========================  ==========================
+    Parameter         Environment variable        Default
+    ================  ==========================  ==========================
+    enabled           ``SMELLO_ENABLED``          ``True``
+    server_url        ``SMELLO_URL``              ``http://localhost:5110``
+    capture_all       ``SMELLO_CAPTURE_ALL``      ``True``
+    capture_hosts     ``SMELLO_CAPTURE_HOSTS``    ``[]``
+    ignore_hosts      ``SMELLO_IGNORE_HOSTS``     ``[]``
+    redact_headers    ``SMELLO_REDACT_HEADERS``   ``["authorization", "x-api-key"]``
+    ================  ==========================  ==========================
+
+    Boolean env vars accept ``true``/``1``/``yes`` and ``false``/``0``/``no``
+    (case-insensitive).  List env vars are comma-separated.
+    """
     global _config, _atexit_registered
 
+    # Resolve: explicit param > env var > hardcoded default
+    if enabled is None:
+        enabled = _env_bool("ENABLED") if _env_bool("ENABLED") is not None else True
     if not enabled:
         return
 
+    if server_url is None:
+        server_url = _env_str("URL") or _DEFAULT_SERVER_URL
+
+    if capture_all is None:
+        env_val = _env_bool("CAPTURE_ALL")
+        capture_all = env_val if env_val is not None else True
+
+    if capture_hosts is None:
+        capture_hosts = _env_list("CAPTURE_HOSTS") or []
+
+    if ignore_hosts is None:
+        ignore_hosts = _env_list("IGNORE_HOSTS") or []
+
+    if redact_headers is None:
+        env_headers = _env_list("REDACT_HEADERS")
+        redact_headers = (
+            env_headers if env_headers is not None else list(_DEFAULT_REDACT_HEADERS)
+        )
+
     _config = SmelloConfig(
         server_url=server_url.rstrip("/"),
-        capture_hosts=capture_hosts or [],
+        capture_hosts=capture_hosts,
         capture_all=capture_all,
-        ignore_hosts=ignore_hosts or [],
-        redact_headers=[
-            h.lower() for h in (redact_headers or ["authorization", "x-api-key"])
-        ],
+        ignore_hosts=ignore_hosts,
+        redact_headers=[h.lower() for h in redact_headers],
     )
 
     # Always ignore the smello server itself

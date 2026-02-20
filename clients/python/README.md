@@ -54,6 +54,19 @@ smello.init(
 )
 ```
 
+All parameters fall back to `SMELLO_*` environment variables when not passed explicitly:
+
+| Parameter | Env variable | Default |
+|-----------|-------------|---------|
+| `enabled` | `SMELLO_ENABLED` | `True` |
+| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
+| `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
+| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
+| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
+| `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
+
+Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
+
 ## Supported Libraries
 
 - **requests** — patches `Session.send()`

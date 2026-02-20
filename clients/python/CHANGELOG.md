@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- Environment variable configuration: all `init()` parameters now fall back to `SMELLO_*` env vars when not passed explicitly (`SMELLO_ENABLED`, `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`).
+
+### Changed
+
+- All `init()` parameter defaults changed from hardcoded values to `None` sentinels. Existing code that calls `smello.init()` without arguments is unaffected — the same hardcoded defaults apply when no env vars are set.
+
 ## [0.2.0] - 2026-02-20
 
 ### Added

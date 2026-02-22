@@ -21,7 +21,9 @@ from smello.patches.patch_grpc import (
 
 @pytest.fixture()
 def config():
-    return SmelloConfig(redact_headers=["authorization", "x-api-key"])
+    return SmelloConfig(
+        server_url="http://test:5110", redact_headers=["authorization", "x-api-key"]
+    )
 
 
 # ---------------------------------------------------------------------------

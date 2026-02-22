@@ -25,7 +25,7 @@ docker run -p 5110:5110 ghcr.io/smelloscope/smello
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 # Smello now captures all outgoing requests — HTTP and gRPC
 import requests
@@ -42,7 +42,7 @@ rows = client.query("SELECT 1").result()
 # Browse captured requests at http://localhost:5110
 ```
 
-Two lines, no configuration.
+Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
 
 ## AI Agent Skills
 
@@ -52,9 +52,9 @@ Smello ships with [Agent Skills](https://agentskills.io) for Claude Code, Cursor
 npx skills add smelloscope/smello
 ```
 
-| Skill | Install individually | Description |
-|-------|---------------------|-------------|
-| `/setup-smello` | `npx skills add smelloscope/smello --skill setup-smello` | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval. |
+| Skill            | Install individually                                      | Description                                                                                                                                                                       |
+| ---------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/setup-smello`  | `npx skills add smelloscope/smello --skill setup-smello`  | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval.         |
 | `/http-debugger` | `npx skills add smelloscope/smello --skill http-debugger` | Queries the Smello API to inspect captured traffic, debug failed API calls, and analyze request/response details. Also activates automatically when you ask about HTTP debugging. |
 
 ## What Smello Captures
@@ -79,22 +79,20 @@ smello.init(
     capture_all=True,                          # capture everything (default)
     ignore_hosts=["localhost"],               # skip these hosts
     redact_headers=["Authorization"],         # replace values with [REDACTED]
-    enabled=True,                              # kill switch
 )
 ```
 
 All parameters fall back to `SMELLO_*` environment variables when not passed explicitly:
 
-| Parameter | Env variable | Default |
-|-----------|-------------|---------|
-| `enabled` | `SMELLO_ENABLED` | `True` |
-| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
-| `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
-| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
-| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
+| Parameter        | Env variable            | Default                          |
+| ---------------- | ----------------------- | -------------------------------- |
+| `server_url`     | `SMELLO_URL`            | `None` (inactive)                |
+| `capture_all`    | `SMELLO_CAPTURE_ALL`    | `True`                           |
+| `capture_hosts`  | `SMELLO_CAPTURE_HOSTS`  | `[]`                             |
+| `ignore_hosts`   | `SMELLO_IGNORE_HOSTS`   | `[]`                             |
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
 
-Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
+The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
 ## API
 
@@ -138,10 +136,10 @@ curl -X DELETE http://localhost:5110/api/requests
 
 ## Python Version Support
 
-| Package | Python |
-|---------|--------|
+| Package                 | Python  |
+| ----------------------- | ------- |
 | **smello** (client SDK) | >= 3.10 |
-| **smello-server** | >= 3.14 |
+| **smello-server**       | >= 3.14 |
 
 ## Supported Libraries
 

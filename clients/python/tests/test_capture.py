@@ -7,7 +7,9 @@ from smello.config import SmelloConfig
 
 @pytest.fixture()
 def config():
-    return SmelloConfig(redact_headers=["authorization", "x-api-key"])
+    return SmelloConfig(
+        server_url="http://test:5110", redact_headers=["authorization", "x-api-key"]
+    )
 
 
 @pytest.fixture()
@@ -68,7 +70,7 @@ def test_header_redaction(config):
 
 
 def test_custom_redact_headers():
-    config = SmelloConfig(redact_headers=["x-secret"])
+    config = SmelloConfig(server_url="http://test:5110", redact_headers=["x-secret"])
     payload = serialize_request_response(
         config=config,
         method="GET",

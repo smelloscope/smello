@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: Remove `enabled` parameter and `SMELLO_ENABLED` env var. The server URL is now the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set.
+- **BREAKING**: Remove default server URL. `server_url` must be configured explicitly.
+
 ## [0.3.1] - 2026-02-20
 
 ## [0.3.0] - 2026-02-20

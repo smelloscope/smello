@@ -58,37 +58,27 @@ Common placement patterns:
 - **CLI / script**: Near the top of `if __name__ == "__main__":`
 - **General**: Wherever the application bootstraps, before HTTP calls are made
 
-Since Smello reads `SMELLO_ENABLED` from the environment, the recommended pattern is to always call `smello.init()` and control activation via the environment:
+Since Smello uses the server URL as its activation signal, the recommended pattern is to always call `smello.init()` and control activation via the `SMELLO_URL` environment variable:
 
 ```python
 import smello
-smello.init()  # only activates when SMELLO_ENABLED=true
+smello.init()  # only activates when SMELLO_URL is set
 ```
 
 Then in `.env` or the shell:
 
 ```bash
-SMELLO_ENABLED=true
+SMELLO_URL=http://localhost:5110
 ```
 
-This way the code has zero conditional logic. For projects that prefer explicit gating in code:
-
-```python
-import os
-if os.getenv("SMELLO_ENABLED", "").lower() in ("1", "true", "yes"):
-    import smello
-    smello.init()
-```
-
-Or if the project already has a settings/config pattern, use that.
+This way the code has zero conditional logic — without `SMELLO_URL`, `init()` is a safe no-op (no patching, no threads, no side effects).
 
 ### C. Configure via environment variables
 
 Smello supports full configuration via `SMELLO_*` environment variables. Suggest adding these to the project's `.env`, `.env.development`, or equivalent:
 
 ```bash
-SMELLO_ENABLED=true                              # enable/disable (default: true)
-SMELLO_URL=http://localhost:5110                  # server URL
+SMELLO_URL=http://localhost:5110                  # server URL (activates Smello)
 # SMELLO_CAPTURE_HOSTS=api.stripe.com,api.openai.com  # only capture these hosts
 # SMELLO_IGNORE_HOSTS=localhost,internal.svc      # skip these hosts
 # SMELLO_REDACT_HEADERS=Authorization,X-Api-Key   # headers to redact
@@ -157,8 +147,7 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 
 | Variable | Type | Default |
 |----------|------|---------|
-| `SMELLO_ENABLED` | bool | `true` |
-| `SMELLO_URL` | string | `http://localhost:5110` |
+| `SMELLO_URL` | string | `None` (inactive) |
 | `SMELLO_CAPTURE_ALL` | bool | `true` |
 | `SMELLO_CAPTURE_HOSTS` | comma-separated list | `[]` |
 | `SMELLO_IGNORE_HOSTS` | comma-separated list | `[]` |

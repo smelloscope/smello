@@ -5,7 +5,7 @@ def test_empty_state(client):
     resp = client.get("/")
     assert resp.status_code == 200
     assert "No captured requests yet" in resp.text
-    assert "smello.init()" in resp.text
+    assert 'smello.init(server_url="http://localhost:5110")' in resp.text
 
 
 def test_shows_captured_request(client, make_payload):

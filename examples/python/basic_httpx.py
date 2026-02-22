@@ -2,7 +2,7 @@
 
 import smello
 
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 import httpx
 

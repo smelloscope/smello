@@ -146,7 +146,7 @@
     <div class="features">
       <div class="feature">
         <h3>Two Lines of Code</h3>
-        <p>Add <code>import smello</code> and <code>smello.init()</code> to your app. Every outgoing HTTP request shows up in the dashboard. No config files, no middleware.</p>
+        <p>Add <code>import smello</code> and <code>smello.init()</code> to your app, then set <code>SMELLO_URL</code> in your environment. Every outgoing HTTP request shows up in the dashboard. No config files, no middleware.</p>
       </div>
       <div class="feature">
         <h3>Full Request &amp; Response</h3>
@@ -188,7 +188,7 @@
     <div class="code-wrap">
       <div class="highlight">
         <pre><code class="language-python">import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 # Every outgoing request is now captured
 import requests

@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import smello
 
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 import grpc  # noqa: E402
 import grpcbin_pb2  # noqa: E402

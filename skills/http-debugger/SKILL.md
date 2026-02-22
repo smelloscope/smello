@@ -112,6 +112,6 @@ curl -s 'http://localhost:5110/api/requests?search=/v1/charges'
 - Headers named `Authorization` and `X-Api-Key` are redacted by default — values show as `[REDACTED]`. This is expected behavior, not an error. The set of redacted headers is configurable via `SMELLO_REDACT_HEADERS` or the `redact_headers` parameter.
 - Request/response bodies are stored as strings. JSON bodies can be parsed with `python -m json.tool` or `jq`.
 - The `library` field tells you whether the request came from `requests`, `httpx`, or `grpc`.
-- If no requests appear, check: (1) `smello.init()` is called **before** HTTP libraries are imported/used, (2) `SMELLO_ENABLED` is not set to `false`, (3) the target host is not in `SMELLO_IGNORE_HOSTS`.
+- If no requests appear, check: (1) `smello.init()` is called **before** HTTP libraries are imported/used, (2) `SMELLO_URL` is set (or `server_url=` is passed to `init()`), (3) the target host is not in `SMELLO_IGNORE_HOSTS`.
 - The web dashboard at http://localhost:5110 provides a visual interface. Suggest the user open it in a browser for a Gmail-style two-panel view.
-- Smello is configured via `SMELLO_*` environment variables: `SMELLO_ENABLED`, `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`.
+- Smello is configured via `SMELLO_*` environment variables: `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`.

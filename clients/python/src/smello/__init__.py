@@ -10,12 +10,12 @@ from smello.patches import apply_all as _apply_all
 from smello.transport import flush, shutdown
 from smello.transport import start_worker as _start_worker
 
-logging.getLogger("smello").addHandler(logging.NullHandler())
+logger = logging.getLogger("smello")
+logger.addHandler(logging.NullHandler())
 
 __all__ = ["init", "flush", "shutdown"]
 __version__ = "0.3.1"
 
-_DEFAULT_SERVER_URL = "http://localhost:5110"
 _DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
 
 _config: SmelloConfig | None = None
@@ -28,9 +28,14 @@ def init(
     capture_all: bool | None = None,
     ignore_hosts: list[str] | None = None,
     redact_headers: list[str] | None = None,
-    enabled: bool | None = None,
 ) -> None:
     """Initialize Smello. Patches requests and httpx to capture outgoing HTTP traffic.
+
+    Smello only activates when a server URL is provided — either via the
+    ``server_url`` parameter or the ``SMELLO_URL`` environment variable.
+    Without a URL, ``init()`` is a no-op: no monkey-patching, no background
+    threads, no side effects.  This makes it safe to leave ``smello.init()``
+    in production code and control activation purely via the environment.
 
     Each parameter falls back to a ``SMELLO_*`` environment variable when
     not passed explicitly, then to a hardcoded default:
@@ -38,8 +43,7 @@ def init(
     ================  ==========================  ==========================
     Parameter         Environment variable        Default
     ================  ==========================  ==========================
-    enabled           ``SMELLO_ENABLED``          ``True``
-    server_url        ``SMELLO_URL``              ``http://localhost:5110``
+    server_url        ``SMELLO_URL``              ``None`` (inactive)
     capture_all       ``SMELLO_CAPTURE_ALL``      ``True``
     capture_hosts     ``SMELLO_CAPTURE_HOSTS``    ``[]``
     ignore_hosts      ``SMELLO_IGNORE_HOSTS``     ``[]``
@@ -51,14 +55,15 @@ def init(
     """
     global _config, _atexit_registered
 
-    # Resolve: explicit param > env var > hardcoded default
-    if enabled is None:
-        enabled = _env_bool("ENABLED") if _env_bool("ENABLED") is not None else True
-    if not enabled:
-        return
-
+    # Resolve: explicit param > env var
     if server_url is None:
-        server_url = _env_str("URL") or _DEFAULT_SERVER_URL
+        server_url = _env_str("URL")
+    if not server_url:
+        logger.warning(
+            "smello.init() called without a server URL. "
+            "Set SMELLO_URL or pass server_url= to activate. Doing nothing."
+        )
+        return
 
     if capture_all is None:
         env_val = _env_bool("CAPTURE_ALL")

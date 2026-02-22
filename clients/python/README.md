@@ -22,7 +22,7 @@ Add two lines to your code:
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 import requests
 resp = requests.get("https://api.stripe.com/v1/charges")
@@ -32,13 +32,15 @@ resp = requests.get("https://api.stripe.com/v1/charges")
 
 Smello monkey-patches `requests`, `httpx`, and `grpc` to capture all outgoing traffic. Browse results at `http://localhost:5110`.
 
+Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment — no URL, no side effects.
+
 ### Google Cloud libraries
 
 Many Google Cloud Python libraries — BigQuery, Firestore, Pub/Sub, Analytics Data API (GA4), Vertex AI, Speech-to-Text, Vision, Translation, and others — use gRPC under the hood. Smello captures these calls automatically:
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 from google.cloud import bigquery
 client = bigquery.Client()
@@ -67,7 +69,6 @@ smello.init(
     capture_all=True,                     # capture everything (default)
     ignore_hosts=["localhost"],          # skip these hosts
     redact_headers=["Authorization"],    # replace values with [REDACTED]
-    enabled=True,                         # kill switch
 )
 ```
 
@@ -75,14 +76,13 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 
 | Parameter | Env variable | Default |
 |-----------|-------------|---------|
-| `enabled` | `SMELLO_ENABLED` | `True` |
-| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
+| `server_url` | `SMELLO_URL` | `None` (inactive) |
 | `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
 | `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
 | `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
 
-Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
+The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
 ## Supported Libraries
 

@@ -29,7 +29,7 @@ The web dashboard opens at [http://localhost:5110](http://localhost:5110).
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 ```
 
 That's it. Smello monkey-patches `requests`, `httpx`, and `grpc` to capture all outgoing traffic.
@@ -44,13 +44,31 @@ resp = httpx.get("https://api.openai.com/v1/models")
 # Browse captured requests at http://localhost:5110
 ```
 
+### Activation model
+
+Smello only activates when a server URL is provided — either via the `server_url` parameter or the `SMELLO_URL` environment variable. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
+
+Leave `smello.init()` in your code and control activation via the environment:
+
+```python
+import smello
+smello.init()  # does nothing unless SMELLO_URL is set
+```
+
+```bash
+# Activate in development
+export SMELLO_URL=http://localhost:5110
+```
+
+Like Sentry's `SENTRY_DSN`, this keeps instrumentation in place with zero production overhead.
+
 ### Google Cloud libraries
 
 Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically — no extra setup needed:
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 # BigQuery, Firestore, Pub/Sub, Analytics (GA4), Vertex AI,
 # Speech-to-Text, Vision, Translation — all captured via gRPC

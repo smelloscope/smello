@@ -25,7 +25,7 @@ pip install smello
 
 ```python
 import smello
-smello.init()
+smello.init(server_url="http://localhost:5110")
 
 # All outgoing requests are now captured (HTTP and gRPC)
 ```

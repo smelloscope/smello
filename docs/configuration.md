@@ -9,18 +9,16 @@ smello.init(
     capture_all=True,                          # capture everything (default)
     ignore_hosts=["localhost"],               # skip these hosts
     redact_headers=["Authorization"],         # replace values with [REDACTED]
-    enabled=True,                              # kill switch
 )
 ```
 
-Every parameter falls back to a **`SMELLO_*` environment variable** when not passed explicitly, then to a hardcoded default. This follows the same pattern as Sentry (`SENTRY_DSN`), LangSmith (`LANGSMITH_API_KEY`), and Datadog (`DD_TRACE_ENABLED`).
+Every parameter falls back to a **`SMELLO_*` environment variable** when not passed explicitly, then to a hardcoded default. This follows the same pattern as Sentry (`SENTRY_DSN`) and LangSmith (`LANGSMITH_API_KEY`).
 
 ## Parameters
 
 | Parameter | Env variable | Default |
 |-----------|-------------|---------|
-| `enabled` | `SMELLO_ENABLED` | `True` |
-| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
+| `server_url` | `SMELLO_URL` | `None` (inactive) |
 | `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
 | `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
 | `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
@@ -28,15 +26,9 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 
 **Precedence**: explicit parameter > environment variable > hardcoded default.
 
-### `enabled`
-
-Master switch. Set to `False` to disable all capturing. Default: `True`.
-
-Set via env var: `SMELLO_ENABLED=false` (accepts `true`/`1`/`yes` and `false`/`0`/`no`, case-insensitive).
-
 ### `server_url`
 
-URL of the Smello server. Default: `http://localhost:5110`.
+URL of the Smello server and the activation signal — without a URL, `init()` does nothing. No patching, no background threads, no side effects.
 
 Set via env var: `SMELLO_URL=http://smello:5110`.
 
@@ -66,20 +58,19 @@ Set via env var: `SMELLO_REDACT_HEADERS=Authorization,X-Api-Key,X-Custom-Token` 
 
 ## Environment-only configuration
 
-For projects where you want zero code changes, add `smello.init()` without arguments and control everything via environment variables:
+For projects where you want zero code changes, add `smello.init()` without arguments and control activation via the `SMELLO_URL` environment variable:
 
 ```python
 import smello
-smello.init()
+smello.init()  # activates only when SMELLO_URL is set
 ```
 
 ```bash
-export SMELLO_ENABLED=true
-export SMELLO_URL=http://smello:5110
+export SMELLO_URL=http://localhost:5110
 export SMELLO_IGNORE_HOSTS=localhost,internal.svc
 ```
 
-This is useful for Docker Compose setups, CI environments, or `.env` files.
+Without `SMELLO_URL`, `init()` is a no-op — safe for production. Useful for Docker Compose, CI, and `.env` files.
 
 ## Flushing and shutdown
 

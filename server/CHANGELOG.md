@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-23
+
 ### Added
 
 - `GET /api/meta` endpoint returning distinct hosts and methods for filter dropdowns.

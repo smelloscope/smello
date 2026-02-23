@@ -7,6 +7,7 @@ on:
       - "server/**"
       - "clients/python/**"
       - "tests/**"
+      - "frontend/**"
       - "pyproject.toml"
       - "uv.lock"
       - ".github/workflows/tests.yml"
@@ -96,3 +97,32 @@ jobs:
 
       - name: Run e2e tests
         run: uv run pytest tests/test_e2e/ -v
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Type check
+        run: cd frontend && npx tsc -b
+
+      - name: Lint
+        run: cd frontend && npm run lint
+
+      - name: Check formatting
+        run: cd frontend && npx prettier --check .
+
+      - name: Run tests
+        run: cd frontend && npm test

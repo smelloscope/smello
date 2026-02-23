@@ -33,3 +33,15 @@ repos:
         entry: uv lock --check
         files: (pyproject\.toml|uv\.lock)$
         pass_filenames: false
+      - id: frontend-eslint
+        name: frontend eslint
+        language: system
+        entry: bash -c 'cd frontend && npx eslint .'
+        files: ^frontend/src/.*\.(js|jsx|ts|tsx)$
+        pass_filenames: false
+      - id: frontend-prettier
+        name: frontend prettier
+        language: system
+        entry: bash -c 'cd frontend && npx prettier --check .'
+        files: ^frontend/.*\.(js|jsx|ts|tsx|json|css)$
+        pass_filenames: false

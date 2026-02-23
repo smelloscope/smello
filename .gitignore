@@ -22,3 +22,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 site/
+node_modules/
+frontend/dist/
+frontend/openapi.json
+*.tsbuildinfo

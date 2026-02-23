@@ -4,18 +4,20 @@ A local web dashboard for inspecting outgoing HTTP requests captured by the [sme
 
 ## Setup
 
+Docker (recommended — includes web dashboard):
+
+```bash
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
+```
+
+Or install via pip (API only, no web dashboard):
+
 ```bash
 pip install smello-server
 smello-server run
 ```
 
-The dashboard opens at `http://localhost:5110`.
-
-Or with Docker:
-
-```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
-```
+The server listens at `http://localhost:5110`.
 
 Then add the client SDK to your Python code:
 

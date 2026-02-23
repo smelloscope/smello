@@ -2,25 +2,26 @@
 
 ## Install
 
-Install the client SDK and server:
-
-```bash
-pip install smello smello-server
-```
-
-Or install the server with Docker:
+Start the server with Docker (recommended — includes web dashboard):
 
 ```bash
 docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
-## Start the server
+Or install the API server directly (no web dashboard):
 
 ```bash
+pip install smello-server
 smello-server run
 ```
 
-The web dashboard opens at [http://localhost:5110](http://localhost:5110).
+Install the client SDK:
+
+```bash
+pip install smello
+```
+
+The server listens at [http://localhost:5110](http://localhost:5110).
 
 !!! tip "Why port 5110?"
     Read it as **5-1-1-0** → **S-L-L-O** → **smello**.

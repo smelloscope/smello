@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- `GET /api/meta` endpoint returning distinct hosts and methods for filter dropdowns.
+- React SPA frontend (MUI, TanStack Query, jotai) replacing Jinja2/HTMX server-side rendering.
+- `SMELLO_FRONTEND_DIR` env var to serve pre-built frontend assets from FastAPI.
+- Multi-stage Dockerfile building both frontend and server.
+
+### Removed
+
+- Jinja2 templates, HTMX, and all server-side rendered web routes.
+- `jinja2` dependency.
+
 ## [0.1.2] - 2026-02-20
 
 ## [0.1.1] - 2025-01-01

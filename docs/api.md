@@ -32,6 +32,14 @@ Returns headers and bodies for both request and response.
 curl -s http://localhost:5110/api/requests/{id} | python -m json.tool
 ```
 
+## Get filter metadata
+
+Returns distinct hosts and methods for populating filter dropdowns.
+
+```bash
+curl -s http://localhost:5110/api/meta | python -m json.tool
+```
+
 ## Clear all requests
 
 ```bash

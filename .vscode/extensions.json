@@ -2,6 +2,7 @@
   "recommendations": [
     "charliermarsh.ruff",
     "astral-sh.ty",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "nefrob.vscode-just-syntax"
   ]
 }

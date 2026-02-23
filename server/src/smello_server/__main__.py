@@ -5,8 +5,6 @@ import os
 
 import uvicorn
 
-from smello_server.app import create_app
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -24,6 +22,12 @@ def main():
     run_parser.add_argument(
         "--db-path", default=None, help="Path to SQLite database file"
     )
+    run_parser.add_argument(
+        "--reload",
+        action="store_true",
+        default=False,
+        help="Enable auto-reload on code changes (for development)",
+    )
 
     args = parser.parse_args()
 
@@ -32,17 +36,19 @@ def main():
         args.host = "0.0.0.0"
         args.port = 5110
         args.db_path = None
+        args.reload = False
 
     if args.command == "run":
         if args.db_path:
             os.environ["SMELLO_DB_PATH"] = args.db_path
 
-        app = create_app()
         uvicorn.run(
-            app,
+            "smello_server.app:create_app",
+            factory=True,
             host=args.host,
             port=args.port,
             log_level="info",
+            reload=args.reload,
         )
 
 

@@ -113,6 +113,31 @@ def test_get_request_not_found(client):
     assert resp.status_code == 404
 
 
+def test_meta_empty(client):
+    resp = client.get("/api/meta")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data == {"hosts": [], "methods": []}
+
+
+def test_meta_returns_distinct_hosts_and_methods(client, make_payload):
+    client.post(
+        "/api/capture", json=make_payload(url="https://api.stripe.com/v1/charges")
+    )
+    client.post(
+        "/api/capture",
+        json=make_payload(method="POST", url="https://api.openai.com/v1/models"),
+    )
+    client.post(
+        "/api/capture",
+        json=make_payload(method="POST", url="https://api.stripe.com/v1/refunds"),
+    )
+
+    data = client.get("/api/meta").json()
+    assert data["hosts"] == ["api.openai.com", "api.stripe.com"]
+    assert data["methods"] == ["GET", "POST"]
+
+
 def test_clear_all(client, sample_payload):
     client.post("/api/capture", json=sample_payload)
     assert len(client.get("/api/requests").json()) == 1

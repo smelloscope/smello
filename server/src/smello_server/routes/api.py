@@ -72,6 +72,11 @@ class RequestDetail(RequestSummary):
     response_body_size: int
 
 
+class MetaResponse(BaseModel):
+    hosts: list[str]
+    methods: list[str]
+
+
 # --- Routes ---
 
 
@@ -153,6 +158,17 @@ async def get_request(request_id: str) -> RequestDetail:
         response_body=r.response_body,
         response_body_size=r.response_body_size,
     )
+
+
+@router.get("/meta", response_model=MetaResponse)
+async def get_meta() -> MetaResponse:
+    hosts: list[str] = (
+        await CapturedRequest.all().distinct().values_list("host", flat=True)
+    )  # type: ignore[assignment]
+    methods: list[str] = (
+        await CapturedRequest.all().distinct().values_list("method", flat=True)
+    )  # type: ignore[assignment]
+    return MetaResponse(hosts=sorted(set(hosts)), methods=sorted(set(methods)))
 
 
 @router.delete("/requests", status_code=204)

@@ -11,14 +11,14 @@ Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lin
 ### 1. Start the server
 
 ```bash
-pip install smello-server
-smello-server run
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
-Or with Docker:
+Or install the API server directly (no web dashboard — API only):
 
 ```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
+pip install smello-server
+smello-server run
 ```
 
 ### 2. Add to your code
@@ -167,19 +167,25 @@ Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is a
 
 ## Development
 
-Requires [uv](https://docs.astral.sh/uv/).
+Requires [uv](https://docs.astral.sh/uv/), [Node.js](https://nodejs.org/) 22+, and [just](https://just.systems/).
 
 ```bash
 git clone https://github.com/smelloscope/smello.git
 cd smello
 uv sync
 
-# Run the server
-uv run smello-server run
+# Terminal 1: API server with auto-reload (http://localhost:5110)
+just server
 
-# Run an example (in another terminal)
+# Terminal 2: Frontend dev server (http://localhost:5111, proxies /api to :5110)
+just frontend-install
+just frontend-dev
+
+# Terminal 3: Run an example
 uv run python examples/python/basic_requests.py
 ```
+
+Run `just` to see all available recipes.
 
 ## Architecture
 
@@ -189,7 +195,7 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 ```
 
 - **smello** (client SDK): Monkey-patches `requests`, `httpx`, and `grpc` to capture traffic. Sends data to the server in a background thread.
-- **smello-server**: FastAPI app with Jinja2 templates and SQLite. Receives captured data and serves the dashboard.
+- **smello-server**: FastAPI app with SQLite. Receives captured data and serves a JSON API. The Docker image includes a React web dashboard.
 
 ## Project Structure
 
@@ -197,6 +203,7 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 smello/
 ├── server/              # smello-server (FastAPI + Tortoise ORM + SQLite)
 │   └── tests/
+├── frontend/            # React SPA (MUI + TanStack Query + jotai)
 ├── clients/python/      # smello client SDK
 │   └── tests/
 ├── tests/test_e2e/      # End-to-end tests

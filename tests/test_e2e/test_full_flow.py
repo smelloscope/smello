@@ -1,7 +1,7 @@
-"""End-to-end test: client SDK captures requests, server stores and renders them.
+"""End-to-end test: client SDK captures requests, server stores them via API.
 
 Spins up a real Smello server, patches HTTP libraries via the SDK,
-makes requests through them, verifies data appears in API and rendered HTML.
+makes requests through them, verifies data appears in the API.
 """
 
 import asyncio
@@ -136,16 +136,14 @@ def _wait_for_capture(smello_url, expected_count=1, timeout=5):
     return json.loads(urllib.request.urlopen(f"{smello_url}/api/requests").read())
 
 
-def _fetch_html(url):
-    return urllib.request.urlopen(url).read().decode()
+def _fetch_json(url):
+    return json.loads(urllib.request.urlopen(url).read())
 
 
 # -- Tests --------------------------------------------------------------------
 
 
-def test_requests_get_captured_and_rendered(
-    smello_server, mock_target, patched_requests
-):
+def test_requests_get_captured(smello_server, mock_target, patched_requests):
     resp = patched_requests.get(f"{mock_target}/e2e-test")
     assert resp.status_code == 200
 
@@ -155,18 +153,8 @@ def test_requests_get_captured_and_rendered(
     assert "/e2e-test" in data[0]["url"]
     assert data[0]["status_code"] == 200
 
-    # Verify list page
-    html = _fetch_html(f"{smello_server}/")
-    assert "/e2e-test" in html
-    assert "GET" in html
-    assert "200" in html
 
-    # Verify detail page
-    detail_html = _fetch_html(f"{smello_server}/requests/{data[0]['id']}")
-    assert "/e2e-test" in detail_html
-
-
-def test_httpx_sync_captured_and_rendered(smello_server, mock_target, patched_httpx):
+def test_httpx_sync_captured(smello_server, mock_target, patched_httpx):
     with patched_httpx.Client() as client:
         resp = client.post(f"{mock_target}/httpx-sync", json={"test": "data"})
     assert resp.status_code == 201
@@ -177,12 +165,8 @@ def test_httpx_sync_captured_and_rendered(smello_server, mock_target, patched_ht
     assert "/httpx-sync" in data[0]["url"]
     assert data[0]["status_code"] == 201
 
-    html = _fetch_html(f"{smello_server}/")
-    assert "/httpx-sync" in html
-    assert "POST" in html
 
-
-def test_httpx_async_captured_and_rendered(smello_server, mock_target, patched_httpx):
+def test_httpx_async_captured(smello_server, mock_target, patched_httpx):
     async def make_request():
         async with patched_httpx.AsyncClient() as client:
             return await client.get(f"{mock_target}/httpx-async")
@@ -195,18 +179,17 @@ def test_httpx_async_captured_and_rendered(smello_server, mock_target, patched_h
     assert data[0]["method"] == "GET"
     assert "/httpx-async" in data[0]["url"]
 
-    html = _fetch_html(f"{smello_server}/")
-    assert "/httpx-async" in html
 
-
-def test_redacted_headers_in_detail_page(smello_server, mock_target, patched_requests):
+def test_redacted_headers_in_api(smello_server, mock_target, patched_requests):
     patched_requests.get(
         f"{mock_target}/secret-endpoint",
         headers={"Authorization": "Bearer sk-super-secret-key"},
     )
 
     data = _wait_for_capture(smello_server)
-    detail_html = _fetch_html(f"{smello_server}/requests/{data[0]['id']}")
+    detail = _fetch_json(f"{smello_server}/api/requests/{data[0]['id']}")
 
-    assert "[REDACTED]" in detail_html
-    assert "sk-super-secret-key" not in detail_html
+    # Header key casing depends on the HTTP library; check case-insensitively
+    headers_lower = {k.lower(): v for k, v in detail["request_headers"].items()}
+    assert headers_lower["authorization"] == "[REDACTED]"
+    assert "sk-super-secret-key" not in json.dumps(detail)

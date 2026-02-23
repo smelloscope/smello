@@ -4,7 +4,9 @@ WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
-RUN npm run build
+# Generated API types are already committed; skip Orval codegen (which
+# needs openapi.json that is not shipped in the repo).
+RUN npm run build --ignore-scripts
 
 # Stage 2: Python server
 FROM python:3.14-slim

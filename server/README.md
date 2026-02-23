@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/smelloscope/smello/main/docs/assets/logo.png" alt="Smello logo" width="160">
+</p>
+
 # Smello Server
 
 A local web dashboard for inspecting outgoing HTTP requests captured by the [smello](https://pypi.org/project/smello/) client SDK — including gRPC calls made by Google Cloud libraries.

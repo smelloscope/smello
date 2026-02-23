@@ -18,9 +18,19 @@ export default function Layout({ children }: { children: ReactNode }) {
           bgcolor: "background.paper",
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 16 }}>
-          Smello
-        </Typography>
+        <Stack
+          component="a"
+          href="/"
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          sx={{ textDecoration: "none", color: "inherit" }}
+        >
+          <Box component="img" src="/logo.png" alt="Smello" sx={{ width: 24, height: 24 }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 16 }}>
+            Smello
+          </Typography>
+        </Stack>
         <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 12 }}>
           HTTP Request Inspector
         </Typography>

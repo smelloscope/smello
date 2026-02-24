@@ -66,3 +66,16 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Three README files** must stay in sync: `README.md` (root), `clients/python/README.md` (PyPI page for smello), and `server/README.md` (PyPI page for smello-server). Update all three after significant changes.
 - **Changelogs**: Each package has its own `CHANGELOG.md` — `server/CHANGELOG.md` and `clients/python/CHANGELOG.md`. Follow [Keep a Changelog](https://keepachangelog.com/) format. Update the `[Unreleased]` section in every commit that introduces a user-facing or changelog-worthy change. Bumping versions moves `[Unreleased]` entries to a versioned section automatically via bump-my-version.
 - **Documentation site** (`docs/`): After significant changes to client or server logic, update the relevant pages (`docs/getting-started.md`, `docs/configuration.md`, `docs/api.md`).
+
+## Brand Color Palette
+
+Extracted from the Smello logo. Use these colors for highlights, accents, and UI elements.
+
+| Name         | Hex       | Usage                                      |
+|--------------|-----------|----------------------------------------------|
+| Navy         | `#1B2A4A` | Primary dark — outlines, text, borders       |
+| Dark Blue    | `#2D4373` | Secondary dark — accents, hover states       |
+| Slate Blue   | `#4A6FA5` | Tertiary — muted accents, lens/glass effects |
+| Gold         | `#F5B731` | Primary accent — highlights, active states   |
+| Amber        | `#E89B1C` | Secondary accent — deeper gold, hover states |
+| Light Gold   | `#FCD462` | Tertiary accent — light highlights, badges   |

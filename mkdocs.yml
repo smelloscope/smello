@@ -11,14 +11,10 @@ theme:
   favicon: assets/logo.png
   palette:
     - scheme: default
-      primary: teal
-      accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: teal
-      accent: teal
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -26,6 +22,9 @@ theme:
     - content.code.copy
     - navigation.sections
     - navigation.footer
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition

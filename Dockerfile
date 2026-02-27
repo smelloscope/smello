@@ -15,6 +15,7 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY server/ server/
+COPY clients/python/ clients/python/
 COPY pyproject.toml uv.lock* ./
 
 RUN uv sync --package smello-server --no-dev --frozen

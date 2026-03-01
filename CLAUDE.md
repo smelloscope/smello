@@ -67,6 +67,29 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Changelogs**: Each package has its own `CHANGELOG.md` — `server/CHANGELOG.md` and `clients/python/CHANGELOG.md`. Follow [Keep a Changelog](https://keepachangelog.com/) format. Update the `[Unreleased]` section in every commit that introduces a user-facing or changelog-worthy change. Bumping versions moves `[Unreleased]` entries to a versioned section automatically via bump-my-version.
 - **Documentation site** (`docs/`): After significant changes to client or server logic, update the relevant pages (`docs/getting-started.md`, `docs/configuration.md`, `docs/api.md`).
 
+## Screenshots
+
+The landing page hero image (`docs/assets/screenshot.png`) is generated automatically.
+To regenerate after UI changes:
+
+```bash
+# Prerequisites: smello-server on :5110, frontend dev server on :5111
+cd scripts && npm install   # one-time
+
+# Full pipeline: clear data → run demo → capture → mockup
+node scripts/demo-mockup.mjs
+```
+
+The screenshot uses a transparent background so it blends into the landing page gradient.
+See `scripts/README.md` for all options (dark mode, custom viewport, custom demo script).
+
+You can also use the library directly from Node.js:
+
+```js
+import { generateMockup } from "./scripts/mockup.mjs";
+await generateMockup({ url: "http://localhost:5111", output: "out.png" });
+```
+
 ## Brand Color Palette
 
 Extracted from the Smello logo. Use these colors for highlights, accents, and UI elements.

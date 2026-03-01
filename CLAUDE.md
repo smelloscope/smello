@@ -86,7 +86,7 @@ See `scripts/README.md` for all options (dark mode, custom viewport, custom demo
 You can also use the library directly from Node.js:
 
 ```js
-import { generateMockup } from "./scripts/mockup.mjs";
+import { generateMockup } from "./scripts/lib/mockup.mjs";
 await generateMockup({ url: "http://localhost:5111", output: "out.png" });
 ```
 

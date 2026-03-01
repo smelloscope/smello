@@ -39,12 +39,12 @@ node scripts/demo-mockup.mjs --transparent false        # with branded gradient 
 
 ## Files
 
-| File              | Role                                                       |
-|-------------------|------------------------------------------------------------|
-| `demo-mockup.mjs` | Entry point — clear, run demo, capture, generate mockup    |
-| `mockup.mjs`      | Library — `generateMockup()` and `findChrome()` exports    |
-| `template.mjs`    | HTML/CSS template for the macOS-style browser chrome frame |
-| `colors.mjs`      | Smello brand palette and light/dark chrome color tokens    |
+| File                | Role                                                       |
+|---------------------|------------------------------------------------------------|
+| `demo-mockup.mjs`   | Entry point — clear, run demo, capture, generate mockup   |
+| `lib/mockup.mjs`    | Library — `generateMockup()` and `findChrome()` exports   |
+| `lib/template.mjs`  | HTML/CSS browser chrome template (supports transparent bg) |
+| `lib/colors.mjs`    | Smello brand palette and light/dark chrome color tokens    |
 
 ## How it works
 

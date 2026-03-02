@@ -23,6 +23,9 @@ theme:
     - navigation.sections
     - navigation.footer
 
+extra:
+  generator: false
+
 extra_css:
   - stylesheets/extra.css
 

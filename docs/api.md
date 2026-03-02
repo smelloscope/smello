@@ -2,6 +2,8 @@
 
 Smello Server provides a JSON API for exploring captured requests from the command line.
 
+The full OpenAPI specification is available at [http://localhost:5110/openapi.json](http://localhost:5110/openapi.json), and an interactive playground at [http://localhost:5110/docs](http://localhost:5110/docs).
+
 ## List requests
 
 ```bash

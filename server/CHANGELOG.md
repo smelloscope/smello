@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Improved
+
+- Redesign dashboard request list: show URL path as primary text with host as secondary, making requests scannable at a glance.
+- Add color-coded HTTP method badges (GET blue, POST green, PUT orange, DELETE red, PATCH purple).
+- Smart gRPC URL display: extract `Service/Method` from fully-qualified gRPC paths.
+- Move status badges to right-aligned column for consistent visual alignment.
+- Show duration in human-friendly format (`1.7s` instead of `1700ms`) with warning highlight for slow requests (>2s).
+- Improve detail panel header: separate host from path, show duration and library as chips.
+- Add directional icons to Request/Response sections.
+- Reorder filter bar: method and host selects on the left, search field fills remaining space.
+- Replace floating-label selects with compact inline-placeholder style.
+- Regenerate landing page screenshot.
+
 ## [0.3.1] - 2026-03-02
 
 ### Improved

@@ -2,10 +2,15 @@ import { useEffect } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import { useGetRequestApiRequestsRequestIdGet } from "../api/generated/default/default";
 import StatusBadge from "./StatusBadge";
+import MethodBadge from "./MethodBadge";
 import Section from "./Section";
+import { parseDisplayUrl } from "../utils/url";
+
+const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
 export default function RequestDetail({ requestId }: { requestId: string }) {
   const {
@@ -34,33 +39,62 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
     return null;
   }
 
+  const { host, path } = parseDisplayUrl(detail.url);
+
   return (
     <Box sx={{ p: 2, overflowY: "auto" }}>
       <Box sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-          <Typography sx={{ fontWeight: 700, fontFamily: "monospace", fontSize: 16 }}>
-            {detail.method}
-          </Typography>
+        {/* Method + Path */}
+        <Stack direction="row" alignItems="baseline" spacing={1} sx={{ mb: 0.5 }}>
+          <MethodBadge method={detail.method} size="medium" />
           <Typography
             sx={{
-              fontFamily: "monospace",
+              fontFamily: mono,
               fontSize: 14,
+              fontWeight: 500,
               wordBreak: "break-all",
               flex: 1,
             }}
           >
-            {detail.url}
+            {path}
           </Typography>
         </Stack>
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexWrap: "wrap" }}>
+
+        {/* Host */}
+        <Typography
+          sx={{
+            fontSize: 12,
+            color: "text.secondary",
+            mb: 1,
+            pl: 0.25,
+          }}
+        >
+          {host}
+        </Typography>
+
+        {/* Metadata row */}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: "wrap" }}>
           <StatusBadge status={detail.status_code} />
-          <Typography variant="body2" color="text.secondary">
-            {detail.duration_ms}ms
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {detail.library}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Chip
+            label={`${detail.duration_ms}ms`}
+            size="small"
+            variant="outlined"
+            sx={{
+              fontFamily: mono,
+              fontSize: 12,
+              height: 22,
+              fontWeight: detail.duration_ms >= 2000 ? 600 : 400,
+              color: detail.duration_ms >= 2000 ? "warning.main" : "text.secondary",
+              borderColor: detail.duration_ms >= 2000 ? "warning.main" : "divider",
+            }}
+          />
+          <Chip
+            label={detail.library}
+            size="small"
+            variant="outlined"
+            sx={{ fontSize: 12, height: 22, color: "text.secondary", borderColor: "divider" }}
+          />
+          <Typography variant="body2" color="text.disabled" sx={{ fontSize: 12 }}>
             {new Date(detail.timestamp).toLocaleString()}
           </Typography>
         </Stack>

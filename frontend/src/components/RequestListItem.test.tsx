@@ -21,10 +21,13 @@ function renderItem(overrides = {}, onClick = () => {}) {
 }
 
 describe("RequestListItem", () => {
-  it("renders method, URL, and duration", () => {
+  it("renders method, path, host, and duration", () => {
     const view = renderItem();
     expect(view.getByText("GET")).toBeInTheDocument();
-    expect(view.getByText(baseItem.url)).toBeInTheDocument();
+    // URL is parsed: path shown as hero text, full URL in title attr
+    expect(view.getByText("/users?page=1")).toBeInTheDocument();
+    expect(view.getByText("api.example.com")).toBeInTheDocument();
+    expect(view.getByTitle(baseItem.url)).toBeInTheDocument();
     expect(view.getByText("42ms")).toBeInTheDocument();
   });
 

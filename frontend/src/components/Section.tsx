@@ -6,6 +6,8 @@ import Paper from "@mui/material/Paper";
 import Collapse from "@mui/material/Collapse";
 import ButtonBase from "@mui/material/ButtonBase";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import CallMade from "@mui/icons-material/CallMade";
+import CallReceived from "@mui/icons-material/CallReceived";
 import HeadersTable from "./HeadersTable";
 import JsonViewer from "./JsonViewer";
 import CopyButton from "./CopyButton";
@@ -27,12 +29,22 @@ export default function Section({ title, headers, body, bodySize }: SectionProps
   const [headersOpen, setHeadersOpen] = useState(false);
   const [bodyOpen, setBodyOpen] = useState(true);
   const headerCount = Object.keys(headers).length;
+  const isRequest = title === "Request";
+  const Icon = isRequest ? CallMade : CallReceived;
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 700 }}>
-        {title}
-      </Typography>
+      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
+        <Icon
+          sx={{
+            fontSize: 16,
+            color: isRequest ? "primary.main" : "success.main",
+          }}
+        />
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          {title}
+        </Typography>
+      </Stack>
       <Paper variant="outlined" sx={{ mb: 1 }}>
         <ButtonBase
           disableRipple

@@ -1,5 +1,7 @@
 import { createTheme } from "@mui/material/styles";
 
+const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
+
 const theme = createTheme({
   typography: {
     fontSize: 13,
@@ -17,6 +19,19 @@ const theme = createTheme({
         root: {
           padding: "4px 8px",
           fontSize: 13,
+          fontFamily: mono,
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "rgba(0, 0, 0, 0.04)",
+          },
+          "&.Mui-selected:hover": {
+            backgroundColor: "rgba(0, 0, 0, 0.06)",
+          },
         },
       },
     },

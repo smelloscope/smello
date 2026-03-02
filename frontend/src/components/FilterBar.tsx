@@ -3,8 +3,6 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
@@ -21,6 +19,36 @@ export default function FilterBar() {
 
   return (
     <Stack direction="row" spacing={1} alignItems="center" sx={{ p: 1 }}>
+      <Select
+        size="small"
+        displayEmpty
+        value={method}
+        onChange={(e) => setMethod(e.target.value)}
+        sx={{ minWidth: 90 }}
+        renderValue={(v) => v || "Method"}
+      >
+        <MenuItem value="">All methods</MenuItem>
+        {meta?.methods.map((m) => (
+          <MenuItem key={m} value={m}>
+            {m}
+          </MenuItem>
+        ))}
+      </Select>
+      <Select
+        size="small"
+        displayEmpty
+        value={host}
+        onChange={(e) => setHost(e.target.value)}
+        sx={{ minWidth: 140 }}
+        renderValue={(v) => v || "Host"}
+      >
+        <MenuItem value="">All hosts</MenuItem>
+        {meta?.hosts.map((h) => (
+          <MenuItem key={h} value={h}>
+            {h}
+          </MenuItem>
+        ))}
+      </Select>
       <TextField
         size="small"
         placeholder="Search URLs..."
@@ -37,28 +65,6 @@ export default function FilterBar() {
         }}
         sx={{ minWidth: 200, flex: 1 }}
       />
-      <FormControl size="small" sx={{ minWidth: 140 }}>
-        <InputLabel>Host</InputLabel>
-        <Select value={host} label="Host" onChange={(e) => setHost(e.target.value)}>
-          <MenuItem value="">All hosts</MenuItem>
-          {meta?.hosts.map((h) => (
-            <MenuItem key={h} value={h}>
-              {h}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl size="small" sx={{ minWidth: 100 }}>
-        <InputLabel>Method</InputLabel>
-        <Select value={method} label="Method" onChange={(e) => setMethod(e.target.value)}>
-          <MenuItem value="">All</MenuItem>
-          {meta?.methods.map((m) => (
-            <MenuItem key={m} value={m}>
-              {m}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
     </Stack>
   );
 }

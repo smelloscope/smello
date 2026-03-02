@@ -28,8 +28,8 @@ export default function RequestList() {
   return (
     <Box
       sx={{
-        width: 380,
-        minWidth: 380,
+        width: 420,
+        minWidth: 420,
         borderRight: "1px solid",
         borderColor: "divider",
         overflowY: "auto",

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-02
+
 ### Added
 
 - Bundle pre-built React frontend into the PyPI wheel. `pip install smello-server && smello-server run` now serves the full web dashboard — Docker is no longer required.

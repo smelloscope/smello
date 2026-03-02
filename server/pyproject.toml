@@ -1,6 +1,6 @@
 [project]
 name = "smello-server"
-version = "0.2.2"
+version = "0.3.0"
 description = "A local web dashboard for inspecting outgoing HTTP requests from your code"
 license = "MIT"
 requires-python = ">=3.14"

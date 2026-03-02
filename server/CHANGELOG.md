@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-03-02
+
 ### Improved
 
 - Redesign dashboard request list: show URL path as primary text with host as secondary, making requests scannable at a glance.

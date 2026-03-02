@@ -1,9 +1,16 @@
 """CLI entry point: `smello-server run` or `python -m smello_server`."""
 
 import argparse
+import logging
 import os
+from pathlib import Path
 
 import uvicorn
+
+logger = logging.getLogger("smello_server")
+
+_DEFAULT_DB_DIR = Path.home() / ".smello"
+_DEFAULT_DB_PATH = _DEFAULT_DB_DIR / "smello.db"
 
 
 def main():
@@ -20,7 +27,9 @@ def main():
         "--port", type=int, default=5110, help="Port to bind to (default: 5110)"
     )
     run_parser.add_argument(
-        "--db-path", default=None, help="Path to SQLite database file"
+        "--db-path",
+        default=None,
+        help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})",
     )
     run_parser.add_argument(
         "--reload",
@@ -41,6 +50,10 @@ def main():
     if args.command == "run":
         if args.db_path:
             os.environ["SMELLO_DB_PATH"] = args.db_path
+
+        db_path = args.db_path or os.environ.get("SMELLO_DB_PATH") or _DEFAULT_DB_PATH
+        logging.basicConfig(level=logging.INFO)
+        logger.info("Database: %s", db_path)
 
         uvicorn.run(
             "smello_server.app:create_app",

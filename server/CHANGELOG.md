@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Improved
+
+- Show database path on startup and in `--help` output (default: `~/.smello/smello.db`).
+- Fix `--host` default documented as `127.0.0.1` — actual default is `0.0.0.0`.
+
 ## [0.3.0] - 2026-03-02
 
 ### Added

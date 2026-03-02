@@ -31,6 +31,10 @@ frontend-bundle: frontend-build
     rm -rf server/src/smello_server/_frontend
     cp -r frontend/dist server/src/smello_server/_frontend
 
+# Clear frontend bundle
+frontend-bundle-clear:
+    rm -rf server/src/smello_server/_frontend
+
 # Run frontend tests
 frontend-test:
     cd frontend && npm test

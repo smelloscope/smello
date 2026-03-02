@@ -27,6 +27,10 @@ def _get_frontend_dir() -> Path | None:
         p = Path(frontend_dir)
         if p.is_dir() and (p / "index.html").is_file():
             return p
+    # Bundled frontend shipped inside the wheel
+    bundled = Path(__file__).parent / "_frontend"
+    if bundled.is_dir() and (bundled / "index.html").is_file():
+        return bundled
     return None
 
 

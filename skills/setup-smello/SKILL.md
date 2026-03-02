@@ -31,15 +31,17 @@ After exploring, present a clear plan with these sections:
 
 ### A. Install the packages
 
+The recommended approach is to install `smello` as a **regular (not dev) dependency**. It has zero dependencies itself, and `smello.init()` is a safe no-op when `SMELLO_URL` is not set — no patching, no threads, no side effects. This means users don't need conditional imports or `try/except ImportError` guards in production.
+
 Based on the package manager detected:
 
-- **pip + requirements.txt**: `pip install smello` (add `smello` to `requirements-dev.txt` or `requirements.txt`)
-- **pip + pyproject.toml**: Add `smello` to `[project.optional-dependencies]` dev group, or `[dependency-groups]` dev group
-- **uv**: `uv add --dev smello`
-- **poetry**: `poetry add --group dev smello`
-- **pipenv**: `pipenv install --dev smello`
+- **pip + requirements.txt**: `pip install smello` (add `smello` to `requirements.txt`)
+- **pip + pyproject.toml**: Add `smello` to `[project.dependencies]`
+- **uv**: `uv add smello`
+- **poetry**: `poetry add smello`
+- **pipenv**: `pipenv install smello`
 
-The server can be installed separately (`pip install smello-server` / `uv tool install smello-server`) or run via Docker.
+The server is covered separately in section D below.
 
 ### B. Add `smello.init()` to the entrypoint
 
@@ -93,9 +95,19 @@ All parameters can also be passed explicitly to `smello.init()`, which takes pre
 
 Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
-### D. Docker Compose (optional)
+### D. Set up the server
 
-If the project uses Docker Compose for development, propose adding a Smello service:
+**Ask the user** which server setup they prefer:
+
+1. **No server setup** — they'll install and run `smello-server` separately (skip this section)
+2. **Docker Compose** — add a Smello service to their compose file
+3. **Development dependency** — add `smello-server` to their project's dev dependencies
+
+`pip install smello-server` includes the full web dashboard — Docker is not required for the UI.
+
+#### Option: Docker Compose
+
+If the user chooses Docker Compose, propose adding a Smello service:
 
 ```yaml
 smello:
@@ -110,15 +122,17 @@ And add `smello-data` to the `volumes:` section. The app container should set `S
 
 Prefer adding this to a dev-specific compose file (`docker-compose.dev.yml`, `compose.dev.yml`, `compose.override.yml`) if one exists. If only a single compose file exists, note that the user may want to create a dev overlay.
 
-### E. Running the server (non-Docker)
+#### Option: Development dependency
 
-If the project doesn't use Docker, mention how to start the server:
+If the user chooses to add the server as a dev dependency, use the same package manager pattern from section A:
 
-```bash
-smello-server run
-```
+- **pip + requirements.txt**: Add `smello-server` to `requirements-dev.txt`
+- **pip + pyproject.toml**: Add `smello-server` to the dev dependency group
+- **uv**: `uv add --dev smello-server`
+- **poetry**: `poetry add --group dev smello-server`
+- **pipenv**: `pipenv install --dev smello-server`
 
-Or install it as a standalone tool:
+Then run with `smello-server run`, or as a standalone tool:
 
 ```bash
 # With uv
@@ -128,8 +142,6 @@ uv tool install smello-server
 pipx install smello-server
 ```
 
-Then run: `smello-server run`
-
 ## Step 3: Wait for approval
 
 After presenting the plan, ask the user which parts they want to proceed with. Do NOT edit any files until explicitly told to do so.
@@ -137,8 +149,8 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 ## Reference
 
 - Smello client SDK: `pip install smello` (Python >= 3.10, zero dependencies)
-- Smello server: `pip install smello-server` (Python >= 3.14) or Docker `ghcr.io/smelloscope/smello`
-- Dashboard: http://localhost:5110
+- Smello server: `pip install smello-server` (Python >= 3.14, includes web dashboard) or Docker `ghcr.io/smelloscope/smello`
+- Dashboard: http://localhost:5110 (served by both pip install and Docker)
 - Supported libraries: `requests` (patches `Session.send()`), `httpx` (patches `Client.send()` and `AsyncClient.send()`), and `grpc` (patches `insecure_channel()` and `secure_channel()`)
 - Default redacted headers: `Authorization`, `X-Api-Key`
 - Default server URL: `http://localhost:5110`

@@ -39,6 +39,7 @@ cd frontend && npm run dev      # dev server on http://localhost:5111 (proxies /
 cd frontend && npm run build    # production build to frontend/dist/
 cd frontend && npm test         # run Vitest tests
 cd frontend && npx orval        # regenerate API types from OpenAPI spec
+just frontend-bundle            # build frontend + copy into server package for wheel
 ```
 
 ## Architecture
@@ -59,7 +60,7 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Frontend uses TanStack Query** for data fetching with 3-second polling interval (replaces HTMX polling). Orval generates typed hooks from the OpenAPI spec.
 - **Frontend state**: jotai atoms for filter state and selected request ID (synced to URL hash for deep linking).
 - **MUI components** throughout: Table, Chip, Select, List, Paper, etc. `react18-json-view` for JSON rendering.
-- **SPA serving**: `SMELLO_FRONTEND_DIR` env var tells FastAPI where to find built React assets. Set automatically in Docker. Missing = API-only mode.
+- **SPA serving**: The PyPI wheel ships pre-built frontend assets in `_frontend/`. `SMELLO_FRONTEND_DIR` env var overrides the bundled path (used in Docker). Precedence: env var > bundled `_frontend/` > API-only mode.
 - **Client SDK has no dependencies**: Transport uses `urllib.request` directly to avoid patching recursion. The server's own hostname is auto-added to `ignore_hosts`.
 - **Server tests** use `FastAPI.TestClient` with a fresh SQLite DB per test (see `server/tests/conftest.py`). Tortoise ORM global context is reset between tests via `_reset_tortoise_global_context()`.
 - **E2E tests** spin up a real uvicorn server and a mock HTTP target, then verify the full capture pipeline via the API.

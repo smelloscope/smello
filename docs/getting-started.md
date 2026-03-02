@@ -2,17 +2,17 @@
 
 ## Install
 
-Start the server with Docker (recommended — includes web dashboard):
-
-```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
-```
-
-Or install the API server directly (no web dashboard):
+Install and start the server:
 
 ```bash
 pip install smello-server
 smello-server run
+```
+
+Or run with Docker:
+
+```bash
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
 Install the client SDK:

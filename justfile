@@ -26,6 +26,11 @@ frontend-dev:
 frontend-build:
     cd frontend && npm run build
 
+# Bundle built frontend into server package (for wheel builds)
+frontend-bundle: frontend-build
+    rm -rf server/src/smello_server/_frontend
+    cp -r frontend/dist server/src/smello_server/_frontend
+
 # Run frontend tests
 frontend-test:
     cd frontend && npm test

@@ -15,14 +15,14 @@ Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lin
 ### 1. Start the server
 
 ```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
-```
-
-Or install the API server directly (no web dashboard — API only):
-
-```bash
 pip install smello-server
 smello-server run
+```
+
+Or run with Docker:
+
+```bash
+docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
 ### 2. Add to your code
@@ -199,7 +199,7 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 ```
 
 - **smello** (client SDK): Monkey-patches `requests`, `httpx`, and `grpc` to capture traffic. Sends data to the server in a background thread.
-- **smello-server**: FastAPI app with SQLite. Receives captured data and serves a JSON API. The Docker image includes a React web dashboard.
+- **smello-server**: FastAPI app with SQLite. Receives captured data and serves a JSON API plus a React web dashboard.
 
 ## Project Structure
 

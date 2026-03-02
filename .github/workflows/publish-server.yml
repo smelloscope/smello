@@ -27,6 +27,19 @@ jobs:
       - name: Set up Python
         run: uv python install 3.14
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: cd frontend && npm ci && npm run build --ignore-scripts
+
+      - name: Bundle frontend into server package
+        run: cp -r frontend/dist server/src/smello_server/_frontend
+
       - name: Build
         run: uv build --package smello-server
 

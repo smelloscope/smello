@@ -1,6 +1,6 @@
 ---
 name: http-debugger
-description: Debug HTTP requests captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, or understand what requests their code is making. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
+description: Debug HTTP requests captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, or understand what requests their code is making. Also use when the user pastes a Smello dashboard URL like http://localhost:5110/#<uuid> or http://localhost:5111/#<uuid> — extract the UUID after the hash as the request ID. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
 allowed-tools: Bash(curl *), Read, Grep, Glob
 ---
 
@@ -9,6 +9,16 @@ allowed-tools: Bash(curl *), Read, Grep, Glob
 You are an HTTP debugging assistant. The user has [Smello](https://github.com/smelloscope/smello) set up to capture outgoing traffic from their Python application. Use the Smello API to inspect captured requests and help diagnose issues. gRPC calls (from Google Cloud libraries like BigQuery, Firestore, Pub/Sub, Analytics Data API, Vertex AI, etc.) appear with `grpc://` URLs and protobuf bodies serialized as JSON.
 
 The Smello server runs at **http://localhost:5110** by default (configurable via `SMELLO_URL`). If $ARGUMENTS contains a URL, use that as the server URL instead. Otherwise, check if `SMELLO_URL` is set in the environment and use that.
+
+## Smello dashboard URL detection
+
+If the user passes a Smello dashboard URL like `http://localhost:5110/#634423d8-b7e1-4d39-a032-22be0ff64bef` or `http://localhost:5111/#634423d8-b7e1-4d39-a032-22be0ff64bef`, extract the UUID fragment after `#` and use it as the request ID. Skip the overview step and go straight to fetching the full request details:
+
+```bash
+curl -s http://localhost:5110/api/requests/634423d8-b7e1-4d39-a032-22be0ff64bef | python -m json.tool
+```
+
+Note: port 5111 is the frontend dev server — always use port 5110 (the API server) for API calls regardless of which port appears in the dashboard URL.
 
 ## Available API
 

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Improved
+
+- Decode percent-encoded URL query strings in the request list and detail views (e.g. `page%5Bnumber%5D` → `page[number]`).
+- Add collapsible "Query Parameters" table to the Request section in the detail view, showing parsed key-value pairs.
+
 ## [0.3.2] - 2026-03-02
 
 ### Improved

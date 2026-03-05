@@ -4,6 +4,20 @@
  * For gRPC URLs like `grpc://host:443/package.Service/Method`,
  * extracts just the `Service/Method` as the display path.
  */
+/**
+ * Parse query parameters from a URL. Returns an empty array if the URL
+ * has no query string or cannot be parsed.
+ */
+export function parseQueryParams(raw: string): [string, string][] {
+  try {
+    const url = new URL(raw);
+    if (!url.search) return [];
+    return [...url.searchParams.entries()];
+  } catch {
+    return [];
+  }
+}
+
 export function parseDisplayUrl(raw: string): { host: string; path: string } {
   try {
     // gRPC URLs: grpc://host:port/fully.qualified.Service/Method
@@ -31,7 +45,7 @@ export function parseDisplayUrl(raw: string): { host: string; path: string } {
     // Standard HTTP(S) URLs
     const url = new URL(raw);
     const host = url.hostname;
-    const path = url.pathname + url.search;
+    const path = decodeURIComponent(url.pathname + url.search);
     return { host, path: path || "/" };
   } catch {
     return { host: "", path: raw };

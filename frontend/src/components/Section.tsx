@@ -8,6 +8,10 @@ import ButtonBase from "@mui/material/ButtonBase";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import CallMade from "@mui/icons-material/CallMade";
 import CallReceived from "@mui/icons-material/CallReceived";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
 import HeadersTable from "./HeadersTable";
 import JsonViewer from "./JsonViewer";
 import CopyButton from "./CopyButton";
@@ -17,6 +21,7 @@ type SectionProps = {
   headers: Record<string, string>;
   body: string | null;
   bodySize: number;
+  queryParams?: [string, string][];
 };
 
 const chevronSx = (open: boolean) => ({
@@ -25,10 +30,12 @@ const chevronSx = (open: boolean) => ({
   transition: "transform 150ms",
 });
 
-export default function Section({ title, headers, body, bodySize }: SectionProps) {
+export default function Section({ title, headers, body, bodySize, queryParams }: SectionProps) {
+  const [queryParamsOpen, setQueryParamsOpen] = useState(false);
   const [headersOpen, setHeadersOpen] = useState(false);
   const [bodyOpen, setBodyOpen] = useState(true);
   const headerCount = Object.keys(headers).length;
+  const hasQueryParams = queryParams && queryParams.length > 0;
   const isRequest = title === "Request";
   const Icon = isRequest ? CallMade : CallReceived;
 
@@ -45,6 +52,43 @@ export default function Section({ title, headers, body, bodySize }: SectionProps
           {title}
         </Typography>
       </Stack>
+      {hasQueryParams && (
+        <Paper variant="outlined" sx={{ mb: 1 }}>
+          <ButtonBase
+            disableRipple
+            onClick={() => setQueryParamsOpen((o) => !o)}
+            sx={{
+              width: "100%",
+              justifyContent: "space-between",
+              p: 1,
+              textAlign: "left",
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
+              Query Parameters ({queryParams.length})
+            </Typography>
+            <ExpandMore fontSize="small" sx={chevronSx(queryParamsOpen)} />
+          </ButtonBase>
+          <Collapse in={queryParamsOpen}>
+            <Box sx={{ px: 1, pb: 1 }}>
+              <Table size="small">
+                <TableBody>
+                  {queryParams.map(([key, value], i) => (
+                    <TableRow key={`${key}-${i}`}>
+                      <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap", width: "1%" }}>
+                        {key}
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: "monospace", wordBreak: "break-all" }}>
+                        {value}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </Paper>
+      )}
       <Paper variant="outlined" sx={{ mb: 1 }}>
         <ButtonBase
           disableRipple

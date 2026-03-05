@@ -8,7 +8,7 @@ import { useGetRequestApiRequestsRequestIdGet } from "../api/generated/default/d
 import StatusBadge from "./StatusBadge";
 import MethodBadge from "./MethodBadge";
 import Section from "./Section";
-import { parseDisplayUrl } from "../utils/url";
+import { parseDisplayUrl, parseQueryParams } from "../utils/url";
 
 const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
@@ -40,6 +40,7 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
   }
 
   const { host, path } = parseDisplayUrl(detail.url);
+  const queryParams = parseQueryParams(detail.url);
 
   return (
     <Box sx={{ p: 2, overflowY: "auto" }}>
@@ -107,6 +108,7 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
         headers={detail.request_headers}
         body={detail.request_body}
         bodySize={detail.request_body_size}
+        queryParams={queryParams}
       />
 
       <Section

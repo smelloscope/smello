@@ -1,4 +1,5 @@
 import JsonView from "react18-json-view";
+import { customizeNode } from "../annotations";
 import "react18-json-view/src/style.css";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -19,7 +20,7 @@ export default function JsonViewer({ data }: { data: string | null }) {
   if (parsed !== undefined) {
     return (
       <Box sx={{ fontSize: 13, fontFamily: "monospace" }}>
-        <JsonView src={parsed} collapsed={2} />
+        <JsonView src={parsed} collapsed={2} customizeNode={customizeNode} />
       </Box>
     );
   }

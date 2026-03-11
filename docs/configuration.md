@@ -8,7 +8,8 @@ smello.init(
     capture_hosts=["api.stripe.com"],         # only capture these hosts
     capture_all=True,                          # capture everything (default)
     ignore_hosts=["localhost"],               # skip these hosts
-    redact_headers=["Authorization"],         # replace values with [REDACTED]
+    redact_headers=["Authorization"],         # replace header values with [REDACTED]
+    redact_query_params=["api_key", "token"], # replace query param values with [REDACTED]
 )
 ```
 
@@ -23,6 +24,7 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 | `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
 | `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
+| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]` |
 
 **Precedence**: explicit parameter > environment variable > hardcoded default.
 
@@ -52,9 +54,15 @@ Set via env var: `SMELLO_IGNORE_HOSTS=localhost,internal.svc` (comma-separated).
 
 ### `redact_headers`
 
-Header names whose values are replaced with `[REDACTED]`. Default: `["Authorization", "X-Api-Key"]`.
+Header names whose values Smello replaces with `[REDACTED]`. Default: `["Authorization", "X-Api-Key"]`.
 
 Set via env var: `SMELLO_REDACT_HEADERS=Authorization,X-Api-Key,X-Custom-Token` (comma-separated). Setting this replaces the defaults entirely.
+
+### `redact_query_params`
+
+Query parameter names whose values Smello replaces with `[REDACTED]`. Default: `[]`.
+
+Set via env var: `SMELLO_REDACT_QUERY_PARAMS=api_key,token,secret` (comma-separated).
 
 ## Environment-only configuration
 

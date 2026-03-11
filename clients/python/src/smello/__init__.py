@@ -28,6 +28,7 @@ def init(
     capture_all: bool | None = None,
     ignore_hosts: list[str] | None = None,
     redact_headers: list[str] | None = None,
+    redact_query_params: list[str] | None = None,
 ) -> None:
     """Initialize Smello. Patches requests and httpx to capture outgoing HTTP traffic.
 
@@ -40,15 +41,16 @@ def init(
     Each parameter falls back to a ``SMELLO_*`` environment variable when
     not passed explicitly, then to a hardcoded default:
 
-    ================  ==========================  ==========================
-    Parameter         Environment variable        Default
-    ================  ==========================  ==========================
-    server_url        ``SMELLO_URL``              ``None`` (inactive)
-    capture_all       ``SMELLO_CAPTURE_ALL``      ``True``
-    capture_hosts     ``SMELLO_CAPTURE_HOSTS``    ``[]``
-    ignore_hosts      ``SMELLO_IGNORE_HOSTS``     ``[]``
-    redact_headers    ``SMELLO_REDACT_HEADERS``   ``["authorization", "x-api-key"]``
-    ================  ==========================  ==========================
+    ====================  ==============================  ==========================
+    Parameter             Environment variable            Default
+    ====================  ==============================  ==========================
+    server_url            ``SMELLO_URL``                  ``None`` (inactive)
+    capture_all           ``SMELLO_CAPTURE_ALL``          ``True``
+    capture_hosts         ``SMELLO_CAPTURE_HOSTS``        ``[]``
+    ignore_hosts          ``SMELLO_IGNORE_HOSTS``         ``[]``
+    redact_headers        ``SMELLO_REDACT_HEADERS``       ``["authorization", "x-api-key"]``
+    redact_query_params   ``SMELLO_REDACT_QUERY_PARAMS``  ``[]``
+    ====================  ==============================  ==========================
 
     Boolean env vars accept ``true``/``1``/``yes`` and ``false``/``0``/``no``
     (case-insensitive).  List env vars are comma-separated.
@@ -81,12 +83,16 @@ def init(
             env_headers if env_headers is not None else list(_DEFAULT_REDACT_HEADERS)
         )
 
+    if redact_query_params is None:
+        redact_query_params = _env_list("REDACT_QUERY_PARAMS") or []
+
     _config = SmelloConfig(
         server_url=server_url.rstrip("/"),
         capture_hosts=capture_hosts,
         capture_all=capture_all,
         ignore_hosts=ignore_hosts,
         redact_headers=[h.lower() for h in redact_headers],
+        redact_query_params=[p.lower() for p in redact_query_params],
     )
 
     # Always ignore the smello server itself

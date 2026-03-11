@@ -12,6 +12,7 @@ class SmelloConfig:
     redact_headers: list[str] = field(
         default_factory=lambda: ["authorization", "x-api-key"]
     )
+    redact_query_params: list[str] = field(default_factory=list)
 
     def should_capture(self, host: str) -> bool:
         """Decide whether to capture a request to the given host."""

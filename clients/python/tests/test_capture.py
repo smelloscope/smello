@@ -141,6 +141,92 @@ def test_string_body(config):
     assert payload["response"]["body"] == "response text"
 
 
+def test_query_param_redaction():
+    config = SmelloConfig(
+        server_url="http://test:5110",
+        redact_query_params=["api_key", "token"],
+    )
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com/search?q=hello&api_key=secret123&token=abc&page=1",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=None,
+        duration_s=0.1,
+        library="requests",
+    )
+    url = payload["request"]["url"]
+    assert "q=hello" in url
+    assert "page=1" in url
+    assert "secret123" not in url
+    assert "abc" not in url
+    assert "api_key=%5BREDACTED%5D" in url
+    assert "token=%5BREDACTED%5D" in url
+
+
+def test_query_param_redaction_case_insensitive():
+    config = SmelloConfig(
+        server_url="http://test:5110",
+        redact_query_params=["api_key"],
+    )
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com/get?API_KEY=secret&other=keep",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=None,
+        duration_s=0.1,
+        library="requests",
+    )
+    url = payload["request"]["url"]
+    assert "secret" not in url
+    assert "other=keep" in url
+
+
+def test_query_param_redaction_no_query_string():
+    config = SmelloConfig(
+        server_url="http://test:5110",
+        redact_query_params=["api_key"],
+    )
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com/path",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=None,
+        duration_s=0.1,
+        library="requests",
+    )
+    assert payload["request"]["url"] == "https://example.com/path"
+
+
+def test_query_param_redaction_empty_list():
+    """No redact_query_params means URL is left untouched."""
+    config = SmelloConfig(server_url="http://test:5110")
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com/get?api_key=secret",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=None,
+        duration_s=0.1,
+        library="requests",
+    )
+    assert payload["request"]["url"] == "https://example.com/get?api_key=secret"
+
+
 def test_duration_rounding(config):
     payload = serialize_request_response(
         config=config,

@@ -3,6 +3,7 @@
 import sys
 import time
 import uuid
+from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 from smello.config import SmelloConfig
 
@@ -21,6 +22,7 @@ def serialize_request_response(
 ) -> dict:
     """Build the capture payload dict."""
     req_headers = _redact_headers(dict(request_headers), config.redact_headers)
+    url = _redact_query_params(url, config.redact_query_params)
     resp_headers = dict(response_headers)
 
     req_body_str = _body_to_str(request_body)
@@ -55,6 +57,21 @@ def _redact_headers(headers: dict, redact_keys: list[str]) -> dict:
     return {
         k: ("[REDACTED]" if k.lower() in redact_keys else v) for k, v in headers.items()
     }
+
+
+def _redact_query_params(url: str, redact_keys: list[str]) -> str:
+    if not redact_keys:
+        return url
+    parts = urlsplit(url)
+    if not parts.query:
+        return url
+    params = parse_qs(parts.query, keep_blank_values=True)
+    redacted = {
+        k: (["[REDACTED]"] * len(v) if k.lower() in redact_keys else v)
+        for k, v in params.items()
+    }
+    new_query = urlencode(redacted, doseq=True)
+    return urlunsplit(parts._replace(query=new_query))
 
 
 def _body_to_str(body: str | bytes | None) -> str | None:

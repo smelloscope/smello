@@ -189,6 +189,32 @@ class TestInitEnvVars:
             smello.init()
             assert smello._config.redact_headers == ["x-secret", "x-token"]
 
+    def test_redact_query_params_from_env(self):
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "SMELLO_URL": "http://test:5110",
+                    "SMELLO_REDACT_QUERY_PARAMS": "api_key,token",
+                },
+            ),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
+        ):
+            smello._config = None
+            smello.init()
+            assert smello._config.redact_query_params == ["api_key", "token"]
+
+    def test_redact_query_params_default_empty(self):
+        with (
+            patch.dict(os.environ, {"SMELLO_URL": "http://test:5110"}, clear=True),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
+        ):
+            smello._config = None
+            smello.init()
+            assert smello._config.redact_query_params == []
+
     def test_redact_headers_default_without_env(self):
         with (
             patch.dict(os.environ, {"SMELLO_URL": "http://test:5110"}, clear=True),
@@ -227,3 +253,4 @@ class TestInitEnvVars:
             assert smello._config.capture_hosts == []
             assert "test" in smello._config.ignore_hosts  # auto-added
             assert smello._config.redact_headers == ["authorization", "x-api-key"]
+            assert smello._config.redact_query_params == []

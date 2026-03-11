@@ -93,7 +93,7 @@ The dashboard recognizes Unix timestamps in JSON bodies and shows the human-read
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
 
-Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default.
+Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters ([details](configuration.md#redact_query_params)).
 
 ## Supported libraries
 

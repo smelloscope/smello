@@ -62,17 +62,18 @@ Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is a
 - Duration in milliseconds
 - Library used (requests, httpx, or grpc)
 
-Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default.
+Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters.
 
 ## Configuration
 
 ```python
 smello.init(
-    server_url="http://localhost:5110",  # where to send captured data
-    capture_hosts=["api.stripe.com"],    # only capture these hosts
-    capture_all=True,                     # capture everything (default)
-    ignore_hosts=["localhost"],          # skip these hosts
-    redact_headers=["Authorization"],    # replace values with [REDACTED]
+    server_url="http://localhost:5110",       # where to send captured data
+    capture_hosts=["api.stripe.com"],         # only capture these hosts
+    capture_all=True,                          # capture everything (default)
+    ignore_hosts=["localhost"],               # skip these hosts
+    redact_headers=["Authorization"],         # replace header values with [REDACTED]
+    redact_query_params=["api_key", "token"], # replace query param values with [REDACTED]
 )
 ```
 
@@ -85,6 +86,7 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 | `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
 | `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
+| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]` |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 

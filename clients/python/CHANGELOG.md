@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- `redact_query_params` parameter and `SMELLO_REDACT_QUERY_PARAMS` env var to redact query string values (e.g. `?api_key=sk-...` → `?api_key=[REDACTED]`).
+
 ## [0.4.0] - 2026-02-22
 
 ### Changed

@@ -59,7 +59,8 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Server routes** are in `routes/api.py` (JSON API with Pydantic response models).
 - **Frontend uses TanStack Query** for data fetching with 3-second polling interval (replaces HTMX polling). Orval generates typed hooks from the OpenAPI spec.
 - **Frontend state**: jotai atoms for filter state and selected request ID (synced to URL hash for deep linking).
-- **MUI components** throughout: Table, Chip, Select, List, Paper, etc. `react18-json-view` for JSON rendering.
+- **MUI components** throughout: Table, Chip, Select, List, Paper, etc. `react18-json-view` for JSON rendering with a `customizeNode` callback for value annotations.
+- **JSON value annotations** (`frontend/src/annotations/`): Recognizes patterns like Unix timestamps in JSON bodies and shows tooltip icons. To add a new annotator, create a detector function and register it in `registry.ts`. See `frontend/src/annotations/README.md`.
 - **SPA serving**: The PyPI wheel ships pre-built frontend assets in `_frontend/`. `SMELLO_FRONTEND_DIR` env var overrides the bundled path (used in Docker). Precedence: env var > bundled `_frontend/` > API-only mode.
 - **Client SDK has no dependencies**: Transport uses `urllib.request` directly to avoid patching recursion. The server's own hostname is auto-added to `ignore_hosts`.
 - **Server tests** use `FastAPI.TestClient` with a fresh SQLite DB per test (see `server/tests/conftest.py`). Tortoise ORM global context is reset between tests via `_reset_tortoise_global_context()`.

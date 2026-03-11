@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- Annotate Unix timestamps (seconds and milliseconds) in JSON response bodies with a tooltip showing the human-readable date.
+
 ## [0.3.3] - 2026-03-05
 
 ### Improved

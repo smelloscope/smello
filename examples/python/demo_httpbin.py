@@ -40,6 +40,18 @@ for code in [200, 201, 404, 418, 500]:
     resp = requests.get(f"https://httpbin.org/status/{code}")
     print(f"GET  /status/{code}  → {resp.status_code}")
 
+# JSON with timestamps (annotations will appear in the dashboard)
+resp = requests.post(
+    "https://httpbin.org/anything",
+    json={
+        "event": "user.login",
+        "created_at": int(time.time()),
+        "scheduled_at_ms": int(time.time() * 1000),
+        "user": {"id": 42, "name": "Alice"},
+    },
+)
+print(f"POST /anything     → {resp.status_code}  (response contains timestamps)")
+
 # Slow response
 resp = requests.get("https://httpbin.org/delay/1")
 print(f"GET  /delay/1      → {resp.status_code}  (check duration in dashboard)")

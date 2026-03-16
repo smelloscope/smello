@@ -81,7 +81,7 @@ def _body_to_str(body: str | bytes | None) -> str | None:
         try:
             return body.decode("utf-8")
         except UnicodeDecodeError:
-            return f"<binary: {len(body)} bytes>"
+            return f"[binary: {len(body)} bytes]"
     return body
 
 

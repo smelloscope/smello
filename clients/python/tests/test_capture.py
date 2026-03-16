@@ -120,7 +120,7 @@ def test_binary_body_non_utf8(config):
         duration_s=0.1,
         library="requests",
     )
-    assert payload["request"]["body"] == "<binary: 256 bytes>"
+    assert payload["request"]["body"] == "[binary: 256 bytes]"
     assert payload["request"]["body_size"] == 256
 
 

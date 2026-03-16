@@ -39,7 +39,7 @@ def patch_requests(config: SmelloConfig) -> None:
                 request_body=prepared_request.body,
                 status_code=response.status_code,
                 response_headers=dict(response.headers),
-                response_body=response.text,
+                response_body=response.content,
                 duration_s=duration,
                 library="requests",
             )

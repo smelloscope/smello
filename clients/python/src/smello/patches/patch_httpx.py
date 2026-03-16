@@ -44,7 +44,7 @@ def _patch_sync(httpx, config: SmelloConfig) -> None:
                 request_body=request.content,
                 status_code=response.status_code,
                 response_headers=dict(response.headers),
-                response_body=response.text,
+                response_body=response.content,
                 duration_s=duration,
                 library="httpx",
             )
@@ -79,7 +79,7 @@ def _patch_async(httpx, config: SmelloConfig) -> None:
                 request_body=request.content,
                 status_code=response.status_code,
                 response_headers=dict(response.headers),
-                response_body=response.text,
+                response_body=response.content,
                 duration_s=duration,
                 library="httpx",
             )

@@ -13,7 +13,7 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import HeadersTable from "./HeadersTable";
-import JsonViewer from "./JsonViewer";
+import BodyViewer from "./BodyViewer";
 import CopyButton from "./CopyButton";
 
 type SectionProps = {
@@ -128,7 +128,7 @@ export default function Section({ title, headers, body, bodySize, queryParams }:
           </Stack>
           <Collapse in={bodyOpen}>
             <Box sx={{ px: 1, pb: 1 }}>
-              <JsonViewer data={body} />
+              <BodyViewer data={body} />
             </Box>
           </Collapse>
         </Paper>

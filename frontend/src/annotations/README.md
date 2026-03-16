@@ -80,7 +80,7 @@ export const defaultAnnotators: Annotator[] = [
 
 Create `__tests__/uuid.test.ts` with tests for the detector function. Detection logic is pure functions — tests run without jsdom.
 
-Two files, done. The rest of the system (`types.ts`, `AnnotatedValue.tsx`, `customizeNode.tsx`, `index.ts`, `JsonViewer.tsx`) stays untouched.
+Two files, done. The rest of the system (`types.ts`, `AnnotatedValue.tsx`, `customizeNode.tsx`, `index.ts`, `BodyViewer.tsx`) stays untouched.
 
 ## Design notes
 

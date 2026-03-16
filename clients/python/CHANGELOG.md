@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-16
+
 ### Added
 
 - **botocore/boto3 support**: Patch `botocore.httpsession.URLLib3Session.send()` to capture AWS SDK traffic. boto3 uses urllib3 directly, bypassing requests and httpx, so it needs its own patch.

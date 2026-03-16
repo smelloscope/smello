@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **botocore/boto3 support**: Patch `botocore.httpsession.URLLib3Session.send()` to capture AWS SDK traffic. boto3 uses urllib3 directly, bypassing requests and httpx, so it needs its own patch.
+
+### Fixed
+
+- Binary response bodies no longer show as garbled text. Patches now pass raw bytes to the serializer, which renders non-UTF-8 content as `[binary: N bytes]`.
+
 ## [0.5.0] - 2026-03-11
 
 ### Added

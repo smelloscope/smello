@@ -46,7 +46,7 @@ just frontend-bundle            # build frontend + copy into server package for 
 
 This is a **uv workspace monorepo** with two packages plus a React frontend:
 
-- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, and `grpc.insecure_channel`/`grpc.secure_channel` to intercept outgoing traffic. Serializes request/response pairs and sends them to the server via a background thread using `urllib` (to avoid triggering its own patches).
+- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, `grpc.insecure_channel`/`grpc.secure_channel`, and `botocore.httpsession.URLLib3Session.send` to intercept outgoing traffic. Serializes request/response pairs and sends them to the server via a background thread using `urllib` (to avoid triggering its own patches).
 
 - **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured data at `POST /api/capture`, stores it, and serves a JSON API (`/api/*`). When `SMELLO_FRONTEND_DIR` points to a directory with built React assets, also serves the web dashboard.
 

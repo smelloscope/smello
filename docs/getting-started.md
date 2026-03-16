@@ -33,7 +33,7 @@ import smello
 smello.init(server_url="http://localhost:5110")
 ```
 
-That's it. Smello monkey-patches `requests`, `httpx`, and `grpc` to capture all outgoing traffic.
+That's it. Smello monkey-patches `requests`, `httpx`, `grpc`, and `botocore` to capture all outgoing traffic.
 
 ```python
 import requests
@@ -80,6 +80,22 @@ rows = client.query("SELECT 1").result()
 
 Any Python library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is captured.
 
+### AWS libraries (boto3)
+
+boto3 uses `botocore`, which calls `urllib3` directly, bypassing `requests` and `httpx`. Smello patches botocore's HTTP session to capture AWS API calls:
+
+```python
+import smello
+smello.init(server_url="http://localhost:5110")
+
+import boto3
+s3 = boto3.client("s3")
+buckets = s3.list_buckets()
+
+# AWS calls appear at http://localhost:5110 — XML responses
+# show as a collapsible tree, just like JSON.
+```
+
 ## What Smello captures
 
 For every outgoing request:
@@ -87,9 +103,9 @@ For every outgoing request:
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- Library used (requests, httpx, or grpc)
+- Library used (requests, httpx, grpc, or botocore)
 
-The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip.
+The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs — Tree shows an expandable tree, Raw shows syntax-highlighted source.
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
 
@@ -102,6 +118,7 @@ Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and o
 | **requests** | `Session.send()`                                       |
 | **httpx**    | `Client.send()` and `AsyncClient.send()`               |
 | **grpc**     | `insecure_channel()` and `secure_channel()` (unary-unary) |
+| **botocore** | `URLLib3Session.send()` (all boto3 / AWS SDK calls)    |
 
 ## Python version support
 

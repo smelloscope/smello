@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-16
+
 ### Added
 
 - **XML body rendering**: Parse XML responses (common in AWS S3, STS, EC2, IAM) into a collapsible tree view, matching the existing JSON treatment.

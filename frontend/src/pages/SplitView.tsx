@@ -3,6 +3,14 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { styled } from "@mui/material/styles";
+import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
+
+const ResizeHandle = styled(Separator)(({ theme }) => ({
+  padding: "0 1px",
+  background: theme.palette.divider,
+  outline: "none",
+}));
 import { useQueryClient } from "@tanstack/react-query";
 import FilterBar from "../components/FilterBar";
 import RequestList from "../components/RequestList";
@@ -19,6 +27,11 @@ import {
 export default function SplitView() {
   const [selectedId] = useSelectedRequestId();
   const queryClient = useQueryClient();
+
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: "smello-split-view",
+    storage: localStorage,
+  });
 
   const { data: allRequests = [] } = useListRequestsApiRequestsGet(
     {},
@@ -67,22 +80,32 @@ export default function SplitView() {
           Clear All
         </Button>
       </Stack>
-      <Stack direction="row" sx={{ flex: 1, overflow: "hidden" }}>
-        <RequestList />
-        <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-          {selectedId ? (
-            <RequestDetail requestId={selectedId} />
-          ) : (
-            <Stack
-              alignItems="center"
-              justifyContent="center"
-              sx={{ height: "100%", color: "text.disabled" }}
-            >
-              <Typography>Select a request to view details</Typography>
-            </Stack>
-          )}
-        </Box>
-      </Stack>
+      <Group
+        orientation="horizontal"
+        defaultLayout={defaultLayout}
+        onLayoutChanged={onLayoutChanged}
+        style={{ flex: 1, overflow: "hidden" }}
+      >
+        <Panel id="list" defaultSize="30%" minSize="15%" maxSize="50%">
+          <RequestList />
+        </Panel>
+        <ResizeHandle />
+        <Panel id="detail" minSize="30%">
+          <Box sx={{ height: "100%", minHeight: 0, overflow: "auto" }}>
+            {selectedId ? (
+              <RequestDetail requestId={selectedId} />
+            ) : (
+              <Stack
+                alignItems="center"
+                justifyContent="center"
+                sx={{ height: "100%", color: "text.disabled" }}
+              >
+                <Typography>Select a request to view details</Typography>
+              </Stack>
+            )}
+          </Box>
+        </Panel>
+      </Group>
     </Stack>
   );
 }

@@ -1,36 +1,34 @@
 /* ── Smello Brand Palette ──
- * Navy:       #1B2A4A  — primary dark
- * Dark Blue:  #2D4373  — secondary dark
- * Slate Blue: #4A6FA5  — tertiary
- * Gold:       #F5B731  — primary accent
- * Amber:      #E89B1C  — secondary accent
- * Light Gold: #FCD462  — tertiary accent
+ * Dark Surface: #2A2A2E  — primary dark
+ * Amber:        #FFA600  — primary accent
+ * Light Amber:  #FFB833  — secondary accent
+ * Pale Amber:   #FFD480  — tertiary accent
  */
 
 /* ── Light mode ── */
 [data-md-color-scheme="default"] {
-  --md-primary-fg-color:        #1B2A4A;
-  --md-primary-fg-color--light: #2D4373;
-  --md-primary-fg-color--dark:  #111D33;
+  --md-primary-fg-color:        #2A2A2E;
+  --md-primary-fg-color--light: #3a3a40;
+  --md-primary-fg-color--dark:  #1a1a1e;
   --md-primary-bg-color:        #ffffff;
   --md-primary-bg-color--light: #ffffff;
 
-  --md-accent-fg-color:         #E89B1C;
-  --md-accent-fg-color--transparent: rgba(232, 155, 28, 0.1);
+  --md-accent-fg-color:         #FFA600;
+  --md-accent-fg-color--transparent: rgba(255, 166, 0, 0.1);
   --md-accent-bg-color:         #ffffff;
   --md-accent-bg-color--light:  #ffffff;
 
-  --md-typeset-a-color:         #2D4373;
+  --md-typeset-a-color:         #FFA600;
 }
 
 /* ── Dark mode ── */
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color:        #1B2A4A;
-  --md-primary-fg-color--light: #2D4373;
-  --md-primary-fg-color--dark:  #111D33;
+  --md-primary-fg-color:        #2A2A2E;
+  --md-primary-fg-color--light: #3a3a40;
+  --md-primary-fg-color--dark:  #1a1a1e;
 
-  --md-accent-fg-color:         #F5B731;
-  --md-accent-fg-color--transparent: rgba(245, 183, 49, 0.1);
+  --md-accent-fg-color:         #FFB833;
+  --md-accent-fg-color--transparent: rgba(255, 184, 51, 0.1);
 
-  --md-typeset-a-color:         #F5B731;
+  --md-typeset-a-color:         #FFB833;
 }

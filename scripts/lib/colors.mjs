@@ -1,11 +1,9 @@
 /** Smello brand color palette (from CLAUDE.md). */
 export const BRAND = {
-  navy: "#1B2A4A",
-  darkBlue: "#2D4373",
-  slateBlue: "#4A6FA5",
-  gold: "#F5B731",
-  amber: "#E89B1C",
-  lightGold: "#FCD462",
+  darkSurface: "#2A2A2E",
+  amber: "#FFA600",
+  lightAmber: "#FFB833",
+  paleAmber: "#FFD480",
 };
 
 export const CHROME_LIGHT = {

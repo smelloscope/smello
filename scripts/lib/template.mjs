@@ -36,7 +36,7 @@ export function buildMockupHTML({
     background: ${
       transparent
         ? "transparent"
-        : `linear-gradient(135deg, ${BRAND.navy} 0%, ${BRAND.darkBlue} 50%, ${BRAND.slateBlue} 100%)`
+        : `linear-gradient(135deg, ${BRAND.darkSurface} 0%, #3a3a40 50%, #4a4a52 100%)`
     };
     display: flex;
     align-items: center;

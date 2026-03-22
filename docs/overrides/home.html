@@ -178,11 +178,55 @@
       white-space: nowrap;
     }
 
+    /* ── Integrations strip ── */
+    .integrations-section {
+      background: #2A2A2E;
+      padding: 3.5rem 1rem;
+      text-align: center;
+      color: white;
+    }
+    .integrations-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .integrations-section .subtitle {
+      opacity: 0.7;
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .integrations-grid {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .integration-card {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      font-size: 0.95rem;
+      color: white;
+      transition: border-color 0.2s;
+    }
+    .integration-card:hover {
+      border-color: #FFA600;
+    }
+    .integration-card .ic-icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
     /* ── Code sample ── */
     .code-section {
       padding: 4rem 1rem;
-      background: #2A2A2E;
-      color: #ffffff;
+      background: var(--md-default-bg-color);
     }
     .code-section h2 {
       text-align: center;
@@ -200,6 +244,58 @@
       padding: 1.5rem !important;
       margin: 0;
       white-space: pre;
+    }
+
+    /* ── FAQ ── */
+    .faq-section {
+      background: #2A2A2E;
+      padding: 4rem 1rem;
+      color: white;
+    }
+    .faq-section h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 2.5rem;
+    }
+    .faq-list {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .faq-list details {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .faq-list details:first-child {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .faq-list summary {
+      cursor: pointer;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 1.1rem 0;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-list summary::-webkit-details-marker { display: none; }
+    .faq-list summary::after {
+      content: "+";
+      font-size: 1.4rem;
+      font-weight: 300;
+      opacity: 0.6;
+      transition: transform 0.2s;
+    }
+    .faq-list details[open] summary::after {
+      content: "\2212";
+    }
+    .faq-list details p {
+      margin: 0 0 1.1rem;
+      opacity: 0.8;
+      font-size: 0.95rem;
+      line-height: 1.65;
     }
   </style>
 
@@ -267,8 +363,40 @@
     </div>
   </section>
 
+  <!-- Works With -->
+  <section class="integrations-section">
+    <h2>Works With</h2>
+    <p class="subtitle">Auto-patches popular Python HTTP and RPC libraries</p>
+    <div class="integrations-grid">
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/requests.svg" alt="requests"> requests
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/httpx.svg" alt="httpx"> httpx
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/grpc.svg" alt="gRPC"> gRPC
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/aws.svg" alt="boto3"> boto3 / AWS
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/googlecloud.svg" alt="Google Cloud"> Google Cloud
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/openai.svg" alt="OpenAI"> OpenAI SDK
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/anthropic.svg" alt="Anthropic"> Anthropic SDK
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/stripe.svg" alt="Stripe"> Stripe SDK
+      </div>
+    </div>
+  </section>
+
   <!-- How It Works -->
-  <section class="code-section" data-md-color-scheme="slate">
+  <section class="code-section">
     <h2>How It Works</h2>
     <div class="steps">
       <div class="step">
@@ -314,6 +442,37 @@
 
 <span class="c1"># Browse captured requests at http://localhost:5110</span></code></pre>
       </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <details>
+        <summary>Does Smello add latency to my requests?</summary>
+        <p>No. Captured data is serialized and sent to the server via a background thread using a queue. Your application's HTTP calls return at their normal speed.</p>
+      </details>
+      <details>
+        <summary>Does it capture sensitive data?</summary>
+        <p>Authorization and cookie headers are redacted by default. You can configure additional headers to redact or filter specific hosts via the <code>ignore_hosts</code> option.</p>
+      </details>
+      <details>
+        <summary>Does it work with async code?</summary>
+        <p>Yes. Smello patches both <code>httpx.Client</code> (sync) and <code>httpx.AsyncClient</code> (async), as well as both sync and async gRPC channels.</p>
+      </details>
+      <details>
+        <summary>What about production use?</summary>
+        <p>Smello is designed for local development and debugging. It stores data in a local SQLite database and runs a lightweight server on your machine. There is no cloud component.</p>
+      </details>
+      <details>
+        <summary>Can I use it with Docker?</summary>
+        <p>Yes. Run <code>smello-server</code> in a container and point your app to it via the <code>SMELLO_URL</code> environment variable. The dashboard is served directly by the server.</p>
+      </details>
+      <details>
+        <summary>Does the client SDK have any dependencies?</summary>
+        <p>No. The <code>smello</code> client package has zero dependencies. It uses <code>urllib.request</code> from the standard library to send captured data, avoiding any patching recursion.</p>
+      </details>
     </div>
   </section>
 

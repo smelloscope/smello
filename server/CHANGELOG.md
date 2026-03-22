@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-03-22
+
 ### Added
 
 - **Resizable split view**: The divider between the request list and detail panel can now be dragged to resize. Layout is persisted to localStorage.

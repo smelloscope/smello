@@ -2,6 +2,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { mono, dark } from "../theme";
 import StatusBadge from "./StatusBadge";
 import MethodBadge from "./MethodBadge";
 import { parseDisplayUrl } from "../utils/url";
@@ -12,8 +13,6 @@ type RequestListItemProps = {
   selected: boolean;
   onClick: () => void;
 };
-
-const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
 function formatTime(ts: string): string {
   const d = new Date(ts);
@@ -34,28 +33,32 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
       selected={selected}
       onClick={onClick}
       sx={{
-        py: 0.75,
+        py: 1,
         px: 1.5,
-        borderBottom: "1px solid",
-        borderColor: "divider",
         alignItems: "flex-start",
+        borderBottom: `1px solid ${dark.border}`,
+        "&:hover": {
+          bgcolor: dark.hover,
+        },
         "&.Mui-selected": {
-          bgcolor: "action.selected",
-          borderLeftColor: "primary.main",
-          borderLeft: "2px solid",
+          bgcolor: dark.selected,
+          "&:hover": {
+            bgcolor: dark.selectedHover,
+          },
         },
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* Row 1: Method + path */}
         <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
-          <MethodBadge method={item.method} />
+          <MethodBadge method={item.method} dark />
           <Typography
             component="span"
             sx={{
               fontFamily: mono,
               fontSize: 12,
               fontWeight: 500,
+              color: dark.textPrimary,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -73,7 +76,7 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
             component="span"
             sx={{
               fontSize: 11,
-              color: "text.secondary",
+              color: dark.textSecondary,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -87,9 +90,8 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
                 component="span"
                 sx={{
                   fontSize: 10,
-                  color: "text.secondary",
+                  color: dark.textDisabled,
                   ml: 0.5,
-                  opacity: 0.6,
                 }}
               >
                 gRPC
@@ -101,14 +103,14 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
               component="span"
               sx={{
                 fontSize: 11,
-                color: item.duration_ms >= 2000 ? "warning.main" : "text.disabled",
+                color: item.duration_ms >= 2000 ? "#ffa726" : dark.textDisabled,
                 fontFamily: mono,
                 fontWeight: item.duration_ms >= 2000 ? 600 : 400,
               }}
             >
               {formatDuration(item.duration_ms)}
             </Typography>
-            <Typography component="span" sx={{ fontSize: 11, color: "text.disabled" }}>
+            <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled }}>
               {formatTime(item.timestamp)}
             </Typography>
             <StatusBadge status={item.status_code} />

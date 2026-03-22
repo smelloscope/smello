@@ -1,6 +1,7 @@
-import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
+import { mono } from "../theme";
 
-const methodColors: Record<string, string> = {
+const methodColorsLight: Record<string, string> = {
   GET: "#1565c0",
   POST: "#2e7d32",
   PUT: "#e65100",
@@ -10,34 +11,39 @@ const methodColors: Record<string, string> = {
   OPTIONS: "#546e7a",
 };
 
+const methodColorsDark: Record<string, string> = {
+  GET: "#64b5f6",
+  POST: "#81c784",
+  PUT: "#ffb74d",
+  PATCH: "#ce93d8",
+  DELETE: "#ef9a9a",
+  HEAD: "#90a4ae",
+  OPTIONS: "#90a4ae",
+};
+
 type MethodBadgeProps = {
   method: string;
   size?: "small" | "medium";
+  dark?: boolean;
 };
 
-export default function MethodBadge({ method, size = "small" }: MethodBadgeProps) {
-  const color = methodColors[method] ?? "#78909c";
-  const fontSize = size === "medium" ? 13 : 11;
-  const px = size === "medium" ? 1 : 0.75;
-  const py = size === "medium" ? 0.25 : 0;
+export default function MethodBadge({ method, size = "small", dark = false }: MethodBadgeProps) {
+  const colors = dark ? methodColorsDark : methodColorsLight;
+  const color = colors[method] ?? (dark ? "#b0bec5" : "#78909c");
 
   return (
-    <Typography
-      component="span"
+    <Chip
+      label={method}
+      size="small"
+      variant="outlined"
       sx={{
-        fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace",
+        fontFamily: mono,
         fontWeight: 700,
-        fontSize,
+        fontSize: size === "medium" ? 12 : 11,
+        height: size === "medium" ? 24 : 20,
         color,
-        bgcolor: `${color}14`,
-        px,
-        py,
-        borderRadius: 0.5,
-        lineHeight: 1.5,
-        letterSpacing: 0.3,
+        borderColor: `${color}40`,
       }}
-    >
-      {method}
-    </Typography>
+    />
   );
 }

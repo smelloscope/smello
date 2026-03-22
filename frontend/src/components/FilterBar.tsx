@@ -5,6 +5,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
+import { dark } from "../theme";
 import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
 import { useGetMetaApiMetaGet } from "../api/generated/default/default";
 
@@ -17,6 +18,13 @@ export default function FilterBar() {
     query: { refetchInterval: 10_000 },
   });
 
+  const darkSelect = {
+    color: dark.textPrimary,
+    ".MuiOutlinedInput-notchedOutline": { borderColor: dark.divider },
+    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: dark.textDisabled },
+    ".MuiSvgIcon-root": { color: dark.textMuted },
+  };
+
   return (
     <Stack direction="row" spacing={1} alignItems="center" sx={{ p: 1 }}>
       <Select
@@ -24,7 +32,7 @@ export default function FilterBar() {
         displayEmpty
         value={method}
         onChange={(e) => setMethod(e.target.value)}
-        sx={{ minWidth: 90 }}
+        sx={{ minWidth: 90, ...darkSelect }}
         renderValue={(v) => v || "Method"}
       >
         <MenuItem value="">All methods</MenuItem>
@@ -39,7 +47,7 @@ export default function FilterBar() {
         displayEmpty
         value={host}
         onChange={(e) => setHost(e.target.value)}
-        sx={{ minWidth: 140 }}
+        sx={{ minWidth: 140, ...darkSelect }}
         renderValue={(v) => v || "Host"}
       >
         <MenuItem value="">All hosts</MenuItem>
@@ -58,12 +66,21 @@ export default function FilterBar() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
+                <SearchIcon fontSize="small" sx={{ color: dark.textMuted }} />
               </InputAdornment>
             ),
           },
         }}
-        sx={{ minWidth: 200, flex: 1 }}
+        sx={{
+          minWidth: 200,
+          flex: 1,
+          "& .MuiOutlinedInput-root": {
+            color: dark.textPrimary,
+            "& .MuiOutlinedInput-notchedOutline": { borderColor: dark.divider },
+            "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: dark.textDisabled },
+          },
+          "& .MuiInputBase-input::placeholder": { color: dark.textDisabled, opacity: 1 },
+        }}
       />
     </Stack>
   );

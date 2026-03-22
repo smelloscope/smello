@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - **Resizable split view**: The divider between the request list and detail panel can now be dragged to resize. Layout is persisted to localStorage.
 
+### Changed
+
+- **Dark sidebar & toolbar**: Request list and top toolbar now use a dark surface (`#2A2A2E`) with light text, inspired by Bear's design. Method badges use bright colors on dark backgrounds for readability.
+- **Streamlined header**: Removed the separate title bar ("Smello — HTTP Request Inspector"); the logo is now inlined into the filter bar.
+- **Updated brand palette**: Replaced blue/navy colors with a dark surface + amber (`#FFA600`) palette across the app, docs, and landing page.
+
 ## [0.4.0] - 2026-03-16
 
 ### Added

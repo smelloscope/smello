@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
+import { darkSurface, dark } from "../theme";
 import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
 
 const ResizeHandle = styled(Separator)(({ theme }) => ({
@@ -61,21 +62,34 @@ export default function SplitView() {
         direction="row"
         alignItems="center"
         sx={{
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
+          bgcolor: darkSurface,
+          color: dark.textPrimary,
+          borderBottom: `1px solid ${dark.border}`,
         }}
       >
+        <Box component="a" href="/" sx={{ display: "flex", alignItems: "center", pl: 1.5 }}>
+          <Box component="img" src="/logo-dark.png" alt="Smello" sx={{ width: 24, height: 24 }} />
+        </Box>
         <Box sx={{ flex: 1 }}>
           <FilterBar />
         </Box>
         <Button
           size="small"
-          color="error"
+          variant="outlined"
           startIcon={<DeleteIcon />}
           onClick={() => clearMutation.mutate()}
           disabled={clearMutation.isPending}
-          sx={{ mr: 1, textTransform: "none" }}
+          sx={{
+            mr: 1,
+            textTransform: "none",
+            height: 40,
+            color: "#ff8a80",
+            borderColor: "rgba(255,138,128,0.4)",
+            "&:hover": {
+              borderColor: "#ff8a80",
+              bgcolor: "rgba(255,138,128,0.08)",
+            },
+          }}
         >
           Clear All
         </Button>

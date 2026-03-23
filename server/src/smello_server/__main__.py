@@ -1,10 +1,13 @@
 """CLI entry point: `smello-server run` or `python -m smello_server`."""
 
-import argparse
 import logging
 import os
+import threading
+import webbrowser
 from pathlib import Path
+from typing import Annotated
 
+import typer
 import uvicorn
 from rich.console import Console
 from rich.panel import Panel
@@ -15,10 +18,18 @@ logger = logging.getLogger("smello_server")
 _DEFAULT_DB_DIR = Path.home() / ".smello"
 _DEFAULT_DB_PATH = _DEFAULT_DB_DIR / "smello.db"
 
+app = typer.Typer(add_completion=False)
+
+
+def _get_url(host: str, port: int) -> str:
+    if host in ("0.0.0.0", "127.0.0.1", "localhost"):
+        return f"http://localhost:{port}"
+    return f"http://{host}:{port}"
+
 
 def _print_banner(host: str, port: int):
     console = Console()
-    url = f"http://localhost:{port}" if host == "0.0.0.0" else f"http://{host}:{port}"
+    url = _get_url(host, port)
 
     body = Text()
     body.append("Smello is running at ", style="bold")
@@ -37,58 +48,49 @@ def _print_banner(host: str, port: int):
     console.print()
 
 
+@app.command()
+def run(
+    host: Annotated[str, typer.Option(help="Host to bind to.")] = "0.0.0.0",
+    port: Annotated[int, typer.Option(help="Port to bind to.")] = 5110,
+    db_path: Annotated[
+        str | None,
+        typer.Option(
+            help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})."
+        ),
+    ] = None,
+    reload: Annotated[
+        bool, typer.Option(help="Enable auto-reload on code changes.")
+    ] = False,
+    open_browser: Annotated[
+        bool, typer.Option("--open/--no-open", help="Open the dashboard in a browser.")
+    ] = True,
+):
+    """Start the Smello server."""
+    if db_path:
+        os.environ["SMELLO_DB_PATH"] = db_path
+
+    resolved_db = db_path or os.environ.get("SMELLO_DB_PATH") or str(_DEFAULT_DB_PATH)
+    logging.basicConfig(level=logging.INFO)
+    logger.info("Database: %s", resolved_db)
+
+    _print_banner(host, port)
+
+    if open_browser:
+        url = _get_url(host, port)
+        threading.Timer(1.5, webbrowser.open, args=(url,)).start()
+
+    uvicorn.run(
+        "smello_server.app:create_app",
+        factory=True,
+        host=host,
+        port=port,
+        log_level="info",
+        reload=reload,
+    )
+
+
 def main():
-    parser = argparse.ArgumentParser(
-        prog="smello-server", description="Smello HTTP request inspector"
-    )
-    subparsers = parser.add_subparsers(dest="command")
-
-    run_parser = subparsers.add_parser("run", help="Start the Smello server")
-    run_parser.add_argument(
-        "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
-    )
-    run_parser.add_argument(
-        "--port", type=int, default=5110, help="Port to bind to (default: 5110)"
-    )
-    run_parser.add_argument(
-        "--db-path",
-        default=None,
-        help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})",
-    )
-    run_parser.add_argument(
-        "--reload",
-        action="store_true",
-        default=False,
-        help="Enable auto-reload on code changes (for development)",
-    )
-
-    args = parser.parse_args()
-
-    if args.command is None:
-        args.command = "run"
-        args.host = "0.0.0.0"
-        args.port = 5110
-        args.db_path = None
-        args.reload = False
-
-    if args.command == "run":
-        if args.db_path:
-            os.environ["SMELLO_DB_PATH"] = args.db_path
-
-        db_path = args.db_path or os.environ.get("SMELLO_DB_PATH") or _DEFAULT_DB_PATH
-        logging.basicConfig(level=logging.INFO)
-        logger.info("Database: %s", db_path)
-
-        _print_banner(args.host, args.port)
-
-        uvicorn.run(
-            "smello_server.app:create_app",
-            factory=True,
-            host=args.host,
-            port=args.port,
-            log_level="info",
-            reload=args.reload,
-        )
+    app()
 
 
 if __name__ == "__main__":

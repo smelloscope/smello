@@ -27,4 +27,4 @@ EXPOSE 5110
 ENV SMELLO_DB_PATH=/data/smello.db
 ENV SMELLO_FRONTEND_DIR=/app/frontend-dist
 
-CMD ["uv", "run", "--package", "smello-server", "smello-server", "run"]
+CMD ["uv", "run", "--package", "smello-server", "smello-server", "--no-open"]

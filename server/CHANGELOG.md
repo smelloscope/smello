@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Startup banner**: Shows the server URL, a GitHub star link, and a link to discussions on startup.
+- **Auto-open browser**: The dashboard opens in your browser automatically on start. Use `--no-open` to disable.
+
+### Changed
+
+- **CLI migrated to Typer**: Replaced argparse with Typer. The `run` subcommand is removed; use `smello-server [OPTIONS]` directly.
+
 ## [0.4.2] - 2026-03-23
 
 ### Added

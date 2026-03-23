@@ -6,11 +6,35 @@ import os
 from pathlib import Path
 
 import uvicorn
+from rich.console import Console
+from rich.panel import Panel
+from rich.text import Text
 
 logger = logging.getLogger("smello_server")
 
 _DEFAULT_DB_DIR = Path.home() / ".smello"
 _DEFAULT_DB_PATH = _DEFAULT_DB_DIR / "smello.db"
+
+
+def _print_banner(host: str, port: int):
+    console = Console()
+    url = f"http://localhost:{port}" if host == "0.0.0.0" else f"http://{host}:{port}"
+
+    body = Text()
+    body.append("Smello is running at ", style="bold")
+    body.append(url, style="bold #FFA600")
+    body.append("\n\n")
+    body.append(
+        "If Smello's been useful, a GitHub star helps others find it too:\n",
+        style="dim",
+    )
+    body.append("https://github.com/smelloscope/smello\n\n", style="dim")
+    body.append("Got feedback or found a bug? Drop a note:\n", style="dim")
+    body.append("https://github.com/smelloscope/smello/discussions", style="dim")
+
+    console.print()
+    console.print(Panel(body, border_style="#FFA600", expand=False, padding=(1, 2)))
+    console.print()
 
 
 def main():
@@ -54,6 +78,8 @@ def main():
         db_path = args.db_path or os.environ.get("SMELLO_DB_PATH") or _DEFAULT_DB_PATH
         logging.basicConfig(level=logging.INFO)
         logger.info("Database: %s", db_path)
+
+        _print_banner(args.host, args.port)
 
         uvicorn.run(
             "smello_server.app:create_app",

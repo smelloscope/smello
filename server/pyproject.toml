@@ -21,6 +21,7 @@ dependencies = [
     "uvicorn[standard]>=0.34.0",
     "tortoise-orm>=0.22.0",
     "aiosqlite>=0.20.0",
+    "rich>=13.0.0",
 ]
 
 [project.urls]

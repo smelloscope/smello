@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-03-23
+
 ### Added
 
 - **Startup banner**: Shows the server URL, a GitHub star link, and a link to discussions on startup.

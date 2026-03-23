@@ -1,20 +1,16 @@
+import { useCallback } from "react";
 import { useSetAtom } from "jotai";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
+import Skeleton from "@mui/material/Skeleton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
-import { darkSurface, dark } from "../theme";
-import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
-
-const ResizeHandle = styled(Separator)(({ theme }) => ({
-  padding: "0 1px",
-  background: theme.palette.divider,
-  outline: "none",
-}));
 import { useQueryClient } from "@tanstack/react-query";
+import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
+import { darkSurface, dark } from "../theme";
 import { useListNavigation } from "../hotkeys/useListNavigation";
 import { useGlobalHotkeys } from "../hotkeys/useGlobalHotkeys";
 import { useDetailHotkeys } from "../hotkeys/useDetailHotkeys";
@@ -32,6 +28,53 @@ import {
   getGetMetaApiMetaGetQueryKey,
 } from "../api/generated/default/default";
 
+const ResizeHandle = styled(Separator)(({ theme }) => ({
+  padding: "0 1px",
+  background: theme.palette.divider,
+  outline: "none",
+}));
+
+const LAYOUT_KEY = "react-resizable-panels:smello-split-view";
+
+function readSavedLayout(): Layout | undefined {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    return raw ? JSON.parse(raw) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// Read once at module level so the very first render has the correct layout.
+const initialLayout = readSavedLayout();
+
+function SplitViewSkeleton() {
+  return (
+    <Stack sx={{ height: "100%" }}>
+      <Box
+        sx={{
+          height: 49,
+          bgcolor: darkSurface,
+          borderBottom: `1px solid ${dark.border}`,
+        }}
+      />
+      <Stack direction="row" sx={{ flex: 1, overflow: "hidden" }}>
+        <Box sx={{ width: initialLayout?.list ?? "30%", bgcolor: darkSurface, p: 1 }}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <Skeleton
+              key={i}
+              variant="rounded"
+              height={40}
+              sx={{ mb: 0.5, bgcolor: "rgba(255,255,255,0.05)" }}
+            />
+          ))}
+        </Box>
+        <Box sx={{ flex: 1 }} />
+      </Stack>
+    </Stack>
+  );
+}
+
 export default function SplitView() {
   const [selectedId] = useSelectedRequestId();
   const queryClient = useQueryClient();
@@ -40,12 +83,15 @@ export default function SplitView() {
   useGlobalHotkeys();
   useDetailHotkeys();
 
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: "smello-split-view",
-    storage: localStorage,
-  });
+  const onLayoutChanged = useCallback((layout: Layout) => {
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
+    } catch {
+      // localStorage may be full or unavailable; layout still works, just won't persist.
+    }
+  }, []);
 
-  const { data: allRequests = [] } = useListRequestsApiRequestsGet(
+  const { data: allRequests = [], isLoading } = useListRequestsApiRequestsGet(
     {},
     { query: { refetchInterval: 3_000 } },
   );
@@ -62,6 +108,10 @@ export default function SplitView() {
       },
     },
   });
+
+  if (isLoading) {
+    return <SplitViewSkeleton />;
+  }
 
   if (allRequests.length === 0) {
     return <EmptyState />;
@@ -107,7 +157,7 @@ export default function SplitView() {
       </Stack>
       <Group
         orientation="horizontal"
-        defaultLayout={defaultLayout}
+        defaultLayout={initialLayout}
         onLayoutChanged={onLayoutChanged}
         style={{ flex: 1, overflow: "hidden" }}
       >

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Keyboard shortcuts**: Gmail/Linear-style hotkeys for the dashboard — j/k to navigate requests, / to search, h/b to toggle sections, c to copy body, ? to view all shortcuts.
+
 ## [0.4.1] - 2026-03-22
 
 ### Added

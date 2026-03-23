@@ -1,6 +1,8 @@
+import { useSetAtom } from "jotai";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
+import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
@@ -13,6 +15,11 @@ const ResizeHandle = styled(Separator)(({ theme }) => ({
   outline: "none",
 }));
 import { useQueryClient } from "@tanstack/react-query";
+import { useListNavigation } from "../hotkeys/useListNavigation";
+import { useGlobalHotkeys } from "../hotkeys/useGlobalHotkeys";
+import { useDetailHotkeys } from "../hotkeys/useDetailHotkeys";
+import { hotkeyHelpOpenAtom } from "../atoms/hotkeyHelp";
+import Kbd from "../components/Kbd";
 import FilterBar from "../components/FilterBar";
 import RequestList from "../components/RequestList";
 import RequestDetail from "../components/RequestDetail";
@@ -28,6 +35,10 @@ import {
 export default function SplitView() {
   const [selectedId] = useSelectedRequestId();
   const queryClient = useQueryClient();
+  const setHelpOpen = useSetAtom(hotkeyHelpOpenAtom);
+  useListNavigation();
+  useGlobalHotkeys();
+  useDetailHotkeys();
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: "smello-split-view",
@@ -112,14 +123,57 @@ export default function SplitView() {
               <Stack
                 alignItems="center"
                 justifyContent="center"
+                spacing={1}
                 sx={{ height: "100%", color: "text.disabled" }}
               >
                 <Typography>Select a request to view details</Typography>
+                <ButtonBase
+                  disableRipple
+                  onClick={() => setHelpOpen(true)}
+                  sx={{ borderRadius: 1, "&:hover": { color: "text.secondary" } }}
+                >
+                  <Typography variant="body2">
+                    Press{" "}
+                    <Kbd
+                      sx={{
+                        color: "text.disabled",
+                        borderColor: "divider",
+                        bgcolor: "transparent",
+                      }}
+                    >
+                      ?
+                    </Kbd>{" "}
+                    for keyboard shortcuts
+                  </Typography>
+                </ButtonBase>
               </Stack>
             )}
           </Box>
         </Panel>
       </Group>
+      <ButtonBase
+        disableRipple
+        onClick={() => setHelpOpen(true)}
+        sx={{
+          position: "fixed",
+          bottom: 12,
+          right: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          px: 1,
+          py: 0.5,
+          borderRadius: 1,
+          color: "text.disabled",
+          "&:hover": { color: "text.secondary", bgcolor: "action.hover" },
+          transition: "color 150ms, background-color 150ms",
+        }}
+      >
+        <Kbd sx={{ color: "text.disabled", borderColor: "divider", bgcolor: "transparent" }}>?</Kbd>
+        <Typography variant="caption" sx={{ fontSize: 11 }}>
+          Shortcuts
+        </Typography>
+      </ButtonBase>
     </Stack>
   );
 }

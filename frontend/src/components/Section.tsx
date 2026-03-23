@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useAtom } from "jotai";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -15,9 +15,16 @@ import TableRow from "@mui/material/TableRow";
 import HeadersTable from "./HeadersTable";
 import BodyViewer from "./BodyViewer";
 import CopyButton from "./CopyButton";
+import {
+  headersOpenAtom,
+  bodyOpenAtom,
+  queryParamsOpenAtom,
+  type Side,
+} from "../atoms/sectionState";
 
 type SectionProps = {
   title: string;
+  side: Side;
   headers: Record<string, string>;
   body: string | null;
   bodySize: number;
@@ -30,13 +37,20 @@ const chevronSx = (open: boolean) => ({
   transition: "transform 150ms",
 });
 
-export default function Section({ title, headers, body, bodySize, queryParams }: SectionProps) {
-  const [queryParamsOpen, setQueryParamsOpen] = useState(false);
-  const [headersOpen, setHeadersOpen] = useState(false);
-  const [bodyOpen, setBodyOpen] = useState(true);
+export default function Section({
+  title,
+  side,
+  headers,
+  body,
+  bodySize,
+  queryParams,
+}: SectionProps) {
+  const [queryParamsOpen, setQueryParamsOpen] = useAtom(queryParamsOpenAtom[side]);
+  const [headersOpen, setHeadersOpen] = useAtom(headersOpenAtom[side]);
+  const [bodyOpen, setBodyOpen] = useAtom(bodyOpenAtom[side]);
   const headerCount = Object.keys(headers).length;
   const hasQueryParams = queryParams && queryParams.length > 0;
-  const isRequest = title === "Request";
+  const isRequest = side === "request";
   const Icon = isRequest ? CallMade : CallReceived;
 
   return (
@@ -124,7 +138,7 @@ export default function Section({ title, headers, body, bodySize, queryParams }:
               </Typography>
               <ExpandMore fontSize="small" sx={chevronSx(bodyOpen)} />
             </ButtonBase>
-            <CopyButton text={body} />
+            <CopyButton text={body} hotkeyLabel={isRequest ? "c" : "C"} />
           </Stack>
           <Collapse in={bodyOpen}>
             <Box sx={{ px: 1, pb: 1 }}>

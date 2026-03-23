@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSetAtom } from "jotai";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -9,6 +10,7 @@ import StatusBadge from "./StatusBadge";
 import MethodBadge from "./MethodBadge";
 import Section from "./Section";
 import { parseDisplayUrl, parseQueryParams } from "../utils/url";
+import { headersOpenAtom, bodyOpenAtom, queryParamsOpenAtom } from "../atoms/sectionState";
 
 const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
@@ -20,6 +22,21 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
   } = useGetRequestApiRequestsRequestIdGet(requestId, {
     query: { retry: false },
   });
+
+  // Reset section collapse state when switching requests
+  const setReqHeaders = useSetAtom(headersOpenAtom.request);
+  const setResHeaders = useSetAtom(headersOpenAtom.response);
+  const setReqBody = useSetAtom(bodyOpenAtom.request);
+  const setResBody = useSetAtom(bodyOpenAtom.response);
+  const setQueryParams = useSetAtom(queryParamsOpenAtom.request);
+
+  useEffect(() => {
+    setReqHeaders(false);
+    setResHeaders(false);
+    setReqBody(true);
+    setResBody(true);
+    setQueryParams(false);
+  }, [requestId, setReqHeaders, setResHeaders, setReqBody, setResBody, setQueryParams]);
 
   useEffect(() => {
     if (isError) {
@@ -105,6 +122,7 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
 
       <Section
         title="Request"
+        side="request"
         headers={detail.request_headers}
         body={detail.request_body}
         bodySize={detail.request_body_size}
@@ -113,6 +131,7 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
 
       <Section
         title="Response"
+        side="response"
         headers={detail.response_headers}
         body={detail.response_body}
         bodySize={detail.response_body_size}

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import ListItemButton from "@mui/material/ListItemButton";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -25,11 +26,19 @@ function formatDuration(ms: number): string {
 }
 
 export default function RequestListItem({ item, selected, onClick }: RequestListItemProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const { host, path } = parseDisplayUrl(item.url);
   const isGrpc = item.url.startsWith("grpc://");
 
+  useEffect(() => {
+    if (selected && ref.current) {
+      ref.current.scrollIntoView({ block: "nearest" });
+    }
+  }, [selected]);
+
   return (
     <ListItemButton
+      ref={ref}
       selected={selected}
       onClick={onClick}
       sx={{

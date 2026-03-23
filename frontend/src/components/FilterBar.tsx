@@ -59,7 +59,7 @@ export default function FilterBar() {
       </Select>
       <TextField
         size="small"
-        placeholder="Search URLs..."
+        placeholder="Search URLs...  (/)"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         slotProps={{
@@ -69,6 +69,9 @@ export default function FilterBar() {
                 <SearchIcon fontSize="small" sx={{ color: dark.textMuted }} />
               </InputAdornment>
             ),
+          },
+          htmlInput: {
+            "data-hotkey-target": "search",
           },
         }}
         sx={{

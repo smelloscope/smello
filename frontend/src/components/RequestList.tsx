@@ -1,30 +1,15 @@
-import { useAtomValue } from "jotai";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import { darkSurface, dark } from "../theme";
-import { useListRequestsApiRequestsGet } from "../api/generated/default/default";
-import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
 import { useSelectedRequestId } from "../hooks/useSelectedRequestId";
+import { useFilteredRequests } from "../hooks/useFilteredRequests";
 import RequestListItem from "./RequestListItem";
 
 export default function RequestList() {
-  const host = useAtomValue(hostFilterAtom);
-  const method = useAtomValue(methodFilterAtom);
-  const search = useAtomValue(searchFilterAtom);
   const [selectedId, setSelectedId] = useSelectedRequestId();
-
-  const { data: requests = [] } = useListRequestsApiRequestsGet(
-    {
-      ...(host ? { host } : {}),
-      ...(method ? { method } : {}),
-      ...(search ? { search } : {}),
-    },
-    {
-      query: { refetchInterval: 3_000 },
-    },
-  );
+  const { data: requests = [] } = useFilteredRequests();
 
   return (
     <Box

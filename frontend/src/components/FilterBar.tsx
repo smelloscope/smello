@@ -59,7 +59,7 @@ export default function FilterBar() {
       </Select>
       <TextField
         size="small"
-        placeholder="Search URLs...  (/)"
+        placeholder="Search requests...  (/)"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         slotProps={{

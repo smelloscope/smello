@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
+from tortoise import connections
 
 from smello_server.models import CapturedRequest
 
@@ -110,6 +111,55 @@ async def list_requests(
     search: str | None = Query(None),
     limit: int = Query(50, le=200),
 ) -> list[RequestSummary]:
+    if search:
+        # Tortoise ORM's JSONField doesn't support __icontains, so use raw
+        # SQL to search across all columns including JSON header fields.
+        where_parts: list[str] = []
+        params: list[str | int] = []
+
+        if host:
+            where_parts.append("host = ?")
+            params.append(host)
+        if method:
+            where_parts.append("method = ?")
+            params.append(method.upper())
+        if status:
+            where_parts.append("status_code = ?")
+            params.append(status)
+
+        like_pattern = f"%{search}%"
+        where_parts.append(
+            "(url LIKE ? COLLATE NOCASE"
+            " OR host LIKE ? COLLATE NOCASE"
+            " OR method LIKE ? COLLATE NOCASE"
+            " OR request_headers LIKE ? COLLATE NOCASE"
+            " OR request_body LIKE ? COLLATE NOCASE"
+            " OR response_headers LIKE ? COLLATE NOCASE"
+            " OR response_body LIKE ? COLLATE NOCASE)"
+        )
+        params.extend([like_pattern] * 7)
+
+        where_clause = " AND ".join(where_parts)
+        db = connections.get("default")
+        _, rows = await db.execute_query(
+            f"SELECT id, timestamp, method, url, host, status_code, duration_ms"
+            f" FROM captured_requests WHERE {where_clause}"
+            " ORDER BY timestamp DESC LIMIT ?",
+            [*params, limit],
+        )
+        return [
+            RequestSummary(
+                id=str(r["id"]),
+                timestamp=datetime.fromisoformat(r["timestamp"]),
+                method=r["method"],
+                url=r["url"],
+                host=r["host"],
+                status_code=r["status_code"],
+                duration_ms=r["duration_ms"],
+            )
+            for r in rows
+        ]
+
     qs = CapturedRequest.all()
     if host:
         qs = qs.filter(host=host)
@@ -117,9 +167,6 @@ async def list_requests(
         qs = qs.filter(method=method.upper())
     if status:
         qs = qs.filter(status_code=status)
-    if search:
-        qs = qs.filter(url__icontains=search)
-
     requests = await qs.limit(limit)
     return [
         RequestSummary(

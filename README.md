@@ -119,7 +119,7 @@ curl -s 'http://localhost:5110/api/requests?host=api.stripe.com'
 # Filter by status code
 curl -s 'http://localhost:5110/api/requests?status=500'
 
-# Search by URL substring
+# Full-text search across URLs, headers, and bodies
 curl -s 'http://localhost:5110/api/requests?search=checkout'
 
 # Limit results (default: 50, max: 200)

@@ -43,7 +43,7 @@ The skill does **not** make any changes — it only proposes. You approve each s
 
 Helps you debug traffic captured by a running Smello instance (HTTP and gRPC). The skill queries the Smello API to:
 
-- List recent requests with filtering (host, method, status code, URL search)
+- List recent requests with filtering (host, method, status code, full-text search across URLs, headers, and bodies)
 - Fetch full request/response details (headers, bodies, timing)
 - Identify failed API calls (4xx/5xx), slow requests, and malformed payloads
 - Cross-reference captured traffic with your source code

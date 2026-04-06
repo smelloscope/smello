@@ -42,7 +42,7 @@ Smello Server provides a JSON API for exploring captured requests from the comma
 # List all captured requests
 curl -s http://localhost:5110/api/requests | python -m json.tool
 
-# Filter by method, host, status, or URL substring
+# Filter by method, host, status, or full-text search
 curl -s 'http://localhost:5110/api/requests?method=POST&host=api.stripe.com'
 
 # Get full request/response details

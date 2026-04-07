@@ -33,7 +33,7 @@ import smello
 smello.init(server_url="http://localhost:5110")
 ```
 
-That's it. Smello monkey-patches `requests`, `httpx`, `grpc`, and `botocore` to capture all outgoing traffic.
+That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic.
 
 ```python
 import requests
@@ -103,7 +103,7 @@ For every outgoing request:
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- Library used (requests, httpx, grpc, or botocore)
+- Library used (requests, httpx, aiohttp, grpc, or botocore)
 
 The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs — Tree shows an expandable tree, Raw shows syntax-highlighted source.
 
@@ -118,6 +118,7 @@ Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and o
 | **requests** | `Session.send()`                                       |
 | **httpx**    | `Client.send()` and `AsyncClient.send()`               |
 | **grpc**     | `insecure_channel()` and `secure_channel()` (unary-unary) |
+| **aiohttp**  | `ClientSession._request()` (async HTTP client)         |
 | **botocore** | `URLLib3Session.send()` (all boto3 / AWS SDK calls)    |
 
 ## Python version support

@@ -34,7 +34,7 @@ resp = requests.get("https://api.stripe.com/v1/charges")
 # Browse captured requests at http://localhost:5110
 ```
 
-Smello monkey-patches `requests`, `httpx`, `grpc`, and `botocore` to capture outgoing traffic. Browse results at `http://localhost:5110`.
+Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Browse results at `http://localhost:5110`.
 
 Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment — no URL, no side effects.
 
@@ -60,7 +60,7 @@ Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is a
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- Library used (requests, httpx, grpc, or botocore)
+- Library used (requests, httpx, aiohttp, grpc, or botocore)
 
 Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters.
 
@@ -94,6 +94,7 @@ The server URL is the activation signal — `init()` does nothing unless `server
 
 - **requests** — patches `Session.send()`
 - **httpx** — patches `Client.send()` and `AsyncClient.send()`
+- **aiohttp** — patches `ClientSession._request()` to capture async HTTP traffic
 - **grpc** — patches `insecure_channel()` and `secure_channel()` to intercept unary-unary calls
 - **botocore** — patches `URLLib3Session.send()` to capture boto3 / AWS SDK traffic
 

@@ -68,7 +68,7 @@ For every outgoing request:
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
-- Library used (requests, httpx, grpc, or botocore)
+- Library used (requests, httpx, aiohttp, grpc, or botocore)
 
 gRPC calls are displayed with a `grpc://` URL scheme (e.g. `grpc://bigquery.googleapis.com:443/...`). Protobuf request and response bodies are automatically serialized to JSON.
 
@@ -151,6 +151,7 @@ curl -X DELETE http://localhost:5110/api/requests
 
 - **requests** — patches `Session.send()`
 - **httpx** — patches `Client.send()` and `AsyncClient.send()`
+- **aiohttp** — patches `ClientSession._request()` to capture async HTTP traffic
 - **grpc** — patches `insecure_channel()` and `secure_channel()` to intercept unary-unary calls
 - **botocore** — patches `URLLib3Session.send()` to capture boto3 / AWS SDK traffic
 
@@ -217,7 +218,7 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 (smello.init())     (FastAPI+SQLite)   (localhost:5110)
 ```
 
-- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `grpc`, and `botocore` to capture traffic. Sends data to the server in a background thread.
+- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture traffic. Sends data to the server in a background thread.
 - **smello-server**: FastAPI app with SQLite. Receives captured data and serves a JSON API plus a React web dashboard.
 
 ## Project Structure

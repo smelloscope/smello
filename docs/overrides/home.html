@@ -331,8 +331,8 @@
         <p>Headers, body, status code, and timing for every captured call. Sensitive headers redacted automatically.</p>
       </div>
       <div class="feature">
-        <h3>requests, httpx, gRPC &amp; boto3</h3>
-        <p>Auto-patches <code>requests</code>, <code>httpx</code>, <code>grpc</code>, and <code>botocore</code>. Captures Google Cloud and AWS SDK traffic.</p>
+        <h3>requests, httpx, aiohttp, gRPC &amp; boto3</h3>
+        <p>Auto-patches <code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, and <code>botocore</code>. Captures Google Cloud and AWS SDK traffic.</p>
       </div>
     </div>
   </section>
@@ -373,6 +373,9 @@
       </div>
       <div class="integration-card">
         <img class="ic-icon" src="assets/logos/httpx.svg" alt="httpx"> httpx
+      </div>
+      <div class="integration-card">
+        <img class="ic-icon" src="assets/logos/aiohttp.svg" alt="aiohttp"> aiohttp
       </div>
       <div class="integration-card">
         <img class="ic-icon" src="assets/logos/grpc.svg" alt="gRPC"> gRPC
@@ -459,7 +462,7 @@
       </details>
       <details>
         <summary>Does it work with async code?</summary>
-        <p>Yes. Smello patches both <code>httpx.Client</code> (sync) and <code>httpx.AsyncClient</code> (async), as well as both sync and async gRPC channels.</p>
+        <p>Yes. Smello patches <code>httpx.AsyncClient</code>, <code>aiohttp.ClientSession</code>, and async gRPC channels, alongside their synchronous counterparts.</p>
       </details>
       <details>
         <summary>What about production use?</summary>

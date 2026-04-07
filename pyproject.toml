@@ -14,6 +14,7 @@ smello-server = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "aiohttp>=3.11.0",
     "httpx>=0.28.1",
     "ty>=0.0.1a5",
     "pre-commit>=4.2.0",

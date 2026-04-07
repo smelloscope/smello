@@ -1,9 +1,18 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { Provider, createStore } from "jotai";
 import { hotkeyHelpOpenAtom } from "../../atoms/hotkeyHelp";
 import HotkeyHelpDialog from "../HotkeyHelpDialog";
+
+afterEach(async () => {
+  // MUI Dialog uses react-transition-group which sets timeouts for
+  // enter/exit transitions (~225ms). Wait for them to complete before
+  // cleanup tears down jsdom, otherwise the callbacks fire after teardown
+  // and crash with "window is not defined".
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  cleanup();
+});
 
 function renderDialog(open = false) {
   const store = createStore();

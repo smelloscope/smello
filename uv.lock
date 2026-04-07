@@ -869,7 +869,7 @@ wheels = [
 
 [[package]]
 name = "smello"
-version = "0.6.1"
+version = "0.7.0"
 source = { editable = "clients/python" }
 
 [[package]]

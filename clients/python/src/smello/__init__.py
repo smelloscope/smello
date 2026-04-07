@@ -14,7 +14,7 @@ logger = logging.getLogger("smello")
 logger.addHandler(logging.NullHandler())
 
 __all__ = ["init", "flush", "shutdown"]
-__version__ = "0.6.1"
+__version__ = "0.7.0"
 
 _DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
 

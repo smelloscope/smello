@@ -87,6 +87,52 @@ def test_search_by_url(client, make_payload):
     assert "stripe" in data[0]["url"]
 
 
+def test_search_by_request_header(client, make_payload):
+    """Search finds requests by header values."""
+    payload = make_payload()
+    payload["request"]["headers"] = {"X-Request-Id": "abc-trace-123"}
+    client.post("/api/capture", json=payload)
+    client.post("/api/capture", json=make_payload())  # default headers
+
+    data = client.get("/api/requests", params={"search": "abc-trace-123"}).json()
+    assert len(data) == 1
+
+
+def test_search_by_response_body(client, make_payload):
+    """Search finds requests by response body content."""
+    payload = make_payload()
+    payload["response"]["body"] = '{"error": "unique-sentinel-value"}'
+    client.post("/api/capture", json=payload)
+    client.post("/api/capture", json=make_payload())
+
+    data = client.get(
+        "/api/requests", params={"search": "unique-sentinel-value"}
+    ).json()
+    assert len(data) == 1
+
+
+def test_search_by_request_body(client, make_payload):
+    """Search finds requests by request body content."""
+    payload = make_payload(method="POST")
+    payload["request"]["body"] = '{"username": "specialuser42"}'
+    client.post("/api/capture", json=payload)
+    client.post("/api/capture", json=make_payload())
+
+    data = client.get("/api/requests", params={"search": "specialuser42"}).json()
+    assert len(data) == 1
+
+
+def test_search_by_response_header(client, make_payload):
+    """Search finds requests by response header values."""
+    payload = make_payload()
+    payload["response"]["headers"] = {"X-Trace-Id": "resp-trace-999"}
+    client.post("/api/capture", json=payload)
+    client.post("/api/capture", json=make_payload())
+
+    data = client.get("/api/requests", params={"search": "resp-trace-999"}).json()
+    assert len(data) == 1
+
+
 def test_limit(client, make_payload):
     for _ in range(5):
         client.post("/api/capture", json=make_payload())

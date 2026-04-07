@@ -32,7 +32,7 @@ Query parameters (all optional, combine as needed):
 - `host=api.example.com` — filter by hostname
 - `method=POST` — filter by HTTP method
 - `status=500` — filter by response status code
-- `search=checkout` — search URL substring
+- `search=checkout` — full-text search across URLs, headers, and bodies
 - `limit=100` — max results (default 50, max 200)
 
 Each item in the response contains: `id`, `timestamp`, `method`, `url`, `host`, `status_code`, `duration_ms`.
@@ -111,8 +111,8 @@ Filter by host to see all traffic to one API:
 curl -s 'http://localhost:5110/api/requests?host=api.stripe.com'
 ```
 
-### Searching for specific endpoints
-Search by URL substring:
+### Searching requests
+Full-text search across URLs, headers, and bodies:
 ```bash
 curl -s 'http://localhost:5110/api/requests?search=/v1/charges'
 ```

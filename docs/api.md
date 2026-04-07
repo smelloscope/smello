@@ -17,7 +17,7 @@ curl -s http://localhost:5110/api/requests | python -m json.tool
 | `method`  | `POST`           | Filter by HTTP method               |
 | `host`    | `api.stripe.com` | Filter by hostname                  |
 | `status`  | `500`            | Filter by response status code      |
-| `search`  | `checkout`       | Search by URL substring             |
+| `search`  | `checkout`       | Full-text search across URLs, headers, and bodies |
 | `limit`   | `10`             | Max results (default: 50, max: 200) |
 
 Combine filters:

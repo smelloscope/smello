@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Full-text search**: The search field now matches across URLs, hosts, methods, request/response headers, and request/response bodies — not just the URL.
+
 ## [0.4.3] - 2026-03-23
 
 ### Added

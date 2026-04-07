@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **aiohttp support**: Instrument `aiohttp.ClientSession` via TraceConfig signals to capture async HTTP traffic. Handles merged headers, base_url resolution, redirects, streaming, and `raise_for_status` by construction.
+
 ## [0.6.1] - 2026-03-22
 
 ## [0.6.0] - 2026-03-16

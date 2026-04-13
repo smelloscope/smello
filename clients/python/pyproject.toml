@@ -5,7 +5,7 @@ description = "Capture outgoing HTTP requests and inspect them in a local web da
 license = "MIT"
 requires-python = ">=3.10"
 readme = "README.md"
-authors = [{ name = "Roman Imankulov", email = "roman.imankulov@gmail.com" }]
+authors = [{ name = "Roman Imankulov", email = "roman@smello.io" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

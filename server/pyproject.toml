@@ -5,7 +5,7 @@ description = "A local web dashboard for inspecting outgoing HTTP requests from 
 license = "MIT"
 requires-python = ">=3.14"
 readme = "README.md"
-authors = [{ name = "Roman Imankulov", email = "roman.imankulov@gmail.com" }]
+authors = [{ name = "Roman Imankulov", email = "roman@smello.io" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

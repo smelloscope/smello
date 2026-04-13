@@ -10,6 +10,10 @@ Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lin
 
 > **Why port 5110?** Read it as **5-1-1-0** → **S-L-L-O** → **smello**.
 
+<p align="center">
+  <img src="docs/assets/screenshot.png" alt="Smello dashboard" width="800">
+</p>
+
 ## Quick Start
 
 ### 1. Start the server
@@ -233,6 +237,10 @@ smello/
 ├── tests/test_e2e/      # End-to-end tests
 └── examples/python/
 ```
+
+## Contact
+
+Questions, feedback, or ideas? Reach out at [roman@smello.io](mailto:roman@smello.io).
 
 ## License
 

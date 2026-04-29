@@ -28,7 +28,7 @@ def client(tmp_path):
 
 @pytest.fixture()
 def sample_payload():
-    """A reusable sample capture payload."""
+    """A reusable sample HTTP capture payload."""
     return {
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "duration_ms": 150,
@@ -55,7 +55,7 @@ def sample_payload():
 
 @pytest.fixture()
 def make_payload():
-    """Factory fixture for creating capture payloads with overrides."""
+    """Factory fixture for creating HTTP capture payloads with overrides."""
 
     def _make(
         *, method="GET", url="https://api.example.com/test", status_code=200, **kwargs
@@ -82,3 +82,46 @@ def make_payload():
         return payload
 
     return _make
+
+
+@pytest.fixture()
+def sample_log_payload():
+    """A reusable sample log capture payload."""
+    return {
+        "event_type": "log",
+        "data": {
+            "level": "WARNING",
+            "logger_name": "myapp.auth",
+            "message": "Token expired for user 42",
+            "pathname": "/app/auth.py",
+            "lineno": 87,
+            "func_name": "validate_token",
+        },
+    }
+
+
+@pytest.fixture()
+def sample_exception_payload():
+    """A reusable sample exception capture payload."""
+    return {
+        "event_type": "exception",
+        "data": {
+            "exc_type": "ValueError",
+            "exc_value": "invalid literal for int() with base 10: 'abc'",
+            "exc_module": "builtins",
+            "traceback_text": (
+                "Traceback (most recent call last):\n"
+                '  File "app.py", line 42, in main\n'
+                "    x = int(user_input)\n"
+                "ValueError: invalid literal for int() with base 10: 'abc'\n"
+            ),
+            "frames": [
+                {
+                    "filename": "app.py",
+                    "lineno": 42,
+                    "function": "main",
+                    "context_line": "    x = int(user_input)",
+                }
+            ],
+        },
+    }

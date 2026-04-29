@@ -6,7 +6,7 @@ Install and start the server:
 
 ```bash
 pip install smello-server
-smello-server run
+smello-server
 ```
 
 Or run with Docker:
@@ -33,7 +33,7 @@ import smello
 smello.init(server_url="http://localhost:5110")
 ```
 
-That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic.
+That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic, hooks `sys.excepthook` to capture unhandled exceptions, and optionally hooks into Python's `logging` module.
 
 ```python
 import requests
@@ -42,7 +42,7 @@ resp = requests.get("https://api.stripe.com/v1/charges")
 import httpx
 resp = httpx.get("https://api.openai.com/v1/models")
 
-# Browse captured requests at http://localhost:5110
+# Browse captured events at http://localhost:5110
 ```
 
 ### Activation model
@@ -94,6 +94,40 @@ CLI flags map 1:1 to the [environment variables](configuration.md):
 
 The `--` separator is optional but recommended when passing flags to the wrapped command.
 
+### Capturing logs
+
+Log capture is opt-in. Enable it to see Python log records alongside your HTTP traffic and exceptions in the same timeline:
+
+```python
+import smello
+smello.init(
+    server_url="http://localhost:5110",
+    capture_logs=True,      # hook into logging module
+    log_level=20,           # capture INFO and above
+)
+
+import logging
+logger = logging.getLogger("myapp")
+logger.warning("Token expired for user %s", user_id)
+
+# Log records appear in the dashboard alongside HTTP requests
+```
+
+### Capturing exceptions
+
+Unhandled exceptions are captured by default — no configuration needed. When your program crashes, Smello captures the full traceback with stack frames and source context, then flushes the event before the process exits.
+
+```python
+import smello
+smello.init(server_url="http://localhost:5110")
+
+# If this raises, the exception appears in the dashboard
+# with the full traceback and frame details
+data = process_input(user_data)
+```
+
+To disable exception capture: `smello.init(capture_exceptions=False)`.
+
 ### Google Cloud libraries
 
 Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically — no extra setup needed:
@@ -129,7 +163,9 @@ buckets = s3.list_buckets()
 
 ## What Smello captures
 
-For every outgoing request:
+### HTTP requests
+
+For every outgoing HTTP and gRPC call:
 
 - Method, URL, headers, and body
 - Response status code, headers, and body
@@ -139,6 +175,26 @@ For every outgoing request:
 The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs — Tree shows an expandable tree, Raw shows syntax-highlighted source.
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
+
+### Logs
+
+When `capture_logs=True`, Smello captures Python log records at or above the configured `log_level`:
+
+- Level (DEBUG, INFO, WARNING, ERROR, CRITICAL), logger name, and formatted message
+- Source file path, line number, and function name
+- Extra attributes attached to the record via `extra={...}`
+
+Smello's own loggers (`smello.*`) and `urllib3` loggers are automatically excluded to prevent recursion.
+
+### Exceptions
+
+Unhandled exceptions are captured with:
+
+- Exception type, message, and module
+- Full formatted traceback text
+- Individual stack frames with filename, line number, function name, and source context line
+
+Both `sys.excepthook` (main thread) and `threading.excepthook` (worker threads) are hooked.
 
 Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters ([details](configuration.md#redact_query_params)).
 

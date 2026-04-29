@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 import Skeleton from "@mui/material/Skeleton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
-import { useQueryClient } from "@tanstack/react-query";
 import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
 import { darkSurface, dark } from "../theme";
 import { useListNavigation } from "../hotkeys/useListNavigation";
@@ -21,12 +20,7 @@ import RequestList from "../components/RequestList";
 import RequestDetail from "../components/RequestDetail";
 import EmptyState from "../components/EmptyState";
 import { useSelectedRequestId } from "../hooks/useSelectedRequestId";
-import {
-  useListRequestsApiRequestsGet,
-  useClearRequestsApiRequestsDelete,
-  getListRequestsApiRequestsGetQueryKey,
-  getGetMetaApiMetaGetQueryKey,
-} from "../api/generated/default/default";
+import { useListEvents, useClearEvents } from "../api/events";
 
 const ResizeHandle = styled(Separator)(({ theme }) => ({
   padding: "0 1px",
@@ -77,7 +71,6 @@ function SplitViewSkeleton() {
 
 export default function SplitView() {
   const [selectedId] = useSelectedRequestId();
-  const queryClient = useQueryClient();
   const setHelpOpen = useSetAtom(hotkeyHelpOpenAtom);
   useListNavigation();
   useGlobalHotkeys();
@@ -91,29 +84,15 @@ export default function SplitView() {
     }
   }, []);
 
-  const { data: allRequests = [], isLoading } = useListRequestsApiRequestsGet(
-    {},
-    { query: { refetchInterval: 3_000 } },
-  );
+  const { data: allEvents = [], isLoading } = useListEvents({}, { refetchInterval: 3_000 });
 
-  const clearMutation = useClearRequestsApiRequestsDelete({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: getListRequestsApiRequestsGetQueryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: getGetMetaApiMetaGetQueryKey(),
-        });
-      },
-    },
-  });
+  const clearMutation = useClearEvents();
 
   if (isLoading) {
     return <SplitViewSkeleton />;
   }
 
-  if (allRequests.length === 0) {
+  if (allEvents.length === 0) {
     return <EmptyState />;
   }
 
@@ -176,7 +155,7 @@ export default function SplitView() {
                 spacing={1}
                 sx={{ height: "100%", color: "text.disabled" }}
               >
-                <Typography>Select a request to view details</Typography>
+                <Typography>Select an event to view details</Typography>
                 <ButtonBase
                   disableRipple
                   onClick={() => setHelpOpen(true)}

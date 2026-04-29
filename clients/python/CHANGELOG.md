@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Exception capture**: Hook `sys.excepthook` and `threading.excepthook` to capture unhandled exceptions with full tracebacks, stack frames, and source context. Enabled by default (`capture_exceptions=True`). Events are flushed synchronously before the process exits.
+- **Frame source snippets**: Each captured exception frame now includes up to 5 lines of source code before and after the failing line (`pre_context`/`post_context`), so you can see the surrounding code on the dashboard without opening the file. Synthetic filenames (`<frozen ...>`, `<string>`) and unreadable sources gracefully fall back to empty lists.
+- **Log capture**: Hook `logging.Logger.callHandlers` to capture Python log records at or above a configurable level. Opt-in via `capture_logs=True` and `log_level` (default: WARNING). Smello's own loggers and `urllib3` are automatically excluded to prevent recursion.
+- **New `init()` parameters**: `capture_exceptions` (bool, default `True`), `capture_logs` (bool, default `False`), `log_level` (int, default `30`/WARNING).
+- **New environment variables**: `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`.
+- **`transport.send_event()`**: New transport function for sending typed events (log, exception) alongside existing HTTP capture payloads.
+
 ## [0.8.0] - 2026-05-02
 
 ### Changed

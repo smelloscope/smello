@@ -35,6 +35,20 @@ def _env_bool(name: str) -> bool | None:
     return None
 
 
+def _env_int(name: str) -> int | None:
+    """Read ``SMELLO_{name}`` as an integer.
+
+    Returns ``None`` if unset, empty, or not a valid integer.
+    """
+    raw = _env_str(name)
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
 def _env_list(name: str) -> list[str] | None:
     """Read ``SMELLO_{name}`` as a comma-separated list.
 

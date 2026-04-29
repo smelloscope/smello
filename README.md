@@ -4,9 +4,9 @@
 
 # Smello
 
-Capture outgoing HTTP requests from your Python code and browse them in a local web dashboard — including gRPC calls made by Google Cloud libraries.
+Capture HTTP requests, Python logs, and unhandled exceptions from your code and browse them in a local web dashboard.
 
-Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lines to your code, and Smello captures every request/response at `http://localhost:5110`.
+Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output — HTTP traffic, log records, and crash tracebacks, all in one timeline. Add two lines to your code and open `http://localhost:5110`.
 
 > **Why port 5110?** Read it as **5-1-1-0** → **S-L-L-O** → **smello**.
 
@@ -20,7 +20,7 @@ Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests. Add two lin
 
 ```bash
 pip install smello-server
-smello-server run
+smello-server
 ```
 
 Or run with Docker:
@@ -35,19 +35,15 @@ docker run -p 5110:5110 ghcr.io/smelloscope/smello
 import smello
 smello.init(server_url="http://localhost:5110")
 
-# Smello now captures all outgoing requests — HTTP and gRPC
+# HTTP requests are captured automatically
 import requests
 resp = requests.get("https://api.stripe.com/v1/charges")
 
-import httpx
-resp = httpx.get("https://api.openai.com/v1/models")
+# Enable log capture
+import logging
+logging.warning("Something went wrong")  # appears in the dashboard
 
-# Google Cloud libraries use gRPC under the hood — Smello captures those too
-from google.cloud import bigquery
-client = bigquery.Client()
-rows = client.query("SELECT 1").result()
-
-# Browse captured requests at http://localhost:5110
+# Unhandled exceptions are captured with full tracebacks
 ```
 
 Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
@@ -74,86 +70,109 @@ npx skills add smelloscope/smello
 
 | Skill            | Install individually                                      | Description                                                                                                                                                                       |
 | ---------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/setup-smello`  | `npx skills add smelloscope/smello --skill setup-smello`  | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval.         |
-| `/http-debugger` | `npx skills add smelloscope/smello --skill http-debugger` | Queries the Smello API to inspect captured traffic, debug failed API calls, and analyze request/response details. Also activates automatically when you ask about HTTP debugging. |
+| `/smello-setup`    | `npx skills add smelloscope/smello --skill smello-setup`    | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval.         |
+| `/smello-debugger` | `npx skills add smelloscope/smello --skill smello-debugger` | Queries the Smello API to inspect captured events — HTTP traffic, log records, and exceptions. Also activates automatically when you ask about debugging. |
 
 ## What Smello Captures
 
-For every outgoing request:
+### HTTP requests
+
+For every outgoing HTTP and gRPC call:
 
 - Method, URL, headers, and body
 - Response status code, headers, and body
 - Duration in milliseconds
 - Library used (requests, httpx, aiohttp, grpc, or botocore)
 
-gRPC calls are displayed with a `grpc://` URL scheme (e.g. `grpc://bigquery.googleapis.com:443/...`). Protobuf request and response bodies are automatically serialized to JSON.
+gRPC calls are displayed with a `grpc://` URL scheme. Protobuf bodies are automatically serialized to JSON. Sensitive headers (`Authorization`, `X-Api-Key`) are redacted by default.
 
-Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters.
+### Logs
+
+When `capture_logs=True`, Smello hooks into Python's `logging` module and captures log records at or above the configured level:
+
+- Log level, logger name, and formatted message
+- Source file, line number, and function name
+- Extra attributes attached to the record
+
+### Exceptions
+
+Unhandled exceptions are captured automatically (enabled by default):
+
+- Exception type, message, and module
+- Full formatted traceback
+- Stack frames with file, line, function, and source context
 
 ## Configuration
 
 ```python
 smello.init(
     server_url="http://localhost:5110",       # where to send captured data
+
+    # HTTP capture
     capture_hosts=["api.stripe.com"],         # only capture these hosts
     capture_all=True,                          # capture everything (default)
     ignore_hosts=["localhost"],               # skip these hosts
     redact_headers=["Authorization"],         # replace header values with [REDACTED]
     redact_query_params=["api_key", "token"], # replace query param values with [REDACTED]
+
+    # Logs & exceptions
+    capture_exceptions=True,                   # capture unhandled exceptions (default)
+    capture_logs=False,                        # capture log records (opt-in)
+    log_level=30,                              # minimum log level to capture (WARNING)
 )
 ```
 
 All parameters fall back to `SMELLO_*` environment variables when not passed explicitly:
 
-| Parameter             | Env variable                 | Default                          |
-| --------------------- | ---------------------------- | -------------------------------- |
-| `server_url`          | `SMELLO_URL`                 | `None` (inactive)                |
-| `capture_all`         | `SMELLO_CAPTURE_ALL`         | `True`                           |
-| `capture_hosts`       | `SMELLO_CAPTURE_HOSTS`       | `[]`                             |
-| `ignore_hosts`        | `SMELLO_IGNORE_HOSTS`        | `[]`                             |
-| `redact_headers`      | `SMELLO_REDACT_HEADERS`      | `["Authorization", "X-Api-Key"]` |
-| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]`                             |
+| Parameter             | Env variable                   | Default                          |
+| --------------------- | ------------------------------ | -------------------------------- |
+| `server_url`          | `SMELLO_URL`                   | `None` (inactive)                |
+| `capture_all`         | `SMELLO_CAPTURE_ALL`           | `True`                           |
+| `capture_hosts`       | `SMELLO_CAPTURE_HOSTS`         | `[]`                             |
+| `ignore_hosts`        | `SMELLO_IGNORE_HOSTS`          | `[]`                             |
+| `redact_headers`      | `SMELLO_REDACT_HEADERS`        | `["Authorization", "X-Api-Key"]` |
+| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS`   | `[]`                             |
+| `capture_exceptions`  | `SMELLO_CAPTURE_EXCEPTIONS`    | `True`                           |
+| `capture_logs`        | `SMELLO_CAPTURE_LOGS`          | `False`                          |
+| `log_level`           | `SMELLO_LOG_LEVEL`             | `30` (WARNING)                   |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
 ## API
 
-Smello provides a JSON API for exploring captured requests from the command line.
+Smello provides a JSON API for exploring captured events from the command line.
 
-### List requests
+### List events
 
 ```bash
-# All captured requests (summary)
-curl -s http://localhost:5110/api/requests | python -m json.tool
+# All captured events (unified timeline)
+curl -s http://localhost:5110/api/events | python -m json.tool
 
-# Filter by method
-curl -s 'http://localhost:5110/api/requests?method=POST'
+# Filter by event type
+curl -s 'http://localhost:5110/api/events?event_type=log'
 
-# Filter by host
-curl -s 'http://localhost:5110/api/requests?host=api.stripe.com'
+# Filter by method, host, or status (HTTP events)
+curl -s 'http://localhost:5110/api/events?method=POST&host=api.stripe.com'
 
-# Filter by status code
-curl -s 'http://localhost:5110/api/requests?status=500'
-
-# Full-text search across URLs, headers, and bodies
-curl -s 'http://localhost:5110/api/requests?search=checkout'
+# Full-text search across summaries and event data
+curl -s 'http://localhost:5110/api/events?search=ValueError'
 
 # Limit results (default: 50, max: 200)
-curl -s 'http://localhost:5110/api/requests?limit=10'
+curl -s 'http://localhost:5110/api/events?limit=10'
 ```
 
-### Get request details
+### Get event details
 
-Returns headers and bodies for both request and response.
+Returns the full event data — headers/bodies for HTTP, traceback/frames for exceptions, message/extra for logs.
 
 ```bash
-curl -s http://localhost:5110/api/requests/{id} | python -m json.tool
+curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 ```
 
-### Clear all requests
+### Clear all events
 
 ```bash
-curl -X DELETE http://localhost:5110/api/requests
+curl -X DELETE http://localhost:5110/api/events
 ```
 
 ## Python Version Support
@@ -234,8 +253,8 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 (smello.init())     (FastAPI+SQLite)   (localhost:5110)
 ```
 
-- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture traffic. Sends data to the server in a background thread.
-- **smello-server**: FastAPI app with SQLite. Receives captured data and serves a JSON API plus a React web dashboard.
+- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture traffic. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.
+- **smello-server**: FastAPI app with SQLite. Receives captured events and serves a JSON API plus a React web dashboard with a unified timeline.
 
 ## Project Structure
 

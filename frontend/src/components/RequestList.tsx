@@ -27,7 +27,7 @@ export default function RequestList() {
           justifyContent="center"
           sx={{ height: "100%", p: 3, color: dark.textMuted }}
         >
-          <Typography variant="body2">No matching requests</Typography>
+          <Typography variant="body2">No matching events</Typography>
         </Stack>
       ) : (
         <List disablePadding>

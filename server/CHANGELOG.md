@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Unified event model**: Replace the HTTP-only `CapturedRequest` model with a unified `CapturedEvent` model that supports multiple event types — HTTP requests, log records, and exceptions — in a single timeline.
+- **Log event capture**: New `log` event type stores Python log records with level, logger name, message, source location, and extra attributes.
+- **Exception event capture**: New `exception` event type stores unhandled exceptions with type, message, full traceback text, and structured stack frames.
+- **`/api/events` endpoint**: New unified timeline endpoint returning all event types sorted by timestamp. Supports filtering by `event_type`, `host`, `method`, `status`, and full-text `search`.
+- **`/api/events/{id}` endpoint**: Returns full event detail with type-specific data in a `data` JSON field.
+- **Event type filter in meta**: `GET /api/meta` now returns `event_types` alongside `hosts` and `methods`.
+- **`DELETE /api/events`**: Clear all events (all types).
+- **Open-in-editor icon in exception frames**: Each captured exception frame in the dashboard now shows a small VS Code icon next to `File:Line`. Clicking it opens the file at that line in VS Code (or any VS Code-based editor like Cursor) via the `vscode://file/...` URL scheme.
+- **Expandable source snippets in exception frames**: Click a frame row to expand a syntax-highlighted Python snippet showing the lines around the failing line, with the failing line highlighted. Powered by `pre_context`/`post_context` fields captured by the client SDK.
+
+### Changed
+
+- **Data model**: Events are stored in a single `captured_events` table with `event_type`, `summary`, and `data` (JSON) columns, replacing the previous multi-column `captured_requests` table.
+- **Dashboard**: The event list now shows HTTP requests, logs, and exceptions in a unified timeline with distinct visual styles — method badges for HTTP, level badges for logs, and traceback previews for exceptions. A new "All types" dropdown filters by event type.
+- **Legacy endpoints preserved**: `/api/requests` and `/api/requests/{id}` still work, automatically filtering to HTTP events only.
+
 ## [0.5.0] - 2026-04-07
 
 ### Added

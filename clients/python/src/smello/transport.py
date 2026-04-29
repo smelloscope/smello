@@ -27,7 +27,16 @@ def start_worker(server_url: str) -> None:
 
 
 def send(payload: dict) -> None:
-    """Queue a capture payload for sending. Non-blocking, drops if queue is full."""
+    """Queue an HTTP capture payload for sending (legacy helper)."""
+    try:
+        _queue.put_nowait(payload)
+    except queue.Full:
+        logger.warning("Payload dropped: capture queue is full")
+
+
+def send_event(event_type: str, data: dict) -> None:
+    """Queue a typed event for sending."""
+    payload = {"event_type": event_type, "data": data}
     try:
         _queue.put_nowait(payload)
     except queue.Full:

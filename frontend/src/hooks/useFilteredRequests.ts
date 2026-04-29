@@ -1,20 +1,25 @@
 import { useAtomValue } from "jotai";
-import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
-import { useListRequestsApiRequestsGet } from "../api/generated/default/default";
+import {
+  hostFilterAtom,
+  methodFilterAtom,
+  searchFilterAtom,
+  eventTypeFilterAtom,
+} from "../atoms/filters";
+import { useListEvents } from "../api/events";
 
 export function useFilteredRequests() {
   const host = useAtomValue(hostFilterAtom);
   const method = useAtomValue(methodFilterAtom);
   const search = useAtomValue(searchFilterAtom);
+  const eventType = useAtomValue(eventTypeFilterAtom);
 
-  return useListRequestsApiRequestsGet(
+  return useListEvents(
     {
+      ...(eventType ? { event_type: eventType } : {}),
       ...(host ? { host } : {}),
       ...(method ? { method } : {}),
       ...(search ? { search } : {}),
     },
-    {
-      query: { refetchInterval: 3_000 },
-    },
+    { refetchInterval: 3_000 },
   );
 }

@@ -1,10 +1,10 @@
-"""Smello - Capture outgoing HTTP requests automatically."""
+"""Smello - Capture outgoing HTTP requests, logs, and exceptions automatically."""
 
 import atexit
 import logging
 from urllib.parse import urlparse
 
-from smello._env import _env_bool, _env_list, _env_str
+from smello._env import _env_bool, _env_int, _env_list, _env_str
 from smello.config import SmelloConfig
 from smello.patches import apply_all as _apply_all
 from smello.transport import flush, shutdown
@@ -30,8 +30,11 @@ def init(
     ignore_hosts: list[str] | None = None,
     redact_headers: list[str] | None = None,
     redact_query_params: list[str] | None = None,
+    capture_exceptions: bool | None = None,
+    capture_logs: bool | None = None,
+    log_level: int | None = None,
 ) -> None:
-    """Initialize Smello. Patches requests and httpx to capture outgoing HTTP traffic.
+    """Initialize Smello. Patches HTTP libraries, logging, and exception hooks.
 
     Smello only activates when a server URL is provided — either via the
     ``server_url`` parameter or the ``SMELLO_URL`` environment variable.
@@ -51,6 +54,9 @@ def init(
     ignore_hosts          ``SMELLO_IGNORE_HOSTS``         ``[]``
     redact_headers        ``SMELLO_REDACT_HEADERS``       ``["authorization", "x-api-key"]``
     redact_query_params   ``SMELLO_REDACT_QUERY_PARAMS``  ``[]``
+    capture_exceptions    ``SMELLO_CAPTURE_EXCEPTIONS``   ``True``
+    capture_logs          ``SMELLO_CAPTURE_LOGS``         ``False``
+    log_level             ``SMELLO_LOG_LEVEL``            ``30`` (WARNING)
     ====================  ==============================  ==========================
 
     Boolean env vars accept ``true``/``1``/``yes`` and ``false``/``0``/``no``
@@ -93,6 +99,18 @@ def init(
     if redact_query_params is None:
         redact_query_params = _env_list("REDACT_QUERY_PARAMS") or []
 
+    if capture_exceptions is None:
+        env_val = _env_bool("CAPTURE_EXCEPTIONS")
+        capture_exceptions = env_val if env_val is not None else True
+
+    if capture_logs is None:
+        env_val = _env_bool("CAPTURE_LOGS")
+        capture_logs = env_val if env_val is not None else False
+
+    if log_level is None:
+        env_val = _env_int("LOG_LEVEL")
+        log_level = env_val if env_val is not None else logging.WARNING
+
     resolved_url = server_url.rstrip("/")
     normalized_redact_headers = [h.lower() for h in redact_headers]
     normalized_redact_query_params = [p.lower() for p in redact_query_params]
@@ -105,6 +123,9 @@ def init(
             ignore_hosts=ignore_hosts,
             redact_headers=normalized_redact_headers,
             redact_query_params=normalized_redact_query_params,
+            capture_exceptions=capture_exceptions,
+            capture_logs=capture_logs,
+            log_level=log_level,
         )
     else:
         # Mutate in place so closures captured by the existing patches see
@@ -115,6 +136,9 @@ def init(
         _config.ignore_hosts = ignore_hosts
         _config.redact_headers = normalized_redact_headers
         _config.redact_query_params = normalized_redact_query_params
+        _config.capture_exceptions = capture_exceptions
+        _config.capture_logs = capture_logs
+        _config.log_level = log_level
 
     # Always ignore the smello server itself
     server_host = urlparse(_config.server_url).hostname

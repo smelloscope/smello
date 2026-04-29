@@ -46,13 +46,13 @@ just frontend-bundle            # build frontend + copy into server package for 
 
 This is a **uv workspace monorepo** with two packages plus a React frontend:
 
-- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, `aiohttp.ClientSession._request`, `grpc.insecure_channel`/`grpc.secure_channel`, and `botocore.httpsession.URLLib3Session.send` to intercept outgoing traffic. Serializes request/response pairs and sends them to the server via a background thread using `urllib` (to avoid triggering its own patches).
+- **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, `aiohttp.ClientSession._request`, `grpc.insecure_channel`/`grpc.secure_channel`, and `botocore.httpsession.URLLib3Session.send` to intercept outgoing traffic. Also hooks `sys.excepthook`/`threading.excepthook` for exception capture and `logging.Logger.callHandlers` for log capture. Sends all events to the server via a background thread using `urllib` (to avoid triggering its own patches).
 
-- **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured data at `POST /api/capture`, stores it, and serves a JSON API (`/api/*`). When `SMELLO_FRONTEND_DIR` points to a directory with built React assets, also serves the web dashboard.
+- **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured events at `POST /api/capture` (supports event types: `http`, `log`, `exception`), stores them in a unified `CapturedEvent` model, and serves a JSON API (`/api/*`). When `SMELLO_FRONTEND_DIR` points to a directory with built React assets, also serves the web dashboard.
 
-- **`frontend/`** — React SPA built with Vite, MUI, TanStack Query, and jotai. API types and hooks are generated from the FastAPI OpenAPI spec using Orval. In development, Vite on port 5111 proxies `/api/*` to FastAPI on port 5110. In Docker, the frontend is pre-built and served by FastAPI directly.
+- **`frontend/`** — React SPA built with Vite, MUI, TanStack Query, and jotai. Manual API hooks in `api/events.ts` (Orval-generated hooks in `api/generated/` are legacy). In development, Vite on port 5111 proxies `/api/*` to FastAPI on port 5110. In Docker, the frontend is pre-built and served by FastAPI directly.
 
-**Data flow:** Patched library (requests/httpx/grpc) → `smello.capture.serialize_request_response` → background queue (`smello.transport`) → `POST /api/capture` → Tortoise ORM → SQLite → JSON API → React SPA.
+**Data flow:** Patched library / excepthook / logging → `smello.transport.send()` or `send_event()` → background queue → `POST /api/capture` → `CapturedEvent` (Tortoise ORM) → SQLite → JSON API (`/api/events`) → React SPA.
 
 ## Key Patterns
 

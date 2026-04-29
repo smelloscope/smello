@@ -1,6 +1,6 @@
 ---
-name: setup-smello
-description: Explore a Python codebase and propose a plan to integrate Smello traffic capture (HTTP and gRPC). Use when the user wants to add Smello to their project, set up request monitoring, or capture outgoing API calls for debugging.
+name: smello-setup
+description: Explore a Python codebase and propose a plan to integrate Smello — capture HTTP requests, logs, and exceptions in a local web dashboard. Use when the user wants to add Smello to their project, set up request monitoring, debug logging, or capture outgoing API calls and crashes for debugging.
 argument-hint: "[server_url]"
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(pip *), Bash(uv *), Bash(cat *), Bash(ls *), Bash(python *), Bash(docker *)
@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash(pip *), Bash(uv *), Bash(cat *), Bash(ls *
 
 # Setup Smello
 
-You are helping the user integrate [Smello](https://github.com/smelloscope/smello) into their Python project. Smello captures outgoing HTTP requests (via `requests` and `httpx`) and gRPC calls (via `grpc`) and displays them in a local web dashboard at http://localhost:5110. Google Cloud libraries (BigQuery, Firestore, Pub/Sub, Analytics Data API, Vertex AI, etc.) use gRPC under the hood and are captured automatically.
+You are helping the user integrate [Smello](https://github.com/smelloscope/smello) into their Python project. Smello captures outgoing HTTP requests (via `requests`, `httpx`, `aiohttp`, and `botocore`), gRPC calls (via `grpc`), unhandled exceptions (via `sys.excepthook`), and Python log records (via `logging`). Everything is displayed in a unified timeline in a local web dashboard at http://localhost:5110. Google Cloud libraries (BigQuery, Firestore, Pub/Sub, Analytics Data API, Vertex AI, etc.) use gRPC under the hood and are captured automatically.
 
 **Your job is to explore the codebase, then present a plan. Do NOT make any changes until the user approves.**
 
@@ -17,13 +17,14 @@ You are helping the user integrate [Smello](https://github.com/smelloscope/smell
 Investigate the project to understand:
 
 1. **Package manager**: Is the project using `pip` + `requirements.txt`, `pip` + `pyproject.toml`, `uv`, `poetry`, `pipenv`, or something else?
-2. **HTTP/gRPC libraries**: Does the project use `requests`, `httpx`, `grpc`, or Google Cloud client libraries? Search for `import requests`, `import httpx`, `from requests`, `from httpx`, `import grpc`, `from google.cloud`, `from google.analytics`.
-3. **Application entrypoint**: Find where the app starts. Look for:
+2. **HTTP/gRPC libraries**: Does the project use `requests`, `httpx`, `aiohttp`, `grpc`, `botocore`, or Google Cloud client libraries? Search for `import requests`, `import httpx`, `from requests`, `from httpx`, `import grpc`, `from google.cloud`, `from google.analytics`, `import boto3`, `import botocore`.
+3. **Logging usage**: Does the project use Python's `logging` module? Search for `import logging`, `logging.getLogger`, `logger.warning`, `logger.error`. This determines whether to suggest `capture_logs=True`.
+4. **Application entrypoint**: Find where the app starts. Look for:
    - `if __name__ == "__main__":` blocks
    - Framework-specific entrypoints: Django (`manage.py`, `wsgi.py`, `asgi.py`), Flask (`app = Flask(...)`, `create_app()`), FastAPI (`app = FastAPI()`), etc.
    - CLI entrypoints in `pyproject.toml` (`[project.scripts]`)
-4. **Docker setup**: Check for `docker-compose.yml`, `docker-compose.dev.yml`, `compose.yml`, `compose.dev.yml`, `Dockerfile`, or similar files. Identify development-specific compose files vs production ones.
-5. **Environment-based config**: Check if the project uses environment variables, `.env` files, or settings modules to toggle dev-only features (this informs where to gate `smello.init()`).
+5. **Docker setup**: Check for `docker-compose.yml`, `docker-compose.dev.yml`, `compose.yml`, `compose.dev.yml`, `Dockerfile`, or similar files. Identify development-specific compose files vs production ones.
+6. **Environment-based config**: Check if the project uses environment variables, `.env` files, or settings modules to toggle dev-only features (this informs where to gate `smello.init()`).
 
 ## Step 2: Present the plan
 
@@ -75,6 +76,22 @@ SMELLO_URL=http://localhost:5110
 
 This way the code has zero conditional logic — without `SMELLO_URL`, `init()` is a safe no-op (no patching, no threads, no side effects).
 
+If the project uses logging extensively, suggest enabling log capture:
+
+```python
+import smello
+smello.init(capture_logs=True, log_level=20)  # capture INFO and above
+```
+
+Or via environment variables:
+
+```bash
+SMELLO_CAPTURE_LOGS=true
+SMELLO_LOG_LEVEL=20
+```
+
+Exception capture is enabled by default — no configuration needed.
+
 ### C. Configure via environment variables
 
 Smello supports full configuration via `SMELLO_*` environment variables. Suggest adding these to the project's `.env`, `.env.development`, or equivalent:
@@ -84,6 +101,8 @@ SMELLO_URL=http://localhost:5110                  # server URL (activates Smello
 # SMELLO_CAPTURE_HOSTS=api.stripe.com,api.openai.com  # only capture these hosts
 # SMELLO_IGNORE_HOSTS=localhost,internal.svc      # skip these hosts
 # SMELLO_REDACT_HEADERS=Authorization,X-Api-Key   # headers to redact
+# SMELLO_CAPTURE_LOGS=true                         # capture Python log records
+# SMELLO_LOG_LEVEL=20                              # minimum log level (INFO=20, WARNING=30)
 ```
 
 All parameters can also be passed explicitly to `smello.init()`, which takes precedence over env vars:
@@ -91,7 +110,9 @@ All parameters can also be passed explicitly to `smello.init()`, which takes pre
 - If the app talks to specific APIs, suggest `SMELLO_CAPTURE_HOSTS=api.example.com` or `capture_hosts=["api.example.com"]`
 - If there are internal services to skip, suggest `SMELLO_IGNORE_HOSTS=...` or `ignore_hosts=[...]`
 - If a non-default server URL is needed (e.g., Docker networking), suggest `SMELLO_URL=http://smello:5110` or `server_url="http://smello:5110"`
+- If the project uses logging heavily, suggest `SMELLO_CAPTURE_LOGS=true` with an appropriate `SMELLO_LOG_LEVEL`
 - Always mention that `Authorization` and `X-Api-Key` headers are redacted by default
+- Mention that unhandled exception capture is on by default
 
 Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
@@ -132,7 +153,7 @@ If the user chooses to add the server as a dev dependency, use the same package 
 - **poetry**: `poetry add --group dev smello-server`
 - **pipenv**: `pipenv install --dev smello-server`
 
-Then run with `smello-server run`, or as a standalone tool:
+Then run with `smello-server`, or as a standalone tool:
 
 ```bash
 # With uv
@@ -151,7 +172,7 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 - Smello client SDK: `pip install smello` (Python >= 3.10, zero dependencies)
 - Smello server: `pip install smello-server` (Python >= 3.14, includes web dashboard) or Docker `ghcr.io/smelloscope/smello`
 - Dashboard: http://localhost:5110 (served by both pip install and Docker)
-- Supported libraries: `requests` (patches `Session.send()`), `httpx` (patches `Client.send()` and `AsyncClient.send()`), and `grpc` (patches `insecure_channel()` and `secure_channel()`)
+- Captures: HTTP requests (`requests`, `httpx`, `aiohttp`, `grpc`, `botocore`), unhandled exceptions (`sys.excepthook`), and Python log records (`logging`)
 - Default redacted headers: `Authorization`, `X-Api-Key`
 - Default server URL: `http://localhost:5110`
 
@@ -164,5 +185,9 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 | `SMELLO_CAPTURE_HOSTS` | comma-separated list | `[]` |
 | `SMELLO_IGNORE_HOSTS` | comma-separated list | `[]` |
 | `SMELLO_REDACT_HEADERS` | comma-separated list | `Authorization,X-Api-Key` |
+| `SMELLO_REDACT_QUERY_PARAMS` | comma-separated list | `[]` |
+| `SMELLO_CAPTURE_EXCEPTIONS` | bool | `true` |
+| `SMELLO_CAPTURE_LOGS` | bool | `false` |
+| `SMELLO_LOG_LEVEL` | int | `30` (WARNING) |
 
 Precedence: explicit `init()` parameter > env var > hardcoded default.

@@ -1,45 +1,63 @@
 import { render, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import RequestListItem from "./RequestListItem";
+import type { EventSummary } from "../api/events";
 
-const baseItem = {
+const httpItem: EventSummary = {
   id: "abc-123",
-  method: "GET",
-  url: "https://api.example.com/users?page=1",
-  host: "api.example.com",
-  status_code: 200,
   timestamp: "2025-01-15T14:30:45.123Z",
-  duration_ms: 42,
+  event_type: "http",
+  summary: "GET /users?page=1 → 200",
 };
 
-function renderItem(overrides = {}, onClick = () => {}) {
-  const { container } = render(
-    <RequestListItem item={{ ...baseItem, ...overrides }} selected={false} onClick={onClick} />,
-  );
-  // MUI ListItemButton renders as a div with role="button"
+const logItem: EventSummary = {
+  id: "log-123",
+  timestamp: "2025-01-15T14:30:45.123Z",
+  event_type: "log",
+  summary: "WARNING myapp.auth: Token expired for user 42",
+};
+
+const exceptionItem: EventSummary = {
+  id: "exc-123",
+  timestamp: "2025-01-15T14:30:45.123Z",
+  event_type: "exception",
+  summary: "ValueError: invalid literal for int()",
+};
+
+function renderItem(item: EventSummary, onClick = () => {}) {
+  const { container } = render(<RequestListItem item={item} selected={false} onClick={onClick} />);
   return within(container);
 }
 
 describe("RequestListItem", () => {
-  it("renders method, path, host, and duration", () => {
-    const view = renderItem();
+  it("renders HTTP event with method and path", () => {
+    const view = renderItem(httpItem);
     expect(view.getByText("GET")).toBeInTheDocument();
-    // URL is parsed: path shown as hero text, full URL in title attr
     expect(view.getByText("/users?page=1")).toBeInTheDocument();
-    expect(view.getByText("api.example.com")).toBeInTheDocument();
-    expect(view.getByTitle(baseItem.url)).toBeInTheDocument();
-    expect(view.getByText("42ms")).toBeInTheDocument();
+    expect(view.getByText("200")).toBeInTheDocument();
+  });
+
+  it("renders log event with level and message", () => {
+    const view = renderItem(logItem);
+    expect(view.getByText("WARNING")).toBeInTheDocument();
+    expect(view.getByText("Token expired for user 42")).toBeInTheDocument();
+    expect(view.getByText("myapp.auth")).toBeInTheDocument();
+  });
+
+  it("renders exception event with type", () => {
+    const view = renderItem(exceptionItem);
+    expect(view.getByText("ValueError")).toBeInTheDocument();
   });
 
   it("formats timestamp as HH:MM:SS in 24-hour format", () => {
-    const view = renderItem();
+    const view = renderItem(httpItem);
     const timeSpan = view.getByText(/^\d{2}:\d{2}:\d{2}$/);
     expect(timeSpan).toBeInTheDocument();
   });
 
   it("calls onClick when clicked", () => {
     const onClick = vi.fn();
-    const view = renderItem({}, onClick);
+    const view = renderItem(httpItem, onClick);
     view.getByRole("button").click();
     expect(onClick).toHaveBeenCalledOnce();
   });

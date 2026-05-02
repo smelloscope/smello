@@ -26,9 +26,7 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
 | `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]` |
 
-**Precedence**: explicit parameter > environment variable > hardcoded default.
-
-The [`smello run`](getting-started.md#run-without-modifying-code) CLI wrapper exposes a flag for each env var (`--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`). Flags translate directly to the matching `SMELLO_*` env var in the wrapped process.
+**Precedence**: explicit parameter > environment variable > hardcoded default. The same env vars are also surfaced as flags on the [`smello run`](#client-cli-smello-run) wrapper.
 
 ### `server_url`
 
@@ -121,6 +119,41 @@ logging.getLogger("smello").setLevel(logging.DEBUG)
 ```
 
 You can also route Smello logs to a file or integrate them with your application's existing logging configuration — just configure the `"smello"` logger however you like.
+
+## Client CLI: `smello run`
+
+`smello run` wraps any Python program and activates Smello in the wrapped process without modifying its source. It works by prepending a bootstrap directory to `PYTHONPATH` and executing your command, so subprocess instrumentation propagates automatically — wrapping `gunicorn` patches its workers too.
+
+```bash
+# .py files run with the current Python interpreter
+smello run my_app.py
+
+# Console scripts work directly
+smello run uvicorn app:app
+smello run pytest tests/
+smello run gunicorn app:app
+
+# Use `--` to disambiguate when the wrapped command's flags conflict with smello's
+smello run --server http://localhost:5110 -- python -m my_module --debug
+```
+
+Each flag maps 1:1 to a `SMELLO_*` environment variable documented above. The flag wins when both are set:
+
+| Flag                                  | Env variable                  | Default                |
+| ------------------------------------- | ----------------------------- | ---------------------- |
+| `--server URL`                        | `SMELLO_URL`                  | `http://localhost:5110` |
+| `--capture-host HOST` (repeatable)    | `SMELLO_CAPTURE_HOSTS`        | `[]`                   |
+| `--ignore-host HOST` (repeatable)     | `SMELLO_IGNORE_HOSTS`         | `[]`                   |
+| `--capture-all` / `--no-capture-all`  | `SMELLO_CAPTURE_ALL`          | `True`                 |
+| `--redact-header HEADER` (repeatable) | `SMELLO_REDACT_HEADERS`       | `Authorization,X-Api-Key` |
+| `--redact-query-param PARAM` (repeatable) | `SMELLO_REDACT_QUERY_PARAMS` | `[]`                  |
+
+CLI-specific behavior worth knowing:
+
+- **`.py` script detection**: if the wrapped command ends in `.py` or `.pyw`, `smello run` prepends `sys.executable` so the script runs even without an executable bit or shebang. Same UX as `coverage run script.py`.
+- **`--capture-host` implies `--no-capture-all`**: passing `--capture-host` without an explicit `--capture-all` switches the wrapper into "only these hosts" mode. Pass `--capture-all` explicitly if you want both an allowlist and the catch-all.
+- **`smello.init()` is idempotent**: wrapping a program that already calls `smello.init()` is safe — the wrapper's bootstrap init runs first, then the program's `init()` updates the live config in place without re-applying patches (no double-capture).
+- **Subprocess propagation**: the bootstrap dir stays on `PYTHONPATH` for the lifetime of the process tree, so child Pythons spawned by `subprocess.run([sys.executable, ...])`, `gunicorn` workers, `celery` workers, etc., all get instrumented automatically.
 
 ## Server CLI options
 

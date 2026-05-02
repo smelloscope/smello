@@ -19,6 +19,7 @@ __version__ = "0.7.0"
 _DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
 
 _config: SmelloConfig | None = None
+_patched: bool = False
 _atexit_registered: bool = False
 
 
@@ -54,8 +55,14 @@ def init(
 
     Boolean env vars accept ``true``/``1``/``yes`` and ``false``/``0``/``no``
     (case-insensitive).  List env vars are comma-separated.
+
+    Calling ``init()`` more than once is safe. The first call applies the
+    monkey-patches; subsequent calls update the live ``SmelloConfig`` in
+    place so new args (filtering, redaction) take effect immediately,
+    without re-wrapping already patched methods. This makes ``smello run``
+    safe to use on programs that already call ``smello.init()`` themselves.
     """
-    global _config, _atexit_registered
+    global _config, _patched, _atexit_registered
 
     # Resolve: explicit param > env var
     if server_url is None:
@@ -86,25 +93,43 @@ def init(
     if redact_query_params is None:
         redact_query_params = _env_list("REDACT_QUERY_PARAMS") or []
 
-    _config = SmelloConfig(
-        server_url=server_url.rstrip("/"),
-        capture_hosts=capture_hosts,
-        capture_all=capture_all,
-        ignore_hosts=ignore_hosts,
-        redact_headers=[h.lower() for h in redact_headers],
-        redact_query_params=[p.lower() for p in redact_query_params],
-    )
+    resolved_url = server_url.rstrip("/")
+    normalized_redact_headers = [h.lower() for h in redact_headers]
+    normalized_redact_query_params = [p.lower() for p in redact_query_params]
+
+    if _config is None:
+        _config = SmelloConfig(
+            server_url=resolved_url,
+            capture_hosts=capture_hosts,
+            capture_all=capture_all,
+            ignore_hosts=ignore_hosts,
+            redact_headers=normalized_redact_headers,
+            redact_query_params=normalized_redact_query_params,
+        )
+    else:
+        # Mutate in place so closures captured by the existing patches see
+        # the new config values without needing to be re-applied.
+        _config.server_url = resolved_url
+        _config.capture_hosts = capture_hosts
+        _config.capture_all = capture_all
+        _config.ignore_hosts = ignore_hosts
+        _config.redact_headers = normalized_redact_headers
+        _config.redact_query_params = normalized_redact_query_params
 
     # Always ignore the smello server itself
     server_host = urlparse(_config.server_url).hostname
     if server_host and server_host not in _config.ignore_hosts:
         _config.ignore_hosts.append(server_host)
 
-    # Start transport worker
+    # Start transport worker (idempotent — start_worker guards against re-start)
     _start_worker(_config.server_url)
 
-    # Apply patches
-    _apply_all(_config)
+    # Apply patches once. Re-applying nests wrappers, which would double-capture
+    # every request (the second patch's `original_send` is the first patch's
+    # patched_send).
+    if not _patched:
+        _apply_all(_config)
+        _patched = True
 
     # Register atexit hook once so pending captures are flushed on exit
     if not _atexit_registered:

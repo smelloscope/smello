@@ -254,3 +254,58 @@ class TestInitEnvVars:
             assert "test" in smello._config.ignore_hosts  # auto-added
             assert smello._config.redact_headers == ["authorization", "x-api-key"]
             assert smello._config.redact_query_params == []
+
+
+class TestInitIdempotency:
+    """Calling init() twice (e.g., bootstrap + user code) must be safe."""
+
+    def test_second_init_does_not_repatch(self):
+        """The second call must not re-invoke apply_all.
+
+        Re-applying patches nests wrappers: the second patch captures the
+        first patched_send as its original_send, so every request gets
+        double-captured.
+        """
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("smello._start_worker"),
+            patch("smello._apply_all") as mock_apply,
+        ):
+            smello._config = None
+            smello._patched = False
+            smello.init(server_url="http://test:5110")
+            smello.init(server_url="http://other:5110")
+            assert mock_apply.call_count == 1
+
+    def test_second_init_updates_config_in_place(self):
+        """The same SmelloConfig object must survive the second init().
+
+        Patches captured a reference to it via closure; mutating in place
+        means new args (filtering, redaction) take effect immediately
+        without re-patching.
+        """
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
+        ):
+            smello._config = None
+            smello._patched = False
+            smello.init(
+                server_url="http://test:5110",
+                ignore_hosts=["a.com"],
+                capture_all=True,
+            )
+            first_config = smello._config
+
+            smello.init(
+                server_url="http://other:5110",
+                ignore_hosts=["b.com"],
+                capture_all=False,
+            )
+
+            assert smello._config is first_config  # same object, mutated
+            assert smello._config.server_url == "http://other:5110"
+            assert "b.com" in smello._config.ignore_hosts
+            assert "a.com" not in smello._config.ignore_hosts
+            assert smello._config.capture_all is False

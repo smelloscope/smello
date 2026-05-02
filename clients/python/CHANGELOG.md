@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-02
+
 ### Changed
 
 - `smello.init()` is now idempotent. The first call applies the monkey-patches; subsequent calls update the live `SmelloConfig` in place so new args (filtering, redaction, server URL) take effect immediately without re-wrapping already patched methods. Previously, calling `init()` twice nested the patches, which would double-capture every request. This makes `smello run` safe to use on programs that also call `smello.init()` themselves.

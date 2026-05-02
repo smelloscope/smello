@@ -461,6 +461,10 @@
         <p>Authorization and cookie headers are redacted by default. You can configure additional headers to redact or filter specific hosts via the <code>ignore_hosts</code> option.</p>
       </details>
       <details>
+        <summary>Can I use Smello without modifying my code?</summary>
+        <p>Yes. Use <code>smello run my_app.py</code> to wrap any Python script, or <code>smello run uvicorn app:app</code> for console scripts. Smello activates in the wrapped process before user code runs, so you don't need to add <code>smello.init()</code> anywhere. Instrumentation propagates to subprocesses, so wrapping <code>gunicorn</code> also captures traffic from worker processes.</p>
+      </details>
+      <details>
         <summary>Does it work with async code?</summary>
         <p>Yes. Smello patches <code>httpx.AsyncClient</code>, <code>aiohttp.ClientSession</code>, and async gRPC channels, alongside their synchronous counterparts.</p>
       </details>

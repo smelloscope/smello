@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **`smello run` CLI**: Wrap any Python program to capture its HTTP traffic without modifying the source. `smello run my_app.py` runs `.py` files with the current Python (no chmod or shebang needed); `smello run uvicorn app:app` works with console scripts. Use `--` to disambiguate when wrapped command flags would conflict with smello's. Subprocess instrumentation propagates automatically through PYTHONPATH inheritance, so wrapping `gunicorn` patches its workers too. CLI flags map 1:1 to the existing `SMELLO_*` env vars (`--server`, `--capture-host`, `--ignore-host`, `--capture-all`/`--no-capture-all`, `--redact-header`, `--redact-query-param`). Passing `--capture-host` without an explicit `--capture-all` switches the wrapper into "only these hosts" mode, matching the flag's "Capture only this host" help text. See `examples/python/wrapper_demo.py` for a runnable example.
+
 ## [0.7.0] - 2026-04-07
 
 ### Added

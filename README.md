@@ -52,6 +52,18 @@ rows = client.query("SELECT 1").result()
 
 Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
 
+### Run without modifying code
+
+For programs you don't want to (or can't) edit, wrap them with `smello run`:
+
+```bash
+smello run my_app.py                                    # .py files run with current Python
+smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run uvicorn app:app
+```
+
+Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically, so wrapping `gunicorn` also captures traffic from worker processes.
+
 ## AI Agent Skills
 
 Smello ships with [Agent Skills](https://agentskills.io) for Claude Code, Cursor, GitHub Copilot, and [20+ other AI coding tools](https://skills.sh/).

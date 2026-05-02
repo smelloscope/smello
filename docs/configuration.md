@@ -28,6 +28,8 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 
 **Precedence**: explicit parameter > environment variable > hardcoded default.
 
+The [`smello run`](getting-started.md#run-without-modifying-code) CLI wrapper exposes a flag for each env var (`--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`). Flags translate directly to the matching `SMELLO_*` env var in the wrapped process.
+
 ### `server_url`
 
 URL of the Smello server and the activation signal — without a URL, `init()` does nothing. No patching, no background threads, no side effects.

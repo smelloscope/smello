@@ -34,6 +34,12 @@ smello.init(server_url="http://localhost:5110")
 # All outgoing requests are now captured (HTTP and gRPC)
 ```
 
+Or run any program without code changes:
+
+```bash
+smello run --server http://localhost:5110 my_app.py
+```
+
 ## API
 
 Smello Server provides a JSON API for exploring captured requests from the command line.

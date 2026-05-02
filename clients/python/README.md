@@ -38,6 +38,20 @@ Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to 
 
 Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment — no URL, no side effects.
 
+### Run without modifying code
+
+For programs you don't want to (or can't) edit, wrap them with `smello run`:
+
+```bash
+smello run my_app.py                                    # .py files run with current Python
+smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run uvicorn app:app
+```
+
+Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically through `PYTHONPATH`, so wrapping `gunicorn` also captures traffic from worker processes.
+
+CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`.
+
 ### Google Cloud libraries
 
 Many Google Cloud Python libraries — BigQuery, Firestore, Pub/Sub, Analytics Data API (GA4), Vertex AI, Speech-to-Text, Vision, Translation, and others — use gRPC under the hood. Smello captures these calls automatically:

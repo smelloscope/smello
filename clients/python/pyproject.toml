@@ -21,6 +21,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+smello = "smello.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/smelloscope/smello"
 Repository = "https://github.com/smelloscope/smello"

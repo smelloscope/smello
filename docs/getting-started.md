@@ -63,6 +63,37 @@ export SMELLO_URL=http://localhost:5110
 
 Like Sentry's `SENTRY_DSN`, this keeps instrumentation in place with zero production overhead.
 
+### Run without modifying code
+
+If you don't want to (or can't) edit the program you're debugging, use `smello run` to wrap any command:
+
+```bash
+smello run my_app.py                                    # .py files run with current Python
+smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run uvicorn app:app
+```
+
+Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically, so `smello run gunicorn app:app` also captures traffic from worker processes.
+
+Use `--` to disambiguate when smello flags would otherwise be confused with the wrapped command's own flags:
+
+```bash
+smello run --server http://localhost:5110 -- python -m my_module --debug
+```
+
+CLI flags map 1:1 to the [environment variables](configuration.md):
+
+| Flag                    | Env var                       |
+| ----------------------- | ----------------------------- |
+| `--server`              | `SMELLO_URL`                  |
+| `--capture-host`        | `SMELLO_CAPTURE_HOSTS`        |
+| `--ignore-host`         | `SMELLO_IGNORE_HOSTS`         |
+| `--capture-all` / `--no-capture-all` | `SMELLO_CAPTURE_ALL` |
+| `--redact-header`       | `SMELLO_REDACT_HEADERS`       |
+| `--redact-query-param`  | `SMELLO_REDACT_QUERY_PARAMS`  |
+
+The `--` separator is optional but recommended when passing flags to the wrapped command.
+
 ### Google Cloud libraries
 
 Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically — no extra setup needed:

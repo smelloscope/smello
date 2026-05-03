@@ -6,7 +6,15 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
-from smello.transport import _json_default, flush, send, shutdown, start_worker
+from smello.transport import (
+    _json_default,
+    flush,
+    send_exception,
+    send_http,
+    send_log,
+    shutdown,
+    start_worker,
+)
 
 
 class _CaptureHandler(BaseHTTPRequestHandler):
@@ -15,7 +23,7 @@ class _CaptureHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         body = json.loads(self.rfile.read(length))
-        _CaptureHandler.captured.append(body)
+        _CaptureHandler.captured.append({"path": self.path, "body": body})
         self.send_response(201)
         self.end_headers()
         self.wfile.write(b'{"status":"ok"}')
@@ -36,23 +44,50 @@ def capture_server():
     server.shutdown()
 
 
-def test_send_delivers_payload(capture_server):
+def _wait(captured, n, timeout=5.0):
+    deadline = time.monotonic() + timeout
+    while len(captured) < n and time.monotonic() < deadline:
+        time.sleep(0.05)
+
+
+def test_send_http_posts_to_capture_http(capture_server):
     url, captured = capture_server
     start_worker(url)
 
-    payload = {
-        "id": "test-transport-1",
-        "request": {"method": "GET", "url": "https://example.com"},
-        "response": {"status_code": 200},
-    }
-    send(payload)
+    send_http(
+        {
+            "id": "test-transport-1",
+            "request": {"method": "GET", "url": "https://example.com"},
+            "response": {"status_code": 200},
+        }
+    )
 
-    deadline = time.monotonic() + 5
-    while not captured and time.monotonic() < deadline:
-        time.sleep(0.05)
-
+    _wait(captured, 1)
     assert len(captured) == 1
-    assert captured[0]["id"] == "test-transport-1"
+    assert captured[0]["path"] == "/api/capture/http"
+    assert captured[0]["body"]["id"] == "test-transport-1"
+
+
+def test_send_log_posts_to_capture_log(capture_server):
+    url, captured = capture_server
+    start_worker(url)
+
+    send_log({"level": "WARNING", "logger_name": "x", "message": "hi"})
+
+    _wait(captured, 1)
+    assert captured[0]["path"] == "/api/capture/log"
+    assert captured[0]["body"]["data"]["message"] == "hi"
+
+
+def test_send_exception_posts_to_capture_exception(capture_server):
+    url, captured = capture_server
+    start_worker(url)
+
+    send_exception({"exc_type": "ValueError", "exc_value": "bad"})
+
+    _wait(captured, 1)
+    assert captured[0]["path"] == "/api/capture/exception"
+    assert captured[0]["body"]["data"]["exc_type"] == "ValueError"
 
 
 def test_flush_waits_for_pending_payloads(capture_server):
@@ -60,7 +95,7 @@ def test_flush_waits_for_pending_payloads(capture_server):
     start_worker(url)
 
     for i in range(5):
-        send({"id": f"flush-{i}", "request": {}, "response": {}})
+        send_http({"id": f"flush-{i}", "request": {}, "response": {}})
 
     result = flush(timeout=5.0)
 
@@ -80,7 +115,7 @@ def test_shutdown_flushes(capture_server):
     url, captured = capture_server
     start_worker(url)
 
-    send({"id": "shutdown-1", "request": {}, "response": {}})
+    send_http({"id": "shutdown-1", "request": {}, "response": {}})
 
     result = shutdown(timeout=5.0)
 
@@ -120,16 +155,13 @@ def test_json_dumps_with_default_serializes_bytes():
     assert isinstance(result["headers"]["x-bin"], str)
 
 
-def test_send_delivers_payload_with_bytes(capture_server):
+def test_send_http_payload_with_bytes(capture_server):
     """Payloads containing bytes should not crash the transport."""
     url, captured = capture_server
     start_worker(url)
 
-    send({"id": "bytes-test", "headers": {"bin": b"\xff"}, "response": {}})
+    send_http({"id": "bytes-test", "headers": {"bin": b"\xff"}, "response": {}})
 
-    deadline = time.monotonic() + 5
-    while not captured and time.monotonic() < deadline:
-        time.sleep(0.05)
-
+    _wait(captured, 1)
     assert len(captured) == 1
-    assert captured[0]["id"] == "bytes-test"
+    assert captured[0]["body"]["id"] == "bytes-test"

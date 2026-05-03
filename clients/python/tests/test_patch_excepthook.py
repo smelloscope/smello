@@ -26,11 +26,11 @@ def mock_transport(monkeypatch):
 
     class _Recorder:
         def __init__(self):
-            self.send_event_calls = []
+            self.send_exception_calls = []
             self.flush_calls = 0
 
-        def send_event(self, event_type, data):
-            self.send_event_calls.append((event_type, data))
+        def send_exception(self, data):
+            self.send_exception_calls.append(data)
 
         def flush(self, timeout=None):
             self.flush_calls += 1
@@ -119,9 +119,8 @@ def test_sends_exception_event(mock_transport):
 
     # Assert
     try:
-        assert len(mock_transport.send_event_calls) == 1
-        event_type, data = mock_transport.send_event_calls[0]
-        assert event_type == "exception"
+        assert len(mock_transport.send_exception_calls) == 1
+        data = mock_transport.send_exception_calls[0]
         assert data["exc_type"] == "ValueError"
         assert "test capture" in data["exc_value"]
         assert "Traceback" in data["traceback_text"]
@@ -141,7 +140,7 @@ def test_capture_exception_serializes_frames(mock_transport):
         patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
-    _, data = mock_transport.send_event_calls[0]
+    data = mock_transport.send_exception_calls[0]
     assert data["exc_type"] == "RuntimeError"
     assert data["exc_value"] == "frame test"
     assert data["exc_module"] == "builtins"
@@ -156,7 +155,7 @@ def test_capture_exception_skips_none(mock_transport):
     patch_excepthook._capture_exception(None, None, None)
 
     # Assert
-    assert mock_transport.send_event_calls == []
+    assert mock_transport.send_exception_calls == []
 
 
 def test_capture_exception_includes_pre_post_context(mock_transport):
@@ -168,7 +167,7 @@ def test_capture_exception_includes_pre_post_context(mock_transport):
         patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
-    _, data = mock_transport.send_event_calls[0]
+    data = mock_transport.send_exception_calls[0]
     last_frame = data["frames"][-1]
     assert last_frame["function"] == "test_capture_exception_includes_pre_post_context"
     assert last_frame["pre_context"], "expected pre_context to be populated"

@@ -95,4 +95,4 @@ def _capture_log_record(record: logging.LogRecord) -> None:
         ).isoformat(),
     }
 
-    transport.send_event("log", data)
+    transport.send_log(data)

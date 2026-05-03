@@ -13,7 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **Log capture**: Hook `logging.Logger.callHandlers` to capture Python log records at or above a configurable level. Opt-in via `capture_logs=True` and `log_level` (default: WARNING). Smello's own loggers and `urllib3` are automatically excluded to prevent recursion.
 - **New `init()` parameters**: `capture_exceptions` (bool, default `True`), `capture_logs` (bool, default `False`), `log_level` (int, default `30`/WARNING).
 - **New environment variables**: `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`.
-- **`transport.send_event()`**: New transport function for sending typed events (log, exception) alongside existing HTTP capture payloads.
+
+### Changed
+
+- **Typed transport endpoints**: Patches now post to typed server endpoints — HTTP captures go to `/api/capture/http`, logs to `/api/capture/log`, and exceptions to `/api/capture/exception`. Previous releases posted HTTP captures to `/api/capture`. Requires `smello-server` with the typed-endpoint release.
+- **Internal transport API**: `transport.send()` is replaced with `transport.send_http()`, `transport.send_log()`, and `transport.send_exception()`. Anyone wrapping the transport directly (rather than going through `smello.init()`) needs to update their imports.
 
 ## [0.8.0] - 2026-05-02
 

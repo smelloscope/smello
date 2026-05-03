@@ -22,7 +22,7 @@ from types import SimpleNamespace
 
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
-from smello.transport import send
+from smello.transport import send_http
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class AiohttpTracer:
                 duration_s=0,
                 library="aiohttp",
             )
-            send(payload)
+            send_http(payload)
         except Exception as err:
             logger.debug("Failed to capture redirect hop: %s", err)
         # Reset for the next hop — body is not resent after redirect.
@@ -131,7 +131,7 @@ class AiohttpTracer:
                     duration_s=duration,
                     library="aiohttp",
                 )
-                send(payload)
+                send_http(payload)
             except Exception as err:
                 logger.debug("Failed to capture request: %s", err)
 
@@ -181,7 +181,7 @@ class AiohttpTracer:
                 duration_s=duration,
                 library="aiohttp",
             )
-            send(payload)
+            send_http(payload)
         except Exception as err:
             logger.debug("Failed to capture error response: %s", err)
 

@@ -34,10 +34,10 @@ def mock_transport(monkeypatch):
 
     class _Recorder:
         def __init__(self):
-            self.send_event_calls = []
+            self.send_log_calls = []
 
-        def send_event(self, event_type, data):
-            self.send_event_calls.append((event_type, data))
+        def send_log(self, data):
+            self.send_log_calls.append(data)
 
     recorder = _Recorder()
     monkeypatch.setattr(module, "transport", recorder)
@@ -68,9 +68,8 @@ def test_captures_log_record(mock_transport):
     test_logger.warning("something went wrong: %s", "details")
 
     # Assert
-    assert len(mock_transport.send_event_calls) >= 1
-    event_type, data = mock_transport.send_event_calls[-1]
-    assert event_type == "log"
+    assert len(mock_transport.send_log_calls) >= 1
+    data = mock_transport.send_log_calls[-1]
     assert data["level"] == "WARNING"
     assert data["logger_name"] == "test.capture"
     assert "something went wrong: details" in data["message"]
@@ -88,7 +87,7 @@ def test_ignores_smello_loggers(mock_transport):
     smello_logger.warning("internal noise")
 
     # Assert
-    assert mock_transport.send_event_calls == []
+    assert mock_transport.send_log_calls == []
 
 
 def test_ignores_urllib3_loggers(mock_transport):
@@ -102,7 +101,7 @@ def test_ignores_urllib3_loggers(mock_transport):
     urllib_logger.warning("connection pool noise")
 
     # Assert
-    assert mock_transport.send_event_calls == []
+    assert mock_transport.send_log_calls == []
 
 
 def test_respects_log_level(mock_transport):
@@ -116,7 +115,7 @@ def test_respects_log_level(mock_transport):
     test_logger.warning("below threshold")
 
     # Assert
-    assert mock_transport.send_event_calls == []
+    assert mock_transport.send_log_calls == []
 
 
 def test_log_still_works(mock_transport):
@@ -148,5 +147,5 @@ def test_captures_extra_attributes(mock_transport):
     test_logger.warning("with extra", extra={"user_id": 42})
 
     # Assert
-    _, data = mock_transport.send_event_calls[-1]
+    data = mock_transport.send_log_calls[-1]
     assert data["extra"]["user_id"] == 42

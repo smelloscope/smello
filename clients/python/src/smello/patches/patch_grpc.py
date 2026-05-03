@@ -5,7 +5,7 @@ import time
 
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
-from smello.transport import send
+from smello.transport import send_http
 
 logger = logging.getLogger(__name__)
 
@@ -240,4 +240,4 @@ def _send_capture(
         duration_s=duration_s,
         library="grpc",
     )
-    send(payload)
+    send_http(payload)

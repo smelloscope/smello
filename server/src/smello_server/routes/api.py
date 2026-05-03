@@ -1,67 +1,63 @@
-"""API routes: ingestion endpoint and JSON API."""
+"""API routes: typed capture endpoints + JSON read API.
 
-import uuid
+Routes are thin wrappers over `smello_server.services.{capture,events}`.
+Per the project convention, route handlers carry the `_api` suffix so they
+don't collide with service function names.
+"""
+
 from datetime import datetime
 from typing import Any
-from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
-from tortoise import connections
 
-from smello_server.models import CapturedEvent
+from smello_server.services.capture import (
+    create_exception_event,
+    create_http_event,
+    create_log_event,
+)
+from smello_server.services.events import (
+    clear_events,
+    get_event,
+    get_meta,
+    list_events,
+)
+from smello_server.types import (
+    ExceptionData,
+    HttpMeta,
+    HttpRequestData,
+    HttpResponseData,
+    LogData,
+)
 
 router = APIRouter(prefix="/api")
 
 
-# --- Input models ---
+# --- Capture payloads (per event type) ---
 
 
-class RequestData(BaseModel):
-    method: str
-    url: str
-    headers: dict[str, str]
-    body: str | None = None
-    body_size: int = 0
-
-
-class ResponseData(BaseModel):
-    status_code: int
-    headers: dict[str, str]
-    body: str | None = None
-    body_size: int = 0
-
-
-class MetaData(BaseModel):
-    library: str = "unknown"
-    python_version: str = ""
-    smello_version: str = ""
-
-
-class CapturePayload(BaseModel):
-    """Flexible capture payload that supports all event types.
-
-    For HTTP events (event_type omitted or "http"), the legacy fields
-    (request, response, meta, duration_ms) are used.
-
-    For log/exception events, event_type + data are used.
-    """
-
-    event_type: str | None = None
+class HttpCapturePayload(BaseModel):
     id: str | None = None
     timestamp: str | None = None
-
-    # HTTP-specific (legacy format)
     duration_ms: int = 0
-    request: RequestData | None = None
-    response: ResponseData | None = None
-    meta: MetaData | None = None
-
-    # Generic event data (for log/exception)
-    data: dict[str, Any] | None = None
+    request: HttpRequestData
+    response: HttpResponseData
+    meta: HttpMeta = HttpMeta()
 
 
-# --- Output models ---
+class LogCapturePayload(BaseModel):
+    id: str | None = None
+    timestamp: str | None = None
+    data: LogData
+
+
+class ExceptionCapturePayload(BaseModel):
+    id: str | None = None
+    timestamp: str | None = None
+    data: ExceptionData
+
+
+# --- Response models ---
 
 
 class CaptureResponse(BaseModel):
@@ -85,98 +81,59 @@ class MetaResponse(BaseModel):
     event_types: list[str]
 
 
-# --- Helpers ---
+OK = CaptureResponse(status="ok")
 
 
-def _build_http_summary(method: str, url: str, status_code: int) -> str:
-    """Build a one-line summary for an HTTP event."""
-    parsed = urlparse(url)
-    path = parsed.path or "/"
-    return f"{method.upper()} {path} → {status_code}"
+# --- Capture routes ---
 
 
-def _build_log_summary(data: dict) -> str:
-    """Build a one-line summary for a log event."""
-    level = data.get("level", "INFO")
-    logger_name = data.get("logger_name", "root")
-    message = data.get("message", "")
-    if len(message) > 200:
-        message = message[:200] + "…"
-    return f"{level} {logger_name}: {message}"
-
-
-def _build_exception_summary(data: dict) -> str:
-    """Build a one-line summary for an exception event."""
-    exc_type = data.get("exc_type", "Exception")
-    exc_value = data.get("exc_value", "")
-    if len(exc_value) > 200:
-        exc_value = exc_value[:200] + "…"
-    return f"{exc_type}: {exc_value}"
-
-
-# --- Routes ---
-
-
-@router.post("/capture", status_code=201, response_model=CaptureResponse)
-async def capture(payload: CapturePayload) -> CaptureResponse:
-    event_type = payload.event_type or "http"
-    event_id = payload.id or str(uuid.uuid4())
-
-    if event_type == "http":
-        if not payload.request or not payload.response:
-            raise HTTPException(
-                status_code=422,
-                detail="HTTP events require 'request' and 'response' fields",
-            )
-        meta = payload.meta or MetaData()
-        host = urlparse(payload.request.url).hostname or "unknown"
-        summary = _build_http_summary(
-            payload.request.method,
-            payload.request.url,
-            payload.response.status_code,
-        )
-        data = {
-            "duration_ms": payload.duration_ms,
-            "method": payload.request.method.upper(),
-            "url": payload.request.url,
-            "host": host,
-            "request_headers": payload.request.headers,
-            "request_body": payload.request.body,
-            "request_body_size": payload.request.body_size,
-            "status_code": payload.response.status_code,
-            "response_headers": payload.response.headers,
-            "response_body": payload.response.body,
-            "response_body_size": payload.response.body_size,
-            "library": meta.library,
-        }
-    elif event_type == "log":
-        if not payload.data:
-            raise HTTPException(
-                status_code=422, detail="Log events require a 'data' field"
-            )
-        summary = _build_log_summary(payload.data)
-        data = payload.data
-    elif event_type == "exception":
-        if not payload.data:
-            raise HTTPException(
-                status_code=422, detail="Exception events require a 'data' field"
-            )
-        summary = _build_exception_summary(payload.data)
-        data = payload.data
-    else:
-        raise HTTPException(status_code=422, detail=f"Unknown event_type: {event_type}")
-
-    await CapturedEvent.create(
-        id=event_id,
-        event_type=event_type,
-        summary=summary,
-        data=data,
+@router.post("/capture/http", status_code=201, response_model=CaptureResponse)
+async def capture_http_api(payload: HttpCapturePayload) -> CaptureResponse:
+    await create_http_event(
+        event_id=payload.id,
+        duration_ms=payload.duration_ms,
+        request=payload.request,
+        response=payload.response,
+        meta=payload.meta,
     )
-    return CaptureResponse(status="ok")
+    return OK
+
+
+@router.post("/capture/log", status_code=201, response_model=CaptureResponse)
+async def capture_log_api(payload: LogCapturePayload) -> CaptureResponse:
+    await create_log_event(event_id=payload.id, data=payload.data)
+    return OK
+
+
+@router.post("/capture/exception", status_code=201, response_model=CaptureResponse)
+async def capture_exception_api(payload: ExceptionCapturePayload) -> CaptureResponse:
+    await create_exception_event(event_id=payload.id, data=payload.data)
+    return OK
+
+
+@router.post(
+    "/capture",
+    status_code=201,
+    response_model=CaptureResponse,
+    deprecated=True,
+    summary="Deprecated: use /api/capture/http",
+)
+async def capture_legacy_api(payload: HttpCapturePayload) -> CaptureResponse:
+    """Deprecated HTTP capture endpoint.
+
+    Kept for backwards compatibility with old smello client wheels in the wild,
+    which only ever posted HTTP captures here. New clients should use the
+    typed endpoints `/api/capture/http`, `/api/capture/log`,
+    `/api/capture/exception`.
+    """
+    return await capture_http_api(payload)
+
+
+# --- Read routes ---
 
 
 @router.get("/events", response_model=list[EventSummary])
-async def list_events(
+async def list_events_api(
     event_type: str | None = Query(None),
     host: str | None = Query(None),
     method: str | None = Query(None),
@@ -184,106 +141,49 @@ async def list_events(
     search: str | None = Query(None),
     limit: int = Query(50, le=200),
 ) -> list[EventSummary]:
-    if search or host or method or status:
-        where_parts: list[str] = []
-        params: list[str | int] = []
-
-        if event_type:
-            where_parts.append("event_type = ?")
-            params.append(event_type)
-        if host:
-            where_parts.append("json_extract(data, '$.host') = ?")
-            params.append(host)
-        if method:
-            where_parts.append("json_extract(data, '$.method') = ?")
-            params.append(method.upper())
-        if status:
-            where_parts.append("json_extract(data, '$.status_code') = ?")
-            params.append(status)
-
-        if search:
-            like_pattern = f"%{search}%"
-            where_parts.append(
-                "(summary LIKE ? COLLATE NOCASE OR data LIKE ? COLLATE NOCASE)"
-            )
-            params.extend([like_pattern, like_pattern])
-
-        where_clause = " AND ".join(where_parts) if where_parts else "1=1"
-        db = connections.get("default")
-        _, rows = await db.execute_query(
-            f"SELECT id, timestamp, event_type, summary"
-            f" FROM captured_events WHERE {where_clause}"
-            " ORDER BY timestamp DESC LIMIT ?",
-            [*params, limit],
-        )
-        return [
-            EventSummary(
-                id=str(r["id"]),
-                timestamp=datetime.fromisoformat(r["timestamp"]),
-                event_type=r["event_type"],
-                summary=r["summary"],
-            )
-            for r in rows
-        ]
-
-    qs = CapturedEvent.all()
-    if event_type:
-        qs = qs.filter(event_type=event_type)
-    events = await qs.limit(limit)
+    rows = await list_events(
+        event_type=event_type,
+        host=host,
+        method=method,
+        status=status,
+        search=search,
+        limit=limit,
+    )
     return [
         EventSummary(
-            id=str(e.id),
-            timestamp=e.timestamp,
-            event_type=e.event_type,
-            summary=e.summary,
+            id=r["id"],
+            timestamp=(
+                datetime.fromisoformat(r["timestamp"])
+                if isinstance(r["timestamp"], str)
+                else r["timestamp"]
+            ),
+            event_type=r["event_type"],
+            summary=r["summary"],
         )
-        for e in events
+        for r in rows
     ]
 
 
 @router.get("/events/{event_id}", response_model=EventDetail)
-async def get_event(event_id: str) -> EventDetail:
-    try:
-        e = await CapturedEvent.get(id=event_id)
-    except Exception:
+async def get_event_api(event_id: str) -> EventDetail:
+    event = await get_event(event_id)
+    if event is None:
         raise HTTPException(status_code=404, detail="Event not found")
-
     return EventDetail(
-        id=str(e.id),
-        timestamp=e.timestamp,
-        event_type=e.event_type,
-        summary=e.summary,
-        data=e.data,
+        id=str(event.id),
+        timestamp=event.timestamp,
+        event_type=event.event_type,
+        summary=event.summary,
+        data=event.data,
     )
 
 
 @router.get("/meta", response_model=MetaResponse)
-async def get_meta() -> MetaResponse:
-    db = connections.get("default")
-
-    _, host_rows = await db.execute_query(
-        "SELECT DISTINCT json_extract(data, '$.host') as host"
-        " FROM captured_events WHERE event_type = 'http' AND host IS NOT NULL"
-    )
-    hosts = sorted({r["host"] for r in host_rows if r["host"]})
-
-    _, method_rows = await db.execute_query(
-        "SELECT DISTINCT json_extract(data, '$.method') as method"
-        " FROM captured_events WHERE event_type = 'http' AND method IS NOT NULL"
-    )
-    methods = sorted({r["method"] for r in method_rows if r["method"]})
-
-    event_types: list[str] = (
-        await CapturedEvent.all().distinct().values_list("event_type", flat=True)
-    )  # type: ignore[assignment]
-
-    return MetaResponse(
-        hosts=hosts,
-        methods=methods,
-        event_types=sorted(set(event_types)),
-    )
+async def get_meta_api() -> MetaResponse:
+    meta = await get_meta()
+    return MetaResponse(**meta)
 
 
 @router.delete("/events", status_code=204)
-async def clear_events() -> None:
-    await CapturedEvent.all().delete()
+async def clear_events_api() -> None:
+    await clear_events()

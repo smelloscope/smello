@@ -4,7 +4,7 @@ from smello.config import SmelloConfig
 
 # Alias imports to avoid shadowing the submodule names (patch_grpc,
 # patch_httpx, patch_requests).  unittest.mock on Python < 3.12 resolves
-# "smello.patches.patch_grpc.send" via getattr, so the module attribute
+# "smello.patches.patch_grpc.send_http" via getattr, so the module attribute
 # must remain the *module*, not the function.
 from smello.patches.patch_aiohttp import patch_aiohttp as _patch_aiohttp
 from smello.patches.patch_botocore import patch_botocore as _patch_botocore

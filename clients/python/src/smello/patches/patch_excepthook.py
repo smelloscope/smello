@@ -19,33 +19,6 @@ _patched = False
 _CONTEXT_LINES = 5
 
 
-def _get_frame_source(
-    filename: str | None, lineno: int | None, count: int = _CONTEXT_LINES
-) -> tuple[list[str], str | None, list[str]]:
-    """Return (pre_lines, error_line, post_lines) from the source file.
-
-    All lines retain their original indentation so they line up when rendered
-    together. Returns ``([], None, [])`` when the source isn't available — e.g.
-    ``<frozen ...>``, ``<string>``, files inside zipped wheels, or generated
-    code. Trailing newlines are stripped.
-    """
-    if not filename or filename.startswith("<") or lineno is None or lineno < 1:
-        return [], None, []
-    try:
-        all_lines = linecache.getlines(filename)
-    except Exception:
-        return [], None, []
-    if not all_lines:
-        return [], None, []
-    pre_start = max(0, lineno - 1 - count)
-    pre = [line.rstrip("\n") for line in all_lines[pre_start : lineno - 1]]
-    error_line = (
-        all_lines[lineno - 1].rstrip("\n") if 1 <= lineno <= len(all_lines) else None
-    )
-    post = [line.rstrip("\n") for line in all_lines[lineno : lineno + count]]
-    return pre, error_line, post
-
-
 def patch_excepthook(config: SmelloConfig) -> None:
     """Install exception hooks to capture unhandled exceptions."""
     global _patched
@@ -123,4 +96,31 @@ def _capture_exception(exc_type, exc_value, exc_tb):
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-    transport.send_event("exception", data)
+    transport.send_exception(data)
+
+
+def _get_frame_source(
+    filename: str | None, lineno: int | None, count: int = _CONTEXT_LINES
+) -> tuple[list[str], str | None, list[str]]:
+    """Return (pre_lines, error_line, post_lines) from the source file.
+
+    All lines retain their original indentation so they line up when rendered
+    together. Returns ``([], None, [])`` when the source isn't available — e.g.
+    ``<frozen ...>``, ``<string>``, files inside zipped wheels, or generated
+    code. Trailing newlines are stripped.
+    """
+    if not filename or filename.startswith("<") or lineno is None or lineno < 1:
+        return [], None, []
+    try:
+        all_lines = linecache.getlines(filename)
+    except Exception:
+        return [], None, []
+    if not all_lines:
+        return [], None, []
+    pre_start = max(0, lineno - 1 - count)
+    pre = [line.rstrip("\n") for line in all_lines[pre_start : lineno - 1]]
+    error_line = (
+        all_lines[lineno - 1].rstrip("\n") if 1 <= lineno <= len(all_lines) else None
+    )
+    post = [line.rstrip("\n") for line in all_lines[lineno : lineno + count]]
+    return pre, error_line, post

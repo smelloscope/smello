@@ -125,3 +125,74 @@ curl -s http://localhost:5110/api/meta | python -m json.tool
 ```bash
 curl -X DELETE http://localhost:5110/api/events
 ```
+
+## Capture endpoints
+
+The Smello client SDK posts captured events to typed endpoints, one per event type. You can also post directly from a script or tool — useful for capturing events from non-Python services.
+
+### `POST /api/capture/http`
+
+```json
+{
+  "id": "optional-uuid",
+  "duration_ms": 142,
+  "request": {
+    "method": "GET",
+    "url": "https://api.stripe.com/v1/charges",
+    "headers": { "Content-Type": "application/json" },
+    "body": null,
+    "body_size": 0
+  },
+  "response": {
+    "status_code": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": "{\"id\": \"ch_123\"}",
+    "body_size": 16
+  },
+  "meta": { "library": "requests" }
+}
+```
+
+### `POST /api/capture/log`
+
+```json
+{
+  "id": "optional-uuid",
+  "data": {
+    "level": "WARNING",
+    "logger_name": "myapp.auth",
+    "message": "Token expired for user 42",
+    "pathname": "/app/auth.py",
+    "lineno": 87,
+    "func_name": "validate_token"
+  }
+}
+```
+
+### `POST /api/capture/exception`
+
+```json
+{
+  "id": "optional-uuid",
+  "data": {
+    "exc_type": "ValueError",
+    "exc_value": "invalid literal for int()",
+    "exc_module": "builtins",
+    "traceback_text": "Traceback (most recent call last):\n  ...",
+    "frames": [
+      {
+        "filename": "app.py",
+        "lineno": 42,
+        "function": "main",
+        "context_line": "    x = int(user_input)"
+      }
+    ]
+  }
+}
+```
+
+All three endpoints return `201 Created` with `{"status": "ok"}`.
+
+### `POST /api/capture` (deprecated)
+
+The legacy HTTP-only endpoint. Accepts the same body shape as `/api/capture/http`. It is preserved for older client wheels (which only ever posted HTTP captures here) and will be removed in a future release. New integrations should use the typed endpoints above.

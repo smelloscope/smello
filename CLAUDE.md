@@ -48,15 +48,15 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 
 - **`clients/python/` (smello)** — Client SDK with zero dependencies. Monkey-patches `requests.Session.send`, `httpx.Client.send`/`AsyncClient.send`, `aiohttp.ClientSession._request`, `grpc.insecure_channel`/`grpc.secure_channel`, and `botocore.httpsession.URLLib3Session.send` to intercept outgoing traffic. Also hooks `sys.excepthook`/`threading.excepthook` for exception capture and `logging.Logger.callHandlers` for log capture. Sends all events to the server via a background thread using `urllib` (to avoid triggering its own patches).
 
-- **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured events at `POST /api/capture` (supports event types: `http`, `log`, `exception`), stores them in a unified `CapturedEvent` model, and serves a JSON API (`/api/*`). When `SMELLO_FRONTEND_DIR` points to a directory with built React assets, also serves the web dashboard.
+- **`server/` (smello-server)** — FastAPI app with Tortoise ORM + SQLite. Receives captured events at three typed endpoints — `POST /api/capture/http`, `POST /api/capture/log`, `POST /api/capture/exception` — each with a strict Pydantic input schema. Stores them in a unified `CapturedEvent` model and serves a JSON API (`/api/*`). The original HTTP-only `POST /api/capture` is still accepted (marked deprecated in OpenAPI) for older client wheels, which only ever posted HTTP captures there. Routes are thin wrappers over `services/capture.py` (writes) and `services/events.py` (reads). When `SMELLO_FRONTEND_DIR` points to a directory with built React assets, also serves the web dashboard.
 
 - **`frontend/`** — React SPA built with Vite, MUI, TanStack Query, and jotai. Manual API hooks in `api/events.ts` (Orval-generated hooks in `api/generated/` are legacy). In development, Vite on port 5111 proxies `/api/*` to FastAPI on port 5110. In Docker, the frontend is pre-built and served by FastAPI directly.
 
-**Data flow:** Patched library / excepthook / logging → `smello.transport.send()` or `send_event()` → background queue → `POST /api/capture` → `CapturedEvent` (Tortoise ORM) → SQLite → JSON API (`/api/events`) → React SPA.
+**Data flow:** Patched library / excepthook / logging → `smello.transport.send_http()` / `send_log()` / `send_exception()` → background queue → `POST /api/capture/{http,log,exception}` → `services/capture.py` → `CapturedEvent` (Tortoise ORM) → SQLite → `services/events.py` → JSON API (`/api/events`) → React SPA.
 
 ## Key Patterns
 
-- **Server routes** are in `routes/api.py` (JSON API with Pydantic response models).
+- **Server routes** are in `routes/api.py` (JSON API with Pydantic response models). Routes are thin wrappers — persistence and queries live in `services/capture.py` and `services/events.py`. New persistence behavior or filter logic should land in the service layer with a corresponding `tests/test_services_*.py` test; routes should only own HTTP concerns (status codes, 404 mapping, OpenAPI shape).
 - **Frontend uses TanStack Query** for data fetching with 3-second polling interval (replaces HTMX polling). Orval generates typed hooks from the OpenAPI spec.
 - **Frontend state**: jotai atoms for filter state and selected request ID (synced to URL hash for deep linking).
 - **MUI components** throughout: Table, Chip, Select, List, Paper, etc. `react18-json-view` for JSON rendering with a `customizeNode` callback for value annotations.

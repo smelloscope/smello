@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
-from smello.transport import send
+from smello.transport import send_http
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ def patch_botocore(config: SmelloConfig) -> None:
                 duration_s=duration,
                 library="botocore",
             )
-            send(payload)
+            send_http(payload)
         except Exception as err:
             logger.debug("Failed to capture botocore request: %s", err)
 

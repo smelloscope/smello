@@ -140,7 +140,7 @@ def test_make_interceptor_class_delegates_to_intercept(config):
 # ---------------------------------------------------------------------------
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_interceptor_captures_successful_call(mock_serialize, mock_send, config):
     call_details = MagicMock()
@@ -177,7 +177,7 @@ def test_interceptor_captures_successful_call(mock_serialize, mock_send, config)
     mock_send.assert_called_once_with({"id": "test"})
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_trailing_metadata_merged_into_response_headers(
     mock_serialize, mock_send, config
@@ -206,7 +206,7 @@ def test_trailing_metadata_merged_into_response_headers(
     assert kw["response_headers"]["x-request-id"] == "def456"
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_success_still_returned_when_send_capture_fails(
     mock_serialize, mock_send, config
@@ -235,7 +235,7 @@ def test_success_still_returned_when_send_capture_fails(
 # ---------------------------------------------------------------------------
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_interceptor_captures_error_call(mock_serialize, mock_send, config):
     call_details = MagicMock()
@@ -269,7 +269,7 @@ def test_interceptor_captures_error_call(mock_serialize, mock_send, config):
     mock_send.assert_called_once_with({"id": "err"})
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_error_without_code_attr_falls_back_to_unknown(
     mock_serialize, mock_send, config
@@ -298,7 +298,7 @@ def test_error_without_code_attr_falls_back_to_unknown(
     assert "something broke" in kw["response_body"]
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_error_still_raised_when_send_capture_fails(mock_serialize, mock_send, config):
     """If _send_capture raises on the error path, the original error is still re-raised."""
@@ -342,7 +342,7 @@ def test_interceptor_skips_ignored_host(mock_serialize, config):
     mock_serialize.assert_not_called()
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_bytes_method_decoded(mock_serialize, mock_send, config):
     call_details = MagicMock()
@@ -366,7 +366,7 @@ def test_bytes_method_decoded(mock_serialize, mock_send, config):
 # ---------------------------------------------------------------------------
 
 
-@patch("smello.patches.patch_grpc.send")
+@patch("smello.patches.patch_grpc.send_http")
 @patch("smello.patches.patch_grpc.serialize_request_response")
 def test_send_capture(mock_serialize, mock_send, config):
     mock_serialize.return_value = {"id": "payload"}

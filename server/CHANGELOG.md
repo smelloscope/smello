@@ -22,7 +22,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - **Data model**: Events are stored in a single `captured_events` table with `event_type`, `summary`, and `data` (JSON) columns, replacing the previous multi-column `captured_requests` table.
 - **Dashboard**: The event list now shows HTTP requests, logs, and exceptions in a unified timeline with distinct visual styles — method badges for HTTP, level badges for logs, and traceback previews for exceptions. A new "All types" dropdown filters by event type.
-- **Legacy endpoints preserved**: `/api/requests` and `/api/requests/{id}` still work, automatically filtering to HTTP events only.
+### Removed
+
+- **BREAKING**: Removed the `/api/requests`, `/api/requests/{id}`, and `DELETE /api/requests` endpoints. Use `/api/events?event_type=http`, `/api/events/{id}`, and `DELETE /api/events` instead. Detail responses now return HTTP fields nested under `data` (e.g. `data.method`, `data.request_headers`) rather than at the top level.
 
 ## [0.5.0] - 2026-04-07
 

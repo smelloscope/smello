@@ -48,11 +48,11 @@ node scripts/demo-mockup.mjs --transparent false        # with branded gradient 
 
 ## How it works
 
-1. **Clear** — `DELETE /api/requests` removes all captured traffic.
+1. **Clear** — `DELETE /api/events` removes all captured traffic.
 2. **Demo** — Runs `examples/python/demo_httpbin.py` (or a custom script) which
    sends various HTTP requests through the Smello client SDK.
-3. **Pick** — Polls `GET /api/requests` until captures arrive, takes the first
-   request ID for deep-linking via URL hash.
+3. **Pick** — Polls `GET /api/events?event_type=http` until captures arrive, takes
+   the first request ID for deep-linking via URL hash.
 4. **Capture** — Puppeteer (using system Chrome) opens the frontend with the
    request pre-selected and takes a 2x retina screenshot.
 5. **Wrap** — A second Puppeteer page renders the screenshot inside an HTML/CSS

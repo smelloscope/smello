@@ -42,14 +42,16 @@ async function smelloAPI(path, { method = "GET", expect } = {}) {
 }
 
 async function clearRequests() {
-  await smelloAPI("/api/requests", { method: "DELETE", expect: 204 });
+  await smelloAPI("/api/events", { method: "DELETE", expect: 204 });
   console.log("Cleared all Smello requests.");
 }
 
 async function waitForRequests(minCount = 1, timeoutMs = 10000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const requests = await smelloAPI(`/api/requests?limit=${minCount}`);
+    const requests = await smelloAPI(
+      `/api/events?event_type=http&limit=${minCount}`,
+    );
     if (requests.length >= minCount) return requests;
     await new Promise((r) => setTimeout(r, 500));
   }

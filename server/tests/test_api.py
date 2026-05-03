@@ -60,24 +60,6 @@ def test_capture_extracts_host(client, make_payload):
     assert detail["data"]["host"] == "api.stripe.com"
 
 
-# --- Legacy /api/requests endpoints ---
-
-
-def test_requests_endpoint_filters_http(client, make_payload, sample_log_payload):
-    client.post("/api/capture", json=make_payload())
-    client.post("/api/capture", json=sample_log_payload)
-    data = client.get("/api/requests").json()
-    assert len(data) == 1
-    assert data[0]["event_type"] == "http"
-
-
-def test_requests_detail_alias(client, sample_payload):
-    client.post("/api/capture", json=sample_payload)
-    resp = client.get(f"/api/requests/{sample_payload['id']}")
-    assert resp.status_code == 200
-    assert resp.json()["data"]["method"] == "GET"
-
-
 # --- Filtering ---
 
 
@@ -257,15 +239,6 @@ def test_clear_all(client, sample_payload, sample_log_payload):
     assert len(client.get("/api/events").json()) == 2
 
     resp = client.delete("/api/events")
-    assert resp.status_code == 204
-    assert len(client.get("/api/events").json()) == 0
-
-
-def test_clear_via_requests_endpoint(client, sample_payload):
-    client.post("/api/capture", json=sample_payload)
-    assert len(client.get("/api/events").json()) == 1
-
-    resp = client.delete("/api/requests")
     assert resp.status_code == 204
     assert len(client.get("/api/events").json()) == 0
 

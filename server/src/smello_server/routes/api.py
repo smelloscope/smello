@@ -241,25 +241,6 @@ async def list_events(
     ]
 
 
-# Keep /api/requests as an alias that filters to HTTP events only
-@router.get("/requests", response_model=list[EventSummary])
-async def list_requests(
-    host: str | None = Query(None),
-    method: str | None = Query(None),
-    status: int | None = Query(None),
-    search: str | None = Query(None),
-    limit: int = Query(50, le=200),
-) -> list[EventSummary]:
-    return await list_events(
-        event_type="http",
-        host=host,
-        method=method,
-        status=status,
-        search=search,
-        limit=limit,
-    )
-
-
 @router.get("/events/{event_id}", response_model=EventDetail)
 async def get_event(event_id: str) -> EventDetail:
     try:
@@ -274,12 +255,6 @@ async def get_event(event_id: str) -> EventDetail:
         summary=e.summary,
         data=e.data,
     )
-
-
-# Keep /api/requests/{id} as an alias
-@router.get("/requests/{request_id}", response_model=EventDetail)
-async def get_request(request_id: str) -> EventDetail:
-    return await get_event(request_id)
 
 
 @router.get("/meta", response_model=MetaResponse)
@@ -307,11 +282,6 @@ async def get_meta() -> MetaResponse:
         methods=methods,
         event_types=sorted(set(event_types)),
     )
-
-
-@router.delete("/requests", status_code=204)
-async def clear_requests() -> None:
-    await CapturedEvent.all().delete()
 
 
 @router.delete("/events", status_code=204)

@@ -125,13 +125,3 @@ curl -s http://localhost:5110/api/meta | python -m json.tool
 ```bash
 curl -X DELETE http://localhost:5110/api/events
 ```
-
-## Legacy endpoints
-
-The original `/api/requests` endpoints still work for backwards compatibility. They behave identically to `/api/events` but automatically filter to HTTP events only:
-
-```bash
-curl -s http://localhost:5110/api/requests              # same as ?event_type=http
-curl -s http://localhost:5110/api/requests/{id}          # same as /api/events/{id}
-curl -X DELETE http://localhost:5110/api/requests        # clears all event types
-```

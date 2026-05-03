@@ -9,6 +9,7 @@ from smello.config import SmelloConfig
 
 
 def serialize_request_response(
+    *,
     config: SmelloConfig,
     method: str,
     url: str,

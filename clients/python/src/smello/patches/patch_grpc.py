@@ -217,6 +217,7 @@ def _intercept_unary_unary(config, target, continuation, client_call_details, re
 
 
 def _send_capture(
+    *,
     config: SmelloConfig,
     method: str,
     url: str,

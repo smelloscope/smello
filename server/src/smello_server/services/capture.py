@@ -1,20 +1,24 @@
 """Persistence for captured events.
 
-Each `create_*` function takes typed Pydantic input, builds the flat `data`
-JSON dict and one-line `summary`, and writes a `CapturedEvent` row.
+Each ``create_*`` function takes typed input, builds the typed output model
+(`HttpEventData` / `LogEventData` / `ExceptionEventData`) and a one-line
+``summary``, then writes a `CapturedEvent` row with the output model dumped to
+JSON in the ``data`` column.
 """
 
 import uuid
-from typing import Any
 from urllib.parse import urlparse
 
 from smello_server.models import CapturedEvent
 from smello_server.types import (
     ExceptionData,
+    ExceptionEventData,
+    HttpEventData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
     LogData,
+    LogEventData,
 )
 
 
@@ -28,25 +32,27 @@ async def create_http_event(
 ) -> CapturedEvent:
     host = urlparse(request.url).hostname or "unknown"
     summary = _build_http_summary(request.method, request.url, response.status_code)
-    data: dict[str, Any] = {
-        "duration_ms": duration_ms,
-        "method": request.method.upper(),
-        "url": request.url,
-        "host": host,
-        "request_headers": request.headers,
-        "request_body": request.body,
-        "request_body_size": request.body_size,
-        "status_code": response.status_code,
-        "response_headers": response.headers,
-        "response_body": response.body,
-        "response_body_size": response.body_size,
-        "library": meta.library,
-    }
+    event_data = HttpEventData(
+        duration_ms=duration_ms,
+        method=request.method.upper(),
+        url=request.url,
+        host=host,
+        request_headers=request.headers,
+        request_body=request.body,
+        request_body_size=request.body_size,
+        status_code=response.status_code,
+        response_headers=response.headers,
+        response_body=response.body,
+        response_body_size=response.body_size,
+        library=meta.library,
+        python_version=meta.python_version,
+        smello_version=meta.smello_version,
+    )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
         event_type="http",
         summary=summary,
-        data=data,
+        data=event_data.model_dump(mode="json"),
     )
 
 
@@ -58,11 +64,21 @@ def _build_http_summary(method: str, url: str, status_code: int) -> str:
 
 async def create_log_event(*, event_id: str | None, data: LogData) -> CapturedEvent:
     summary = _build_log_summary(data.level, data.logger_name, data.message)
+    event_data = LogEventData(
+        level=data.level,
+        logger_name=data.logger_name,
+        message=data.message,
+        pathname=data.pathname,
+        lineno=data.lineno,
+        func_name=data.func_name,
+        exc_text=data.exc_text,
+        extra=data.extra,
+    )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
         event_type="log",
         summary=summary,
-        data=data.model_dump(),
+        data=event_data.model_dump(mode="json"),
     )
 
 
@@ -76,11 +92,18 @@ async def create_exception_event(
     *, event_id: str | None, data: ExceptionData
 ) -> CapturedEvent:
     summary = _build_exception_summary(data.exc_type, data.exc_value)
+    event_data = ExceptionEventData(
+        exc_type=data.exc_type,
+        exc_value=data.exc_value,
+        exc_module=data.exc_module,
+        traceback_text=data.traceback_text,
+        frames=data.frames,
+    )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
         event_type="exception",
         summary=summary,
-        data=data.model_dump(),
+        data=event_data.model_dump(mode="json"),
     )
 
 

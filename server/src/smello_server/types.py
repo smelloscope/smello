@@ -1,12 +1,21 @@
 """Shared Pydantic types for captured events.
 
-Used by `services.capture` (writes) and `routes.api` (request payloads).
-Route-only response models stay in `routes/api.py`.
+Two layers:
+
+- **Input** models — what clients POST to `/api/capture/{http,log,exception}`.
+  Open (``extra="allow"``) where it matters so older/forward clients can send
+  unrecognized fields without rejection.
+- **Output** models — what the server stores in ``CapturedEvent.data`` and
+  returns from ``/api/events/{id}``. Closed (no extras) so the generated
+  TypeScript types are tight. Each carries a ``Literal[...] event_type``
+  discriminator and the union ``EventData`` is what the read API exposes.
 """
 
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+# --- Input models (capture endpoints) ---
 
 
 class HttpRequestData(BaseModel):
@@ -59,3 +68,55 @@ class ExceptionData(BaseModel):
     traceback_text: str = ""
     frames: list[ExceptionFrame] = []
     model_config = {"extra": "allow"}
+
+
+# --- Output models (read API + storage) ---
+
+
+class HttpEventData(BaseModel):
+    """HTTP capture as stored and served. Flat by convention."""
+
+    event_type: Literal["http"] = "http"
+    duration_ms: int
+    method: str
+    url: str
+    host: str
+    request_headers: dict[str, str]
+    request_body: str | None = None
+    request_body_size: int = 0
+    status_code: int
+    response_headers: dict[str, str]
+    response_body: str | None = None
+    response_body_size: int = 0
+    library: str = "unknown"
+    python_version: str = ""
+    smello_version: str = ""
+
+
+class LogEventData(BaseModel):
+    event_type: Literal["log"] = "log"
+    level: str
+    logger_name: str
+    message: str
+    pathname: str | None = None
+    lineno: int | None = None
+    func_name: str | None = None
+    exc_text: str | None = None
+    extra: dict[str, Any] | None = None
+
+
+class ExceptionEventData(BaseModel):
+    event_type: Literal["exception"] = "exception"
+    exc_type: str
+    exc_value: str = ""
+    exc_module: str | None = None
+    traceback_text: str = ""
+    frames: list[ExceptionFrame] = []
+
+
+EventType = Literal["http", "log", "exception"]
+
+EventData = Annotated[
+    HttpEventData | LogEventData | ExceptionEventData,
+    Field(discriminator="event_type"),
+]

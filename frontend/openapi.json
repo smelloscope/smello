@@ -1,0 +1,1131 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Smello",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/capture/http": {
+      "post": {
+        "summary": "Capture Http Api",
+        "operationId": "capture_http_api_api_capture_http_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpCapturePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capture/log": {
+      "post": {
+        "summary": "Capture Log Api",
+        "operationId": "capture_log_api_api_capture_log_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogCapturePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capture/exception": {
+      "post": {
+        "summary": "Capture Exception Api",
+        "operationId": "capture_exception_api_api_capture_exception_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExceptionCapturePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capture": {
+      "post": {
+        "summary": "Deprecated: use /api/capture/http",
+        "description": "Deprecated HTTP capture endpoint.\n\nKept for backwards compatibility with old smello client wheels in the wild,\nwhich only ever posted HTTP captures here. New clients should use the\ntyped endpoints `/api/capture/http`, `/api/capture/log`,\n`/api/capture/exception`.",
+        "operationId": "capture_legacy_api_api_capture_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpCapturePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/events": {
+      "get": {
+        "summary": "List Events Api",
+        "operationId": "list_events_api_api_events_get",
+        "parameters": [
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "host",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Host"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Method"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventSummary"
+                  },
+                  "title": "Response List Events Api Api Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear Events Api",
+        "operationId": "clear_events_api_api_events_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/events/{event_id}": {
+      "get": {
+        "summary": "Get Event Api",
+        "operationId": "get_event_api_api_events__event_id__get",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta": {
+      "get": {
+        "summary": "Get Meta Api",
+        "operationId": "get_meta_api_api_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CaptureResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "CaptureResponse"
+      },
+      "EventDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": ["http", "log", "exception"],
+            "title": "Event Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/HttpEventData"
+              },
+              {
+                "$ref": "#/components/schemas/LogEventData"
+              },
+              {
+                "$ref": "#/components/schemas/ExceptionEventData"
+              }
+            ],
+            "title": "Data",
+            "discriminator": {
+              "propertyName": "event_type",
+              "mapping": {
+                "exception": "#/components/schemas/ExceptionEventData",
+                "http": "#/components/schemas/HttpEventData",
+                "log": "#/components/schemas/LogEventData"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": ["id", "timestamp", "event_type", "summary", "data"],
+        "title": "EventDetail"
+      },
+      "EventSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": ["http", "log", "exception"],
+            "title": "Event Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": ["id", "timestamp", "event_type", "summary"],
+        "title": "EventSummary"
+      },
+      "ExceptionCapturePayload": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ExceptionData"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "ExceptionCapturePayload"
+      },
+      "ExceptionData": {
+        "properties": {
+          "exc_type": {
+            "type": "string",
+            "title": "Exc Type"
+          },
+          "exc_value": {
+            "type": "string",
+            "title": "Exc Value",
+            "default": ""
+          },
+          "exc_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Module"
+          },
+          "traceback_text": {
+            "type": "string",
+            "title": "Traceback Text",
+            "default": ""
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/ExceptionFrame"
+            },
+            "type": "array",
+            "title": "Frames",
+            "default": []
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": ["exc_type"],
+        "title": "ExceptionData"
+      },
+      "ExceptionEventData": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "const": "exception",
+            "title": "Event Type",
+            "default": "exception"
+          },
+          "exc_type": {
+            "type": "string",
+            "title": "Exc Type"
+          },
+          "exc_value": {
+            "type": "string",
+            "title": "Exc Value",
+            "default": ""
+          },
+          "exc_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Module"
+          },
+          "traceback_text": {
+            "type": "string",
+            "title": "Traceback Text",
+            "default": ""
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/ExceptionFrame"
+            },
+            "type": "array",
+            "title": "Frames",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": ["exc_type"],
+        "title": "ExceptionEventData"
+      },
+      "ExceptionFrame": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "lineno": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lineno"
+          },
+          "function": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Function"
+          },
+          "context_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Line"
+          },
+          "pre_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pre Context",
+            "default": []
+          },
+          "post_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Post Context",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": ["filename"],
+        "title": "ExceptionFrame"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HttpCapturePayload": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "request": {
+            "$ref": "#/components/schemas/HttpRequestData"
+          },
+          "response": {
+            "$ref": "#/components/schemas/HttpResponseData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/HttpMeta",
+            "default": {
+              "library": "unknown",
+              "python_version": "",
+              "smello_version": ""
+            }
+          }
+        },
+        "type": "object",
+        "required": ["request", "response"],
+        "title": "HttpCapturePayload"
+      },
+      "HttpEventData": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "const": "http",
+            "title": "Event Type",
+            "default": "http"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "host": {
+            "type": "string",
+            "title": "Host"
+          },
+          "request_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Request Headers"
+          },
+          "request_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Body"
+          },
+          "request_body_size": {
+            "type": "integer",
+            "title": "Request Body Size",
+            "default": 0
+          },
+          "status_code": {
+            "type": "integer",
+            "title": "Status Code"
+          },
+          "response_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Response Headers"
+          },
+          "response_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Body"
+          },
+          "response_body_size": {
+            "type": "integer",
+            "title": "Response Body Size",
+            "default": 0
+          },
+          "library": {
+            "type": "string",
+            "title": "Library",
+            "default": "unknown"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "default": ""
+          },
+          "smello_version": {
+            "type": "string",
+            "title": "Smello Version",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_ms",
+          "method",
+          "url",
+          "host",
+          "request_headers",
+          "status_code",
+          "response_headers"
+        ],
+        "title": "HttpEventData",
+        "description": "HTTP capture as stored and served. Flat by convention."
+      },
+      "HttpMeta": {
+        "properties": {
+          "library": {
+            "type": "string",
+            "title": "Library",
+            "default": "unknown"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "default": ""
+          },
+          "smello_version": {
+            "type": "string",
+            "title": "Smello Version",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "HttpMeta"
+      },
+      "HttpRequestData": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "body_size": {
+            "type": "integer",
+            "title": "Body Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": ["method", "url", "headers"],
+        "title": "HttpRequestData"
+      },
+      "HttpResponseData": {
+        "properties": {
+          "status_code": {
+            "type": "integer",
+            "title": "Status Code"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "body_size": {
+            "type": "integer",
+            "title": "Body Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": ["status_code", "headers"],
+        "title": "HttpResponseData"
+      },
+      "LogCapturePayload": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LogData"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "LogCapturePayload"
+      },
+      "LogData": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "logger_name": {
+            "type": "string",
+            "title": "Logger Name"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "pathname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pathname"
+          },
+          "lineno": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lineno"
+          },
+          "func_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Func Name"
+          },
+          "exc_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Text"
+          },
+          "extra": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": ["level", "logger_name", "message"],
+        "title": "LogData"
+      },
+      "LogEventData": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "const": "log",
+            "title": "Event Type",
+            "default": "log"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "logger_name": {
+            "type": "string",
+            "title": "Logger Name"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "pathname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pathname"
+          },
+          "lineno": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lineno"
+          },
+          "func_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Func Name"
+          },
+          "exc_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Text"
+          },
+          "extra": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra"
+          }
+        },
+        "type": "object",
+        "required": ["level", "logger_name", "message"],
+        "title": "LogEventData"
+      },
+      "MetaResponse": {
+        "properties": {
+          "hosts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hosts"
+          },
+          "methods": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Methods"
+          },
+          "event_types": {
+            "items": {
+              "type": "string",
+              "enum": ["http", "log", "exception"]
+            },
+            "type": "array",
+            "title": "Event Types"
+          }
+        },
+        "type": "object",
+        "required": ["hosts", "methods", "event_types"],
+        "title": "MetaResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

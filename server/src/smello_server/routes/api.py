@@ -6,10 +6,10 @@ don't collide with service function names.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Self, cast
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from smello_server.services.capture import (
     create_exception_event,
@@ -20,9 +20,12 @@ from smello_server.services.events import (
     clear_events,
     get_event,
     get_meta,
+    hydrate_event_data,
     list_events,
 )
 from smello_server.types import (
+    EventData,
+    EventType,
     ExceptionData,
     HttpMeta,
     HttpRequestData,
@@ -67,18 +70,27 @@ class CaptureResponse(BaseModel):
 class EventSummary(BaseModel):
     id: str
     timestamp: datetime
-    event_type: str
+    event_type: EventType
     summary: str
 
 
 class EventDetail(EventSummary):
-    data: dict[str, Any]
+    data: EventData
+
+    @model_validator(mode="after")
+    def _check_event_type_consistency(self) -> Self:
+        if self.event_type != self.data.event_type:
+            raise ValueError(
+                f"event_type mismatch: outer={self.event_type!r},"
+                f" data={self.data.event_type!r}"
+            )
+        return self
 
 
 class MetaResponse(BaseModel):
     hosts: list[str]
     methods: list[str]
-    event_types: list[str]
+    event_types: list[EventType]
 
 
 OK = CaptureResponse(status="ok")
@@ -157,7 +169,7 @@ async def list_events_api(
                 if isinstance(r["timestamp"], str)
                 else r["timestamp"]
             ),
-            event_type=r["event_type"],
+            event_type=cast(EventType, r["event_type"]),
             summary=r["summary"],
         )
         for r in rows
@@ -172,16 +184,16 @@ async def get_event_api(event_id: str) -> EventDetail:
     return EventDetail(
         id=str(event.id),
         timestamp=event.timestamp,
-        event_type=event.event_type,
+        event_type=cast(EventType, event.event_type),
         summary=event.summary,
-        data=event.data,
+        data=hydrate_event_data(event.event_type, event.data),
     )
 
 
 @router.get("/meta", response_model=MetaResponse)
 async def get_meta_api() -> MetaResponse:
     meta = await get_meta()
-    return MetaResponse(**meta)
+    return MetaResponse.model_validate(meta)
 
 
 @router.delete("/events", status_code=204)

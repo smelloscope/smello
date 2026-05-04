@@ -1,14 +1,17 @@
 """Service-level tests for read functions: list, get, meta, clear."""
 
 import pytest
+from smello_server.models import CapturedEvent
 from smello_server.services.capture import create_http_event, create_log_event
 from smello_server.services.events import (
     clear_events,
     get_event,
     get_meta,
+    hydrate_event_data,
     list_events,
 )
 from smello_server.types import (
+    HttpEventData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
@@ -154,3 +157,38 @@ async def test_clear_events(services_db):
     assert len(await list_events()) == 2
     await clear_events()
     assert await list_events() == []
+
+
+@pytest.mark.asyncio
+async def test_hydrate_event_data_validates_typed_payload(services_db):
+    """New writes round-trip through the typed union without modification."""
+    created = await _http(method="POST", url="https://x.test/y", status_code=201)
+    stored = await CapturedEvent.get(id=created.id)
+    typed = hydrate_event_data(stored.event_type, stored.data)
+    assert isinstance(typed, HttpEventData)
+    assert typed.method == "POST"
+    assert typed.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_hydrate_event_data_backfills_legacy_rows(services_db):
+    """Rows written before the typed-output refactor lacked `event_type`
+    inside `data`. Hydration should inject it from the column."""
+    legacy_data = {
+        "duration_ms": 5,
+        "method": "GET",
+        "url": "https://legacy.test/",
+        "host": "legacy.test",
+        "request_headers": {},
+        "request_body": None,
+        "request_body_size": 0,
+        "status_code": 200,
+        "response_headers": {},
+        "response_body": None,
+        "response_body_size": 0,
+        "library": "requests",
+    }
+    typed = hydrate_event_data("http", legacy_data)
+    assert isinstance(typed, HttpEventData)
+    assert typed.event_type == "http"
+    assert typed.url == "https://legacy.test/"

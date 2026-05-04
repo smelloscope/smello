@@ -44,13 +44,15 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
     return null;
   }
 
-  switch (detail.event_type) {
+  // Narrow on the discriminator inside `data` so TS refines `detail.data` for
+  // each branch.
+  switch (detail.data.event_type) {
     case "http":
-      return <HttpDetail detail={detail} />;
+      return <HttpDetail detail={{ ...detail, data: detail.data }} />;
     case "log":
-      return <LogDetail detail={detail} />;
+      return <LogDetail detail={{ ...detail, data: detail.data }} />;
     case "exception":
-      return <ExceptionDetail detail={detail} />;
+      return <ExceptionDetail detail={{ ...detail, data: detail.data }} />;
     default:
       return (
         <Box sx={{ p: 3, color: "text.secondary" }}>

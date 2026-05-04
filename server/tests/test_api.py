@@ -5,6 +5,13 @@ and that each route reaches the right service. Persistence and filter
 behavior live in `test_services_*`.
 """
 
+from smello_server.routes.api import EventDetail
+from smello_server.types import (
+    ExceptionEventData,
+    HttpEventData,
+    LogEventData,
+)
+
 # --- Typed capture endpoints ---
 
 
@@ -79,10 +86,57 @@ def test_event_detail_returns_full_data(client, http_payload):
     client.post("/api/capture/http", json=http_payload)
     detail = client.get(f"/api/events/{http_payload['id']}").json()
     assert detail["event_type"] == "http"
+    assert detail["data"]["event_type"] == "http"
     assert detail["data"]["method"] == "GET"
     assert detail["data"]["url"] == "https://api.example.com/v1/test"
     assert detail["data"]["host"] == "api.example.com"
     assert detail["data"]["status_code"] == 200
+
+
+def test_event_detail_validates_against_typed_union_http(client, http_payload):
+    client.post("/api/capture/http", json=http_payload)
+    raw = client.get(f"/api/events/{http_payload['id']}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, HttpEventData)
+    assert parsed.data.method == "GET"
+    assert parsed.data.python_version == "3.12.2"
+    assert parsed.data.smello_version == "0.1.0"
+
+
+def test_event_detail_validates_against_typed_union_log(client, log_payload):
+    client.post("/api/capture/log", json=log_payload)
+    event_id = client.get("/api/events").json()[0]["id"]
+    raw = client.get(f"/api/events/{event_id}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, LogEventData)
+    assert parsed.data.level == "WARNING"
+    assert parsed.data.logger_name == "myapp.auth"
+
+
+def test_event_detail_validates_against_typed_union_exception(
+    client, exception_payload
+):
+    client.post("/api/capture/exception", json=exception_payload)
+    event_id = client.get("/api/events").json()[0]["id"]
+    raw = client.get(f"/api/events/{event_id}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, ExceptionEventData)
+    assert parsed.data.exc_type == "ValueError"
+    assert parsed.data.frames[0].filename == "app.py"
+
+
+def test_openapi_schema_exposes_discriminated_union(client):
+    spec = client.get("/openapi.json").json()
+    schemas = spec["components"]["schemas"]
+    # Each output model is present.
+    assert "HttpEventData" in schemas
+    assert "LogEventData" in schemas
+    assert "ExceptionEventData" in schemas
+    # EventDetail.data is a discriminated union by event_type.
+    event_detail = schemas["EventDetail"]
+    data_prop = event_detail["properties"]["data"]
+    assert "discriminator" in data_prop
+    assert data_prop["discriminator"]["propertyName"] == "event_type"
 
 
 def test_event_not_found(client):

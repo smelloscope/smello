@@ -10,8 +10,8 @@ import type { EventDetail, LogEventData } from "../../api/events";
 
 const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
-export default function LogDetail({ detail }: { detail: EventDetail }) {
-  const d = detail.data as unknown as LogEventData;
+export default function LogDetail({ detail }: { detail: EventDetail & { data: LogEventData } }) {
+  const d = detail.data;
   const hasExtra = d.extra && Object.keys(d.extra).length > 0;
 
   return (

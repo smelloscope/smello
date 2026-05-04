@@ -2,7 +2,6 @@ import { useSetAtom } from "jotai";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelectedRequestId } from "../hooks/useSelectedRequestId";
 import { useGetEvent } from "../api/events";
-import type { HttpEventData } from "../api/events";
 import { headersOpenAtom, bodyOpenAtom, queryParamsOpenAtom } from "../atoms/sectionState";
 import { snackbarMessageAtom } from "../atoms/snackbar";
 
@@ -32,10 +31,10 @@ export function useDetailHotkeys() {
   useHotkeys(
     "c",
     () => {
-      if (detail?.event_type === "http") {
-        const d = detail.data as unknown as HttpEventData;
-        if (d.request_body) {
-          navigator.clipboard.writeText(d.request_body);
+      if (detail?.data.event_type === "http") {
+        const { request_body } = detail.data;
+        if (request_body) {
+          navigator.clipboard.writeText(request_body);
           setSnackbar("Request body copied");
         }
       }
@@ -46,10 +45,10 @@ export function useDetailHotkeys() {
   useHotkeys(
     "shift+c",
     () => {
-      if (detail?.event_type === "http") {
-        const d = detail.data as unknown as HttpEventData;
-        if (d.response_body) {
-          navigator.clipboard.writeText(d.response_body);
+      if (detail?.data.event_type === "http") {
+        const { response_body } = detail.data;
+        if (response_body) {
+          navigator.clipboard.writeText(response_body);
           setSnackbar("Response body copied");
         }
       }

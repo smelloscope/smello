@@ -39,11 +39,27 @@ async def test_create_http_event_persists_row(services_db):
     stored = await CapturedEvent.get(id=event.id)
     assert stored.event_type == "http"
     assert stored.summary == "GET /v1/test → 200"
+    assert stored.data["event_type"] == "http"
     assert stored.data["method"] == "GET"
     assert stored.data["host"] == "api.example.com"
     assert stored.data["status_code"] == 200
     assert stored.data["duration_ms"] == 150
     assert stored.data["library"] == "requests"
+
+
+@pytest.mark.asyncio
+async def test_create_http_event_persists_meta_fields(services_db):
+    """python_version and smello_version are now first-class output fields."""
+    event = await create_http_event(
+        event_id=None,
+        duration_ms=0,
+        request=HttpRequestData(method="GET", url="https://x.test/", headers={}),
+        response=HttpResponseData(status_code=200, headers={}),
+        meta=HttpMeta(library="httpx", python_version="3.12.2", smello_version="0.4.0"),
+    )
+    stored = await CapturedEvent.get(id=event.id)
+    assert stored.data["python_version"] == "3.12.2"
+    assert stored.data["smello_version"] == "0.4.0"
 
 
 @pytest.mark.asyncio
@@ -90,6 +106,7 @@ async def test_create_log_event_persists_row(services_db):
     stored = await CapturedEvent.get(id=event.id)
     assert stored.event_type == "log"
     assert stored.summary == "WARNING myapp.auth: Token expired for user 42"
+    assert stored.data["event_type"] == "log"
     assert stored.data["level"] == "WARNING"
     assert stored.data["pathname"] == "/app/auth.py"
     assert stored.data["lineno"] == 87
@@ -130,6 +147,7 @@ async def test_create_exception_event_persists_row(services_db):
     stored = await CapturedEvent.get(id=event.id)
     assert stored.event_type == "exception"
     assert stored.summary.startswith("ValueError: invalid literal")
+    assert stored.data["event_type"] == "exception"
     assert stored.data["exc_type"] == "ValueError"
     assert stored.data["frames"][0]["filename"] == "app.py"
     assert stored.data["frames"][0]["pre_context"] == []

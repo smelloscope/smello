@@ -11,8 +11,8 @@ import type { EventDetail, HttpEventData } from "../../api/events";
 
 const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
-export default function HttpDetail({ detail }: { detail: EventDetail }) {
-  const d = detail.data as unknown as HttpEventData;
+export default function HttpDetail({ detail }: { detail: EventDetail & { data: HttpEventData } }) {
+  const d = detail.data;
   const { host, path } = parseDisplayUrl(d.url);
   const queryParams = parseQueryParams(d.url);
 
@@ -71,8 +71,8 @@ export default function HttpDetail({ detail }: { detail: EventDetail }) {
         title="Request"
         side="request"
         headers={d.request_headers}
-        body={d.request_body}
-        bodySize={d.request_body_size}
+        body={d.request_body ?? null}
+        bodySize={d.request_body_size ?? 0}
         queryParams={queryParams}
       />
 
@@ -80,8 +80,8 @@ export default function HttpDetail({ detail }: { detail: EventDetail }) {
         title="Response"
         side="response"
         headers={d.response_headers}
-        body={d.response_body}
-        bodySize={d.response_body_size}
+        body={d.response_body ?? null}
+        bodySize={d.response_body_size ?? 0}
       />
     </Box>
   );

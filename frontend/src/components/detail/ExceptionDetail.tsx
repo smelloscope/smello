@@ -18,8 +18,10 @@ const mono = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
 type Frame = ExceptionEventData["frames"][number];
 
-function vscodeUrl(path: string, line: number): string {
-  return `vscode://file/${encodeURI(path)}:${line}`;
+function vscodeUrl(path: string, line: number | null | undefined): string {
+  return line == null
+    ? `vscode://file/${encodeURI(path)}`
+    : `vscode://file/${encodeURI(path)}:${line}`;
 }
 
 function shortenPath(path: string, segments = 3): string {
@@ -37,7 +39,7 @@ function FrameSnippet({ frame }: { frame: Frame }) {
   const post = frame.post_context ?? [];
   const errorLine = frame.context_line ?? "";
 
-  const startLineno = frame.lineno - pre.length;
+  const startLineno = (frame.lineno ?? 1) - pre.length;
   const allLines = [...pre, errorLine, ...post];
   const errorIdx = pre.length;
   const code = allLines.join("\n");
@@ -228,8 +230,12 @@ function FrameItem({ frame, isLast }: { frame: Frame; isLast: boolean }) {
   );
 }
 
-export default function ExceptionDetail({ detail }: { detail: EventDetail }) {
-  const d = detail.data as unknown as ExceptionEventData;
+export default function ExceptionDetail({
+  detail,
+}: {
+  detail: EventDetail & { data: ExceptionEventData };
+}) {
+  const d = detail.data;
 
   return (
     <Box sx={{ p: 2, overflowY: "auto" }}>

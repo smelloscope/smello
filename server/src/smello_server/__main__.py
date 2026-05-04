@@ -1,5 +1,6 @@
 """CLI entry point: `smello-server run` or `python -m smello_server`."""
 
+import json
 import logging
 import os
 import threading
@@ -87,6 +88,27 @@ def run(
         log_level="info",
         reload=reload,
     )
+
+
+@app.command("openapi-export")
+def openapi_export(
+    output: Annotated[
+        Path,
+        typer.Option("--output", "-o", help="Where to write the OpenAPI schema."),
+    ] = Path("frontend/openapi.json"),
+):
+    """Export the FastAPI OpenAPI schema to a JSON file.
+
+    Used by the frontend's `openapi-typescript` step to generate TS types.
+    """
+    # Imported lazily so unrelated CLI invocations (e.g. `--help`) don't pay
+    # the cost of loading FastAPI + Tortoise.
+    from smello_server.app import create_app  # noqa: PLC0415
+
+    schema = create_app().openapi()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(schema, indent=2) + "\n")
+    typer.echo(f"Wrote OpenAPI schema → {output}")
 
 
 def main():

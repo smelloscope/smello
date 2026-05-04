@@ -14,6 +14,11 @@ bump-server part:
 server:
     uv run smello-server run --reload
 
+# Export the OpenAPI schema (consumed by the frontend's openapi-typescript step)
+openapi-export:
+    uv run --frozen smello-server openapi-export --output frontend/openapi.json
+    cd frontend && npx prettier --write openapi.json
+
 # Install frontend dependencies
 frontend-install:
     cd frontend && npm install

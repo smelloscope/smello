@@ -2,9 +2,25 @@
 
 from typing import Any
 
+from pydantic import TypeAdapter
 from tortoise import connections
 
 from smello_server.models import CapturedEvent
+from smello_server.types import EventData
+
+_event_data_adapter: TypeAdapter[EventData] = TypeAdapter(EventData)
+
+
+def hydrate_event_data(event_type: str, data: dict[str, Any]) -> EventData:
+    """Validate a stored ``data`` blob against the typed ``EventData`` union.
+
+    Injects ``event_type`` from the column into ``data`` if missing, so rows
+    written before the typed-output refactor still round-trip without a
+    migration. New writes already include ``event_type`` inside ``data``.
+    """
+    if "event_type" not in data:
+        data = {**data, "event_type": event_type}
+    return _event_data_adapter.validate_python(data)
 
 
 async def list_events(

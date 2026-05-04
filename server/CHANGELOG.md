@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+- **Typed event payloads**: `GET /api/events/{id}` now returns `data` as a Pydantic-discriminated union (`HttpEventData | LogEventData | ExceptionEventData`) instead of an opaque object. The OpenAPI schema exposes the discriminator so frontends can generate strongly-typed clients (the bundled dashboard now uses `openapi-typescript`). Old DB rows written before this change are hydrated transparently on read.
+- **HTTP meta promoted**: `python_version` and `smello_version` are now stored alongside `library` in the HTTP event payload (previously dropped at write time).
+- **`smello-server openapi-export`**: New CLI command that writes the FastAPI OpenAPI schema to a JSON file. Used by the frontend's type-generation step and the matching `just openapi-export` recipe.
 - **Unified event model**: Replace the HTTP-only `CapturedRequest` model with a unified `CapturedEvent` model that supports multiple event types — HTTP requests, log records, and exceptions — in a single timeline.
 - **Typed capture endpoints**: New `POST /api/capture/http`, `POST /api/capture/log`, and `POST /api/capture/exception` endpoints, each with a strict Pydantic input schema. The original HTTP-only `POST /api/capture` is preserved (deprecated) for older client wheels.
 - **Log event capture**: New `log` event type stores Python log records with level, logger name, message, source location, and extra attributes.

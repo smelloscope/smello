@@ -36,6 +36,9 @@ def _make_args(**overrides) -> argparse.Namespace:
         "capture_all": None,
         "redact_header": None,
         "redact_query_param": None,
+        "capture_exceptions": None,
+        "capture_logs": None,
+        "log_level": None,
     }
     defaults.update(overrides)
     return argparse.Namespace(**defaults)
@@ -107,6 +110,28 @@ def test_overrides_redact_headers():
 def test_overrides_redact_query_params():
     overrides = cli._smello_env_overrides(_make_args(redact_query_param=["api_key"]))
     assert overrides == {"SMELLO_REDACT_QUERY_PARAMS": "api_key"}
+
+
+@pytest.mark.parametrize("flag,expected", [(True, "true"), (False, "false")])
+def test_overrides_capture_exceptions(flag, expected):
+    overrides = cli._smello_env_overrides(_make_args(capture_exceptions=flag))
+    assert overrides == {"SMELLO_CAPTURE_EXCEPTIONS": expected}
+
+
+@pytest.mark.parametrize("flag,expected", [(True, "true"), (False, "false")])
+def test_overrides_capture_logs(flag, expected):
+    overrides = cli._smello_env_overrides(_make_args(capture_logs=flag))
+    assert overrides == {"SMELLO_CAPTURE_LOGS": expected}
+
+
+def test_overrides_log_level():
+    overrides = cli._smello_env_overrides(_make_args(log_level=20))
+    assert overrides == {"SMELLO_LOG_LEVEL": "20"}
+
+
+def test_overrides_capture_logs_with_level():
+    overrides = cli._smello_env_overrides(_make_args(capture_logs=True, log_level=10))
+    assert overrides == {"SMELLO_CAPTURE_LOGS": "true", "SMELLO_LOG_LEVEL": "10"}
 
 
 # --- _build_child_env (composes os.environ + overrides + PYTHONPATH + URL default) ---

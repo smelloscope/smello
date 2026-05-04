@@ -182,6 +182,9 @@ Each flag maps 1:1 to a `SMELLO_*` environment variable documented above. The fl
 | `--capture-all` / `--no-capture-all`  | `SMELLO_CAPTURE_ALL`          | `True`                 |
 | `--redact-header HEADER` (repeatable) | `SMELLO_REDACT_HEADERS`       | `Authorization,X-Api-Key` |
 | `--redact-query-param PARAM` (repeatable) | `SMELLO_REDACT_QUERY_PARAMS` | `[]`                  |
+| `--capture-exceptions` / `--no-capture-exceptions` | `SMELLO_CAPTURE_EXCEPTIONS`  | `True`                 |
+| `--capture-logs` / `--no-capture-logs` | `SMELLO_CAPTURE_LOGS`        | `False`                |
+| `--log-level LEVEL`                   | `SMELLO_LOG_LEVEL`           | `30` (WARNING)         |
 
 CLI-specific behavior worth knowing:
 

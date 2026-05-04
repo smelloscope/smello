@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **Log capture**: Hook `logging.Logger.callHandlers` to capture Python log records at or above a configurable level. Opt-in via `capture_logs=True` and `log_level` (default: WARNING). Smello's own loggers and `urllib3` are automatically excluded to prevent recursion.
 - **New `init()` parameters**: `capture_exceptions` (bool, default `True`), `capture_logs` (bool, default `False`), `log_level` (int, default `30`/WARNING).
 - **New environment variables**: `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`.
+- **New `smello run` flags** for the new options: `--capture-exceptions` / `--no-capture-exceptions`, `--capture-logs` / `--no-capture-logs`, and `--log-level LEVEL`. Each maps 1:1 to its `SMELLO_*` env var, keeping the wrapper feature-complete with the in-code `init()` API.
 
 ### Changed
 

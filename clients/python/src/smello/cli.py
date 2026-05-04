@@ -68,6 +68,14 @@ def _smello_env_overrides(args: argparse.Namespace) -> dict[str, str]:
         overrides["SMELLO_REDACT_HEADERS"] = ",".join(args.redact_header)
     if args.redact_query_param:
         overrides["SMELLO_REDACT_QUERY_PARAMS"] = ",".join(args.redact_query_param)
+    if args.capture_exceptions is not None:
+        overrides["SMELLO_CAPTURE_EXCEPTIONS"] = (
+            "true" if args.capture_exceptions else "false"
+        )
+    if args.capture_logs is not None:
+        overrides["SMELLO_CAPTURE_LOGS"] = "true" if args.capture_logs else "false"
+    if args.log_level is not None:
+        overrides["SMELLO_LOG_LEVEL"] = str(args.log_level)
 
     return overrides
 
@@ -149,6 +157,39 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         metavar="PARAM",
         help="Redact this query parameter value (repeatable).",
+    )
+    run.add_argument(
+        "--capture-exceptions",
+        dest="capture_exceptions",
+        action="store_true",
+        default=None,
+        help="Capture unhandled exceptions (default).",
+    )
+    run.add_argument(
+        "--no-capture-exceptions",
+        dest="capture_exceptions",
+        action="store_false",
+        help="Disable unhandled-exception capture.",
+    )
+    run.add_argument(
+        "--capture-logs",
+        dest="capture_logs",
+        action="store_true",
+        default=None,
+        help="Capture Python log records (off by default).",
+    )
+    run.add_argument(
+        "--no-capture-logs",
+        dest="capture_logs",
+        action="store_false",
+        help="Disable log capture.",
+    )
+    run.add_argument(
+        "--log-level",
+        type=int,
+        metavar="LEVEL",
+        default=None,
+        help="Minimum log level to capture as an int (e.g. 20=INFO, 30=WARNING).",
     )
     run.add_argument(
         "command",

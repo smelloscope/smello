@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 uv sync
 
 # Run the server (default: http://localhost:5110)
-uv run smello-server run
+uv run smello-server
 
 # Run all tests
 uv run pytest

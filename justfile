@@ -12,7 +12,7 @@ bump-server part:
 
 # Run smello server locally with auto-reload (http://localhost:5110)
 server:
-    uv run smello-server run --reload
+    uv run smello-server --reload
 
 # Export the OpenAPI schema (consumed by the frontend's openapi-typescript step)
 openapi-export:

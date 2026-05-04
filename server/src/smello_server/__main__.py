@@ -1,4 +1,10 @@
-"""CLI entry point: `smello-server run` or `python -m smello_server`."""
+"""CLI entry point: `smello-server` (or `python -m smello_server`).
+
+By default, `smello-server [OPTIONS]` starts the server. The `run` and
+`openapi-export` subcommands exist but are hidden from `--help` since they
+are dev/CI tooling — `run` stays callable as an explicit alias for
+backwards compatibility (e.g. `just server`, the Dockerfile).
+"""
 
 import json
 import logging
@@ -49,24 +55,14 @@ def _print_banner(host: str, port: int):
     console.print()
 
 
-@app.command()
-def run(
-    host: Annotated[str, typer.Option(help="Host to bind to.")] = "0.0.0.0",
-    port: Annotated[int, typer.Option(help="Port to bind to.")] = 5110,
-    db_path: Annotated[
-        str | None,
-        typer.Option(
-            help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})."
-        ),
-    ] = None,
-    reload: Annotated[
-        bool, typer.Option(help="Enable auto-reload on code changes.")
-    ] = False,
-    open_browser: Annotated[
-        bool, typer.Option("--open/--no-open", help="Open the dashboard in a browser.")
-    ] = True,
-):
-    """Start the Smello server."""
+def _start_server(
+    *,
+    host: str,
+    port: int,
+    db_path: str | None,
+    reload: bool,
+    open_browser: bool,
+) -> None:
     if db_path:
         os.environ["SMELLO_DB_PATH"] = db_path
 
@@ -90,7 +86,59 @@ def run(
     )
 
 
-@app.command("openapi-export")
+_HOST_OPT = Annotated[str, typer.Option(help="Host to bind to.")]
+_PORT_OPT = Annotated[int, typer.Option(help="Port to bind to.")]
+_DB_PATH_OPT = Annotated[
+    str | None,
+    typer.Option(help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})."),
+]
+_RELOAD_OPT = Annotated[bool, typer.Option(help="Enable auto-reload on code changes.")]
+_OPEN_BROWSER_OPT = Annotated[
+    bool,
+    typer.Option("--open/--no-open", help="Open the dashboard in a browser."),
+]
+
+
+@app.callback(invoke_without_command=True)
+def main_callback(
+    ctx: typer.Context,
+    host: _HOST_OPT = "0.0.0.0",
+    port: _PORT_OPT = 5110,
+    db_path: _DB_PATH_OPT = None,
+    reload: _RELOAD_OPT = False,
+    open_browser: _OPEN_BROWSER_OPT = True,
+):
+    """Start the Smello server."""
+    if ctx.invoked_subcommand is not None:
+        return
+    _start_server(
+        host=host,
+        port=port,
+        db_path=db_path,
+        reload=reload,
+        open_browser=open_browser,
+    )
+
+
+@app.command(hidden=True)
+def run(
+    host: _HOST_OPT = "0.0.0.0",
+    port: _PORT_OPT = 5110,
+    db_path: _DB_PATH_OPT = None,
+    reload: _RELOAD_OPT = False,
+    open_browser: _OPEN_BROWSER_OPT = True,
+):
+    """Start the Smello server (alias for the bare invocation)."""
+    _start_server(
+        host=host,
+        port=port,
+        db_path=db_path,
+        reload=reload,
+        open_browser=open_browser,
+    )
+
+
+@app.command("openapi-export", hidden=True)
 def openapi_export(
     output: Annotated[
         Path,

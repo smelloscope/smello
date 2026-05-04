@@ -44,14 +44,32 @@ Based on the package manager detected:
 
 The server is covered separately in section D below.
 
-### B. Add `smello.init()` to the entrypoint
+### B. Pick an activation path
 
-Propose the exact file and location. The two lines must go **before** any HTTP library imports or usage:
+Smello can be activated in two ways. Recommend **one** based on what fits the project; mention the other so the user knows it exists.
+
+**Path 1 — code-level activation (`smello.init()`)**: explicit, lives next to other bootstrap code, easy to gate by environment. Best when the project owns its entrypoint and a couple of extra lines are welcome.
+
+**Path 2 — wrapper (`smello run`)**: zero source changes. The user prepends `smello run` to whatever command they already use (`smello run uvicorn app:app`, `smello run pytest tests/`, `smello run my_app.py`). Best when:
+- The entrypoint is owned by a framework or third-party tool that's awkward to edit (gunicorn/uvicorn workers, pytest, celery).
+- The user just wants a one-off debugging session and doesn't want to touch source.
+- Subprocess instrumentation needs to propagate to workers automatically (it does — PYTHONPATH is inherited).
+
+`smello run` exposes the same `SMELLO_*` config as flags: `--server`, `--capture-host`, `--ignore-host`, `--capture-all`/`--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-exceptions`/`--no-capture-exceptions`, `--capture-logs`/`--no-capture-logs`, `--log-level`. Flags win over env vars. Use `--` to disambiguate when the wrapped command's flags would collide (`smello run --server URL -- python -m mod --debug`).
+
+#### B1. If using `smello.init()`
+
+Propose the exact file and location. The two lines must go **before** any HTTP library imports or usage so HTTP patching catches the first request:
 
 ```python
 import smello
 smello.init()
 ```
+
+Ordering nuance for the other capture types:
+
+- **Exceptions** (on by default — `capture_exceptions=True`): `init()` installs `sys.excepthook` / `threading.excepthook` immediately. Position doesn't matter beyond running before the exception happens — for unhandled exceptions in the bootstrap path itself, place `init()` as early as possible. Pass `capture_exceptions=False` (or `SMELLO_CAPTURE_EXCEPTIONS=false`) to opt out.
+- **Logs** (off by default — opt in with `capture_logs=True`): logging capture works regardless of when handlers and loggers are created — Smello hooks `Logger.callHandlers`, which all log calls funnel through. So even loggers configured later (Django settings, `logging.config.dictConfig`, etc.) are captured.
 
 Common placement patterns:
 
@@ -91,6 +109,30 @@ SMELLO_LOG_LEVEL=20
 ```
 
 Exception capture is enabled by default — no configuration needed.
+
+#### B2. If using `smello run`
+
+No source edits. The user runs their existing command through the wrapper:
+
+```bash
+# .py scripts run with the current Python interpreter
+smello run my_app.py
+
+# Console scripts work directly; subprocess workers are instrumented automatically
+smello run uvicorn app:app
+smello run gunicorn app:app
+smello run pytest tests/
+
+# `--` disambiguates when the wrapped command and smello share flag names
+smello run --server http://localhost:5110 -- python -m my_module --debug
+
+# Enable log + exception capture without code changes
+smello run --capture-logs --log-level 20 uvicorn app:app
+```
+
+If the project ships its own `smello.init()` call already, the wrapper is still safe to use: bootstrap initialization runs first, then the program's `init()` updates the live config in place (no double-patching, no double-capture).
+
+For long-running commands defined in `Procfile`, `Makefile`, `justfile`, `package.json` scripts, or compose files, suggest prefixing the command with `smello run` in dev variants only.
 
 ### C. Configure via environment variables
 
@@ -175,6 +217,7 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 - Captures: HTTP requests (`requests`, `httpx`, `aiohttp`, `grpc`, `botocore`), unhandled exceptions (`sys.excepthook`), and Python log records (`logging`)
 - Default redacted headers: `Authorization`, `X-Api-Key`
 - Default server URL: `http://localhost:5110`
+- `smello run` wrapper: zero-code activation via `PYTHONPATH` bootstrap; subprocess-instrumentation safe; flags mirror `SMELLO_*` env vars 1:1.
 
 ### Environment variables
 

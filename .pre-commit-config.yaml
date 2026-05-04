@@ -33,6 +33,18 @@ repos:
         entry: uv lock --check
         files: (pyproject\.toml|uv\.lock)$
         pass_filenames: false
+      - id: openapi-schema-export
+        name: export OpenAPI schema
+        language: system
+        entry: bash -c 'uv run --frozen smello-server openapi-export --output frontend/openapi.json && cd frontend && npx prettier --write openapi.json'
+        files: ^server/src/.*\.py$
+        pass_filenames: false
+      - id: openapi-typescript
+        name: regenerate frontend types from OpenAPI
+        language: system
+        entry: bash -c 'cd frontend && npx openapi-typescript openapi.json -o src/api/schema.ts && npx prettier --write src/api/schema.ts'
+        files: ^(frontend/openapi\.json|server/src/.*\.py)$
+        pass_filenames: false
       - id: frontend-eslint
         name: frontend eslint
         language: system

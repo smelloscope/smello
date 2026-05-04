@@ -1,5 +1,6 @@
 """Configuration for Smello client."""
 
+import logging
 from dataclasses import dataclass, field
 
 
@@ -13,6 +14,9 @@ class SmelloConfig:
         default_factory=lambda: ["authorization", "x-api-key"]
     )
     redact_query_params: list[str] = field(default_factory=list)
+    capture_exceptions: bool = True
+    capture_logs: bool = False
+    log_level: int = logging.WARNING
 
     def should_capture(self, host: str) -> bool:
         """Decide whether to capture a request to the given host."""

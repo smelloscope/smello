@@ -1,31 +1,22 @@
-"""Tortoise ORM models for captured HTTP requests."""
+"""Tortoise ORM models for captured events."""
+
+from datetime import datetime, timezone
 
 from tortoise import fields
 from tortoise.models import Model
 
 
-class CapturedRequest(Model):
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class CapturedEvent(Model):
     id = fields.UUIDField(pk=True)
-    timestamp = fields.DatetimeField(auto_now_add=True)
-    duration_ms = fields.IntField()
-
-    # Request
-    method = fields.CharField(max_length=10)
-    url = fields.TextField()
-    request_headers: dict = fields.JSONField()
-    request_body = fields.TextField(null=True)
-    request_body_size = fields.IntField(default=0)
-
-    # Response
-    status_code = fields.IntField()
-    response_headers: dict = fields.JSONField()
-    response_body = fields.TextField(null=True)
-    response_body_size = fields.IntField(default=0)
-
-    # Meta
-    host = fields.CharField(max_length=255, index=True)
-    library = fields.CharField(max_length=50)
+    timestamp = fields.DatetimeField(default=utcnow)
+    event_type = fields.CharField(max_length=16, index=True)  # http, log, exception
+    summary = fields.CharField(max_length=500)
+    data: dict = fields.JSONField()
 
     class Meta:
-        table = "captured_requests"
+        table = "captured_events"
         ordering = ["-timestamp"]

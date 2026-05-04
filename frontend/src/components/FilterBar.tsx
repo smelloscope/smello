@@ -6,17 +6,23 @@ import MenuItem from "@mui/material/MenuItem";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import { dark } from "../theme";
-import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
-import { useGetMetaApiMetaGet } from "../api/generated/default/default";
+import {
+  hostFilterAtom,
+  methodFilterAtom,
+  searchFilterAtom,
+  eventTypeFilterAtom,
+} from "../atoms/filters";
+import { useGetMeta } from "../api/events";
+import EventTypeIcon from "./EventTypeIcon";
+import type { EventType } from "../api/events";
 
 export default function FilterBar() {
   const [host, setHost] = useAtom(hostFilterAtom);
   const [method, setMethod] = useAtom(methodFilterAtom);
   const [search, setSearch] = useAtom(searchFilterAtom);
+  const [eventType, setEventType] = useAtom(eventTypeFilterAtom);
 
-  const { data: meta } = useGetMetaApiMetaGet({
-    query: { refetchInterval: 10_000 },
-  });
+  const { data: meta } = useGetMeta({ refetchInterval: 10_000 });
 
   const darkSelect = {
     color: dark.textPrimary,
@@ -25,8 +31,40 @@ export default function FilterBar() {
     ".MuiSvgIcon-root": { color: dark.textMuted },
   };
 
+  const eventTypeLabels: Record<string, string> = {
+    http: "HTTP",
+    log: "Logs",
+    exception: "Exceptions",
+  };
+
   return (
     <Stack direction="row" spacing={1} alignItems="center" sx={{ p: 1 }}>
+      <Select
+        size="small"
+        displayEmpty
+        value={eventType}
+        onChange={(e) => setEventType(e.target.value)}
+        sx={{ minWidth: 130, ...darkSelect }}
+        renderValue={(v) => {
+          if (!v) return "All types";
+          return (
+            <Stack direction="row" alignItems="center" spacing={0.75}>
+              <EventTypeIcon eventType={v as EventType} dark size={16} />
+              <span>{eventTypeLabels[v] ?? v}</span>
+            </Stack>
+          );
+        }}
+      >
+        <MenuItem value="">All types</MenuItem>
+        {meta?.event_types.map((t) => (
+          <MenuItem key={t} value={t}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <EventTypeIcon eventType={t} size={18} />
+              <span>{eventTypeLabels[t] ?? t}</span>
+            </Stack>
+          </MenuItem>
+        ))}
+      </Select>
       <Select
         size="small"
         displayEmpty
@@ -59,7 +97,7 @@ export default function FilterBar() {
       </Select>
       <TextField
         size="small"
-        placeholder="Search requests...  (/)"
+        placeholder="Search events...  (/)"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         slotProps={{

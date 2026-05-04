@@ -1,7 +1,7 @@
 import { useSetAtom } from "jotai";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelectedRequestId } from "../hooks/useSelectedRequestId";
-import { useGetRequestApiRequestsRequestIdGet } from "../api/generated/default/default";
+import { useGetEvent } from "../api/events";
 import { headersOpenAtom, bodyOpenAtom, queryParamsOpenAtom } from "../atoms/sectionState";
 import { snackbarMessageAtom } from "../atoms/snackbar";
 
@@ -9,8 +9,8 @@ export function useDetailHotkeys() {
   const [selectedId] = useSelectedRequestId();
   const enabled = !!selectedId;
 
-  const { data: detail } = useGetRequestApiRequestsRequestIdGet(selectedId ?? "", {
-    query: { enabled },
+  const { data: detail } = useGetEvent(selectedId ?? "", {
+    enabled,
   });
 
   const setReqHeaders = useSetAtom(headersOpenAtom.request);
@@ -27,13 +27,16 @@ export function useDetailHotkeys() {
   useHotkeys("b", () => setReqBody((o) => !o), { enabled });
   useHotkeys("shift+b", () => setResBody((o) => !o), { enabled });
 
-  // Copy shortcuts
+  // Copy shortcuts (only for HTTP events)
   useHotkeys(
     "c",
     () => {
-      if (detail?.request_body) {
-        navigator.clipboard.writeText(detail.request_body);
-        setSnackbar("Request body copied");
+      if (detail?.data.event_type === "http") {
+        const { request_body } = detail.data;
+        if (request_body) {
+          navigator.clipboard.writeText(request_body);
+          setSnackbar("Request body copied");
+        }
       }
     },
     { enabled },
@@ -42,9 +45,12 @@ export function useDetailHotkeys() {
   useHotkeys(
     "shift+c",
     () => {
-      if (detail?.response_body) {
-        navigator.clipboard.writeText(detail.response_body);
-        setSnackbar("Response body copied");
+      if (detail?.data.event_type === "http") {
+        const { response_body } = detail.data;
+        if (response_body) {
+          navigator.clipboard.writeText(response_body);
+          setSnackbar("Response body copied");
+        }
       }
     },
     { enabled },

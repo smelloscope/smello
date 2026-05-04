@@ -1,4 +1,4 @@
-"""Background transport: sends captured data to the Smello server without blocking."""
+"""Background transport: sends captured events to the Smello server without blocking."""
 
 import json
 import logging
@@ -8,7 +8,9 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
-_queue: queue.Queue = queue.Queue(maxsize=1000)
+# Each queue item is (path, payload). The worker uses the path to choose
+# the typed capture endpoint.
+_queue: queue.Queue[tuple[str, dict]] = queue.Queue(maxsize=1000)
 _server_url: str = ""
 _started: bool = False
 
@@ -26,12 +28,19 @@ def start_worker(server_url: str) -> None:
     thread.start()
 
 
-def send(payload: dict) -> None:
-    """Queue a capture payload for sending. Non-blocking, drops if queue is full."""
-    try:
-        _queue.put_nowait(payload)
-    except queue.Full:
-        logger.warning("Payload dropped: capture queue is full")
+def send_http(payload: dict) -> None:
+    """Queue an HTTP capture payload for `/api/capture/http`."""
+    _enqueue("/api/capture/http", payload)
+
+
+def send_log(payload: dict) -> None:
+    """Queue a log capture payload for `/api/capture/log`."""
+    _enqueue("/api/capture/log", payload)
+
+
+def send_exception(payload: dict) -> None:
+    """Queue an exception capture payload for `/api/capture/exception`."""
+    _enqueue("/api/capture/exception", payload)
 
 
 def flush(timeout: float = 2.0) -> bool:
@@ -60,19 +69,37 @@ def shutdown(timeout: float = 2.0) -> bool:
 
     Returns ``True`` if the queue drained in time, ``False`` otherwise.
     """
-    result = flush(timeout=timeout)
-    return result
+    return flush(timeout=timeout)
+
+
+def _enqueue(path: str, payload: dict) -> None:
+    try:
+        _queue.put_nowait((path, payload))
+    except queue.Full:
+        logger.warning("Payload dropped: capture queue is full")
 
 
 def _worker() -> None:
     """Background worker that sends queued payloads to the server."""
     while True:
-        payload = _queue.get()
+        path, payload = _queue.get()
         try:
-            _send_to_server(payload)
+            _send_to_server(path, payload)
         except Exception as err:
             logger.warning("Failed to send capture to %s: %s", _server_url, err)
         _queue.task_done()
+
+
+def _send_to_server(path: str, payload: dict) -> None:
+    """Send a payload to the Smello server using urllib (to avoid recursion)."""
+    data = json.dumps(payload, default=_json_default).encode("utf-8")
+    req = urllib.request.Request(
+        f"{_server_url}{path}",
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=5)
 
 
 def _json_default(obj: object) -> str:
@@ -81,15 +108,3 @@ def _json_default(obj: object) -> str:
         return repr(obj)
     except Exception:
         return "<unserializable>"
-
-
-def _send_to_server(payload: dict) -> None:
-    """Send a payload to the Smello server using urllib (to avoid recursion)."""
-    data = json.dumps(payload, default=_json_default).encode("utf-8")
-    req = urllib.request.Request(
-        f"{_server_url}/api/capture",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    urllib.request.urlopen(req, timeout=5)

@@ -305,7 +305,7 @@
       <img src="assets/logo-dark.png" alt="Smello logo">
       <h1>Smello</h1>
     </div>
-    <p class="tagline">Capture outgoing HTTP and gRPC requests from your Python code and browse them in a local web dashboard.</p>
+    <p class="tagline">Capture HTTP requests, Python logs, and exceptions from your code and browse them in a local web dashboard.</p>
     <div class="hero-buttons">
       <a href="getting-started/" class="primary">Get Started</a>
       <a href="https://github.com/smelloscope/smello" class="secondary">GitHub</a>
@@ -314,7 +314,7 @@
       <span class="prompt">$</span> pip install smello smello-server
     </div>
     <div class="hero-screenshot">
-      <img src="assets/screenshot.png" alt="Smello dashboard showing captured HTTP requests">
+      <img src="assets/screenshot.png" alt="Smello dashboard showing captured HTTP requests, logs, and exceptions">
     </div>
   </section>
 
@@ -324,15 +324,15 @@
     <div class="features">
       <div class="feature">
         <h3>Two Lines of Code</h3>
-        <p><code>import smello</code> and <code>smello.init()</code> in your entrypoint.</p>
+        <p><code>import smello</code> and <code>smello.init()</code> in your entrypoint. HTTP requests, exceptions, and logs — all captured.</p>
       </div>
       <div class="feature">
-        <h3>Full Request &amp; Response</h3>
-        <p>Headers, body, status code, and timing for every captured call. Sensitive headers redacted automatically.</p>
+        <h3>Unified Timeline</h3>
+        <p>HTTP traffic, log records, and crash tracebacks in one scrollable view. Filter by event type, search across everything.</p>
       </div>
       <div class="feature">
         <h3>requests, httpx, aiohttp, gRPC &amp; boto3</h3>
-        <p>Auto-patches <code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, and <code>botocore</code>. Captures Google Cloud and AWS SDK traffic.</p>
+        <p>Auto-patches <code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, and <code>botocore</code>. Hooks <code>sys.excepthook</code> and <code>logging</code>.</p>
       </div>
     </div>
   </section>
@@ -342,14 +342,14 @@
     <h2>AI Agent Skills</h2>
     <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 900px;">
       <div class="feature">
-        <h3><a href="ai-skills/#setup-smello-project-integration" style="color: inherit; text-decoration: none;">/setup-smello</a></h3>
+        <h3><a href="ai-skills/#smello-setup-project-integration" style="color: inherit; text-decoration: none;">/smello-setup</a></h3>
         <p>Your AI agent explores your code and adds Smello automatically.</p>
-        <p style="margin-top: 0.75rem;"><a href="ai-skills/#setup-smello-project-integration" style="color: #FFA600;">Learn more &rarr;</a></p>
+        <p style="margin-top: 0.75rem;"><a href="ai-skills/#smello-setup-project-integration" style="color: #FFA600;">Learn more &rarr;</a></p>
       </div>
       <div class="feature">
-        <h3><a href="ai-skills/#http-debugger-traffic-inspection" style="color: inherit; text-decoration: none;">/http-debugger</a></h3>
-        <p>Inspect captured traffic, find failures, and analyze responses.</p>
-        <p style="margin-top: 0.75rem;"><a href="ai-skills/#http-debugger-traffic-inspection" style="color: #FFA600;">Learn more &rarr;</a></p>
+        <h3><a href="ai-skills/#smello-debugger-event-inspection" style="color: inherit; text-decoration: none;">/smello-debugger</a></h3>
+        <p>Inspect captured traffic, logs, exceptions — find failures and analyze events.</p>
+        <p style="margin-top: 0.75rem;"><a href="ai-skills/#smello-debugger-event-inspection" style="color: #FFA600;">Learn more &rarr;</a></p>
       </div>
     </div>
     <p style="text-align: center; margin-top: 2rem; font-size: 1.05rem; opacity: 0.85;">
@@ -366,7 +366,7 @@
   <!-- Works With -->
   <section class="integrations-section">
     <h2>Works With</h2>
-    <p class="subtitle">Auto-patches popular Python HTTP and RPC libraries</p>
+    <p class="subtitle">Auto-patches popular Python HTTP and RPC libraries, plus logging and exception hooks</p>
     <div class="integrations-grid">
       <div class="integration-card">
         <img class="ic-icon" src="assets/logos/requests.svg" alt="requests"> requests
@@ -426,7 +426,7 @@
       <div class="step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <div class="step-label">Browse traffic</div>
+          <div class="step-label">Browse requests, logs &amp; exceptions</div>
           <code>http://localhost:5110</code>
         </div>
       </div>
@@ -436,14 +436,14 @@
         <pre><code class="language-python"><span class="kn">import</span> <span class="nn">smello</span>
 <span class="n">smello</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>  <span class="c1"># reads SMELLO_URL env var, or pass server_url="..."</span>
 
-<span class="c1"># Every outgoing request is now captured</span>
+<span class="c1"># HTTP requests, exceptions &amp; (optionally) logs are captured</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://api.stripe.com/v1/charges"</span><span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">httpx</span>
 <span class="n">resp</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://api.openai.com/v1/models"</span><span class="p">)</span>
 
-<span class="c1"># Browse captured requests at http://localhost:5110</span></code></pre>
+<span class="c1"># Browse captured events at http://localhost:5110</span></code></pre>
       </div>
     </div>
   </section>
@@ -454,7 +454,11 @@
     <div class="faq-list">
       <details>
         <summary>Does Smello add latency to my requests?</summary>
-        <p>No. Captured data is serialized and sent to the server via a background thread using a queue. Your application's HTTP calls return at their normal speed.</p>
+        <p>No. Captured data is serialized and sent to the server via a background thread using a queue. Your application's HTTP calls return at their normal speed. Log and exception capture are equally non-blocking.</p>
+      </details>
+      <details>
+        <summary>What does it capture exactly?</summary>
+        <p>HTTP requests and responses (method, URL, headers, body, status, duration), Python log records (level, logger, message, source location), and unhandled exceptions (type, traceback, stack frames). Everything appears in a single unified timeline.</p>
       </details>
       <details>
         <summary>Does it capture sensitive data?</summary>
@@ -470,7 +474,7 @@
       </details>
       <details>
         <summary>What about production use?</summary>
-        <p>Smello is designed for local development and debugging. It stores data in a local SQLite database and runs a lightweight server on your machine. There is no cloud component.</p>
+        <p>Smello is designed for local development and debugging. It stores data in a local SQLite database and runs a lightweight server on your machine. There is no cloud component. Without <code>SMELLO_URL</code> set, <code>init()</code> is a zero-overhead no-op.</p>
       </details>
       <details>
         <summary>Can I use it with Docker?</summary>

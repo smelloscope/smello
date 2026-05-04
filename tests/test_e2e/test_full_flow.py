@@ -31,7 +31,7 @@ from smello_server.app import create_app
 # -- Mock target API server ---------------------------------------------------
 
 
-class _MockTargetHandler(BaseHTTPRequestHandler):
+class MockTargetHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/redirect-me":
             self.send_response(302)
@@ -83,7 +83,7 @@ def _free_port():
 @pytest.fixture()
 def mock_target():
     """A mock HTTP server acting as the external API being called."""
-    server = HTTPServer(("127.0.0.1", 0), _MockTargetHandler)
+    server = HTTPServer(("127.0.0.1", 0), MockTargetHandler)
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -110,7 +110,7 @@ def smello_server(tmp_path):
     deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
         try:
-            urllib.request.urlopen(f"{base}/api/requests", timeout=1)
+            urllib.request.urlopen(f"{base}/api/events", timeout=1)
             break
         except Exception:
             time.sleep(0.1)
@@ -158,19 +158,38 @@ def patched_aiohttp(smello_server):
 # -- Helpers ------------------------------------------------------------------
 
 
-def _wait_for_capture(smello_url, expected_count=1, timeout=5):
-    """Poll the API until the expected number of captured requests appear."""
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        data = json.loads(urllib.request.urlopen(f"{smello_url}/api/requests").read())
-        if len(data) >= expected_count:
-            return data
-        time.sleep(0.1)
-    return json.loads(urllib.request.urlopen(f"{smello_url}/api/requests").read())
-
-
 def _fetch_json(url):
     return json.loads(urllib.request.urlopen(url).read())
+
+
+def _flatten_http_event(detail):
+    """Merge the HTTP `data` payload onto the top-level event dict."""
+    return {**detail, **(detail.get("data") or {})}
+
+
+def _list_http_events(smello_url):
+    """Return all captured HTTP events with their data flattened to the top level."""
+    summaries = _fetch_json(f"{smello_url}/api/events?event_type=http")
+    return [
+        _flatten_http_event(_fetch_json(f"{smello_url}/api/events/{s['id']}"))
+        for s in summaries
+    ]
+
+
+def _wait_for_capture(smello_url, expected_count=1, timeout=5):
+    """Poll the API until the expected number of captured HTTP events appear."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        events = _list_http_events(smello_url)
+        if len(events) >= expected_count:
+            return events
+        time.sleep(0.1)
+    return _list_http_events(smello_url)
+
+
+def _fetch_event_detail(smello_url, event_id):
+    """Fetch a single event and flatten its HTTP `data` to the top level."""
+    return _flatten_http_event(_fetch_json(f"{smello_url}/api/events/{event_id}"))
 
 
 # -- Tests --------------------------------------------------------------------
@@ -220,7 +239,7 @@ def test_redacted_headers_in_api(smello_server, mock_target, patched_requests):
     )
 
     data = _wait_for_capture(smello_server)
-    detail = _fetch_json(f"{smello_server}/api/requests/{data[0]['id']}")
+    detail = _fetch_event_detail(smello_server, data[0]["id"])
 
     # Header key casing depends on the HTTP library; check case-insensitively
     headers_lower = {k.lower(): v for k, v in detail["request_headers"].items()}
@@ -263,7 +282,7 @@ def test_aiohttp_post_captured(smello_server, mock_target, patched_aiohttp):
     assert "/aiohttp-post" in data[0]["url"]
     assert data[0]["status_code"] == 201
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{data[0]['id']}")
+    detail = _fetch_event_detail(smello_server, data[0]["id"])
     assert detail["request_body"] == json.dumps({"test": "data"})
 
 
@@ -282,7 +301,7 @@ def test_aiohttp_post_str_data(smello_server, mock_target, patched_aiohttp):
     data = _wait_for_capture(smello_server)
     assert len(data) >= 1
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{data[0]['id']}")
+    detail = _fetch_event_detail(smello_server, data[0]["id"])
     assert detail["request_body"] == "hello world"
 
 
@@ -301,7 +320,7 @@ def test_aiohttp_post_bytes_data(smello_server, mock_target, patched_aiohttp):
     data = _wait_for_capture(smello_server)
     assert len(data) >= 1
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{data[0]['id']}")
+    detail = _fetch_event_detail(smello_server, data[0]["id"])
     assert detail["request_body"] == '{"raw": true}'
 
 
@@ -330,7 +349,7 @@ def test_aiohttp_ignored_host_not_captured(smello_server, mock_target):
 
     # Give the worker a moment, then verify the ignored request was not captured
     time.sleep(1)
-    data = json.loads(urllib.request.urlopen(f"{smello_server}/api/requests").read())
+    data = _list_http_events(smello_server)
     captured_urls = [r["url"] for r in data]
     assert not any("/should-be-ignored" in url for url in captured_urls)
 
@@ -431,7 +450,7 @@ def test_aiohttp_base_url_ignore_hosts(smello_server, mock_target):
     assert resp.status == 200
 
     time.sleep(1)
-    data = json.loads(urllib.request.urlopen(f"{smello_server}/api/requests").read())
+    data = _list_http_events(smello_server)
     captured_urls = [r["url"] for r in data]
     assert not any("/base-url-ignored" in url for url in captured_urls)
 
@@ -459,7 +478,7 @@ def test_aiohttp_session_headers_captured(smello_server, mock_target, patched_ai
     matching = [r for r in data if "/aiohttp-sess-hdr" in r["url"]]
     assert len(matching) >= 1
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{matching[0]['id']}")
+    detail = _fetch_event_detail(smello_server, matching[0]["id"])
     headers_lower = {k.lower(): v for k, v in detail["request_headers"].items()}
     assert headers_lower["x-session-default"] == "from-session"
     assert headers_lower["x-per-request"] == "per-req"
@@ -507,7 +526,7 @@ def test_aiohttp_post_dict_data(smello_server, mock_target, patched_aiohttp):
     matching = [r for r in data if "/aiohttp-form" in r["url"]]
     assert len(matching) >= 1
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{matching[0]['id']}")
+    detail = _fetch_event_detail(smello_server, matching[0]["id"])
     assert "username=alice" in detail["request_body"]
     assert "role=admin" in detail["request_body"]
 
@@ -573,7 +592,7 @@ def test_aiohttp_redirect_method_change(smello_server, mock_target, patched_aioh
     assert final[0]["method"] == "GET"
     assert final[0]["status_code"] == 200
 
-    detail = _fetch_json(f"{smello_server}/api/requests/{final[0]['id']}")
+    detail = _fetch_event_detail(smello_server, final[0]["id"])
     assert detail["request_body"] is None
 
 

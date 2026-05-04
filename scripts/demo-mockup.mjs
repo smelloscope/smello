@@ -3,9 +3,13 @@
  * End-to-end demo mockup generator.
  *
  * 1. Clears all Smello data via the API
- * 2. Runs the demo_httpbin.py sample script to generate traffic
+ * 2. Runs the all_in_one.py sample script to generate HTTP traffic, logs, and an exception
  * 3. Picks the first captured request so the detail panel is visible
  * 4. Calls generateMockup() to produce the final screenshot
+ *
+ * The default demo script intentionally raises an unhandled exception (so Smello
+ * captures it), which means a non-zero exit code is expected and not treated
+ * as failure.
  *
  * Usage:
  *   node scripts/demo-mockup.mjs                          # default settings
@@ -42,14 +46,16 @@ async function smelloAPI(path, { method = "GET", expect } = {}) {
 }
 
 async function clearRequests() {
-  await smelloAPI("/api/requests", { method: "DELETE", expect: 204 });
+  await smelloAPI("/api/events", { method: "DELETE", expect: 204 });
   console.log("Cleared all Smello requests.");
 }
 
 async function waitForRequests(minCount = 1, timeoutMs = 10000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const requests = await smelloAPI(`/api/requests?limit=${minCount}`);
+    const requests = await smelloAPI(
+      `/api/events?event_type=http&limit=${minCount}`,
+    );
     if (requests.length >= minCount) return requests;
     await new Promise((r) => setTimeout(r, 500));
   }
@@ -61,7 +67,7 @@ async function waitForRequests(minCount = 1, timeoutMs = 10000) {
 // ---------------------------------------------------------------------------
 
 function runDemoScript(scriptPath) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     console.log(`Running ${scriptPath}...`);
     const child = spawn("uv", ["run", "python", scriptPath], {
       cwd: ROOT,
@@ -73,14 +79,15 @@ function runDemoScript(scriptPath) {
     child.stdout.on("data", (d) => (stdout += d));
     child.stderr.on("data", (d) => (stderr += d));
 
+    // Demo scripts may intentionally raise unhandled exceptions so Smello
+    // captures them — a non-zero exit code is not a failure here.
     child.on("close", (code) => {
       if (stdout) console.log(stdout.trimEnd());
+      if (stderr) console.error(stderr.trimEnd());
       if (code !== 0) {
-        if (stderr) console.error(stderr.trimEnd());
-        reject(new Error(`Demo script exited with code ${code}`));
-      } else {
-        resolve();
+        console.log(`(demo script exited with code ${code} — continuing)`);
       }
+      resolve();
     });
   });
 }
@@ -92,7 +99,8 @@ function runDemoScript(scriptPath) {
 const { values: args } = parseArgs({
   options: {
     // Own options
-    script: { type: "string", default: resolve(ROOT, "examples/python/demo_httpbin.py") },
+    script: { type: "string", default: resolve(ROOT, "examples/python/all_in_one.py") },
+    "select-method": { type: "string", default: "POST" },
     // Mockup options (forwarded to generateMockup)
     url: { type: "string" },
     output: { type: "string", default: resolve(ROOT, "docs", "assets", "screenshot.png") },
@@ -110,7 +118,9 @@ if (args.help) {
 Usage: node scripts/demo-mockup.mjs [options]
 
 Demo options:
-  --script <path>       Python demo script (default: examples/python/demo_httpbin.py)
+  --script <path>       Python demo script (default: examples/python/all_in_one.py)
+  --select-method <m>   HTTP method to pre-select in the dashboard (default: POST).
+                        Falls back to the most recent request if none match.
 
 Mockup options:
   --url <url>           Override the screenshot URL (default: auto-detected from frontend)
@@ -139,14 +149,20 @@ async function main() {
   // 2. Run demo script
   await runDemoScript(args.script);
 
-  // 3. Wait for captures and pick the first request
-  const requests = await waitForRequests(1);
-  const firstId = requests[0].id;
-  console.log(`Using request ${firstId} (${requests[0].method} ${requests[0].url})\n`);
+  // 3. Wait for captures and pick a request — prefer the configured method
+  //    (POST by default) since it shows request + response bodies, then fall
+  //    back to the most recent capture.
+  await waitForRequests(1);
+  const requests = await smelloAPI("/api/events?event_type=http&limit=50");
+  const wantedMethod = args["select-method"].toUpperCase();
+  const matchPrefix = `${wantedMethod} `;
+  const picked =
+    requests.find((r) => (r.summary || "").startsWith(matchPrefix)) || requests[0];
+  console.log(`Using request ${picked.id} (${picked.summary})\n`);
 
   // 4. Generate mockup — URL defaults to frontend with request pre-selected
   await generateMockup({
-    url: args.url || `${FRONTEND_URL}/#${firstId}`,
+    url: args.url || `${FRONTEND_URL}/#${picked.id}`,
     output: args.output,
     width: parseInt(args.width),
     height: parseInt(args.height),

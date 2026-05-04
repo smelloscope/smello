@@ -12,7 +12,12 @@ bump-server part:
 
 # Run smello server locally with auto-reload (http://localhost:5110)
 server:
-    uv run smello-server run --reload
+    uv run smello-server --reload
+
+# Export the OpenAPI schema (consumed by the frontend's openapi-typescript step)
+openapi-export:
+    uv run --frozen smello-server openapi-export --output frontend/openapi.json
+    cd frontend && npx prettier --write openapi.json
 
 # Install frontend dependencies
 frontend-install:

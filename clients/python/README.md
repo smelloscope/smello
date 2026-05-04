@@ -4,9 +4,9 @@
 
 # Smello
 
-Capture outgoing HTTP requests from your Python code and browse them in a local web dashboard — including gRPC calls made by Google Cloud libraries.
+Capture HTTP requests, Python logs, and unhandled exceptions from your code and browse them in a local web dashboard.
 
-Like [Mailpit](https://mailpit.axllent.org/), but for HTTP requests.
+Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output.
 
 ## Setup
 
@@ -19,7 +19,7 @@ pip install smello smello-server
 Start the server:
 
 ```bash
-smello-server run
+smello-server
 ```
 
 Add two lines to your code:
@@ -31,10 +31,10 @@ smello.init(server_url="http://localhost:5110")
 import requests
 resp = requests.get("https://api.stripe.com/v1/charges")
 
-# Browse captured requests at http://localhost:5110
+# Browse captured events at http://localhost:5110
 ```
 
-Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Browse results at `http://localhost:5110`.
+Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. It also hooks into `sys.excepthook` to capture unhandled exceptions with full tracebacks, and optionally into Python's `logging` module to capture log records.
 
 Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment — no URL, no side effects.
 
@@ -71,10 +71,11 @@ Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is a
 
 ## What Smello Captures
 
-- Method, URL, headers, and body
-- Response status code, headers, and body
-- Duration in milliseconds
-- Library used (requests, httpx, aiohttp, grpc, or botocore)
+**HTTP requests** — method, URL, headers, body, response status/headers/body, duration, and library used (requests, httpx, aiohttp, grpc, or botocore).
+
+**Unhandled exceptions** (enabled by default) — exception type, message, full traceback, and stack frames with source context.
+
+**Log records** (opt-in via `capture_logs=True`) — level, logger name, message, source location, and extra attributes.
 
 Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and optionally redacts query string parameters.
 
@@ -83,11 +84,18 @@ Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default and o
 ```python
 smello.init(
     server_url="http://localhost:5110",       # where to send captured data
+
+    # HTTP capture
     capture_hosts=["api.stripe.com"],         # only capture these hosts
     capture_all=True,                          # capture everything (default)
     ignore_hosts=["localhost"],               # skip these hosts
     redact_headers=["Authorization"],         # replace header values with [REDACTED]
     redact_query_params=["api_key", "token"], # replace query param values with [REDACTED]
+
+    # Logs & exceptions
+    capture_exceptions=True,                   # capture unhandled exceptions (default)
+    capture_logs=False,                        # capture log records (opt-in)
+    log_level=30,                              # minimum log level to capture (WARNING)
 )
 ```
 
@@ -101,6 +109,9 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 | `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
 | `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
 | `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]` |
+| `capture_exceptions` | `SMELLO_CAPTURE_EXCEPTIONS` | `True` |
+| `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
+| `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 

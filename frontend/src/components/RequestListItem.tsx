@@ -5,12 +5,11 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { mono, dark } from "../theme";
 import StatusBadge from "./StatusBadge";
-import MethodBadge from "./MethodBadge";
-import { parseDisplayUrl } from "../utils/url";
-import type { RequestSummary } from "../api/generated/model";
+import EventTypeIcon from "./EventTypeIcon";
+import type { EventSummary } from "../api/events";
 
 type RequestListItemProps = {
-  item: RequestSummary;
+  item: EventSummary;
   selected: boolean;
   onClick: () => void;
 };
@@ -20,15 +19,173 @@ function formatTime(ts: string): string {
   return d.toLocaleTimeString("en-US", { hour12: false });
 }
 
-function formatDuration(ms: number): string {
-  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${ms}ms`;
+function HttpRow({ item }: { item: EventSummary }) {
+  const match = item.summary.match(/^(\w+)\s+(.+?)\s+→\s+(\d+)$/);
+  const method = match?.[1] ?? "???";
+  const path = match?.[2] ?? item.summary;
+  const status = match?.[3] ? parseInt(match[3], 10) : 0;
+
+  return (
+    <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontFamily: mono,
+            fontSize: 11,
+            fontWeight: 700,
+            color: dark.textSecondary,
+            flexShrink: 0,
+          }}
+        >
+          {method}
+        </Typography>
+        <Typography
+          component="span"
+          sx={{
+            fontFamily: mono,
+            fontSize: 12,
+            fontWeight: 500,
+            color: dark.textPrimary,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+          title={item.summary}
+        >
+          {path}
+        </Typography>
+      </Stack>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
+        <Typography
+          component="span"
+          sx={{ fontSize: 11, color: dark.textSecondary, flex: 1, mr: 1 }}
+        >
+          {formatTime(item.timestamp)}
+        </Typography>
+        <StatusBadge status={status} />
+      </Stack>
+    </Box>
+  );
+}
+
+function LogRow({ item }: { item: EventSummary }) {
+  const match = item.summary.match(/^(\w+)\s+(.+?):\s+(.*)$/);
+  const level = match?.[1] ?? "INFO";
+  const logger = match?.[2] ?? "";
+  const message = match?.[3] ?? item.summary;
+
+  return (
+    <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontFamily: mono,
+            fontSize: 11,
+            fontWeight: 700,
+            color: dark.textSecondary,
+            flexShrink: 0,
+          }}
+        >
+          {level}
+        </Typography>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: dark.textPrimary,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+          title={item.summary}
+        >
+          {message}
+        </Typography>
+      </Stack>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: 11,
+            color: dark.textSecondary,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+            mr: 1,
+          }}
+        >
+          {logger}
+        </Typography>
+        <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled, flexShrink: 0 }}>
+          {formatTime(item.timestamp)}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+function ExceptionRow({ item }: { item: EventSummary }) {
+  const colonIdx = item.summary.indexOf(":");
+  const excType = colonIdx > 0 ? item.summary.slice(0, colonIdx) : item.summary;
+  const excValue = colonIdx > 0 ? item.summary.slice(colonIdx + 2) : "";
+
+  return (
+    <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontFamily: mono,
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#ef9a9a",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+          title={item.summary}
+        >
+          {excType}
+        </Typography>
+      </Stack>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: 11,
+            color: dark.textSecondary,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+            mr: 1,
+          }}
+        >
+          {excValue}
+        </Typography>
+        <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled, flexShrink: 0 }}>
+          {formatTime(item.timestamp)}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+function eventLevel(item: EventSummary): string | undefined {
+  if (item.event_type !== "log") return undefined;
+  const match = item.summary.match(/^(\w+)\s+/);
+  return match?.[1];
 }
 
 export default function RequestListItem({ item, selected, onClick }: RequestListItemProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const { host, path } = parseDisplayUrl(item.url);
-  const isGrpc = item.url.startsWith("grpc://");
 
   useEffect(() => {
     if (selected && ref.current) {
@@ -45,87 +202,21 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
         py: 1,
         px: 1.5,
         alignItems: "flex-start",
+        gap: 1,
         borderBottom: `1px solid ${dark.border}`,
-        "&:hover": {
-          bgcolor: dark.hover,
-        },
+        "&:hover": { bgcolor: dark.hover },
         "&.Mui-selected": {
           bgcolor: dark.selected,
-          "&:hover": {
-            bgcolor: dark.selectedHover,
-          },
+          "&:hover": { bgcolor: dark.selectedHover },
         },
       }}
     >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        {/* Row 1: Method + path */}
-        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
-          <MethodBadge method={item.method} dark />
-          <Typography
-            component="span"
-            sx={{
-              fontFamily: mono,
-              fontSize: 12,
-              fontWeight: 500,
-              color: dark.textPrimary,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flex: 1,
-            }}
-            title={item.url}
-          >
-            {path}
-          </Typography>
-        </Stack>
-
-        {/* Row 2: host + metadata */}
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-          <Typography
-            component="span"
-            sx={{
-              fontSize: 11,
-              color: dark.textSecondary,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flex: 1,
-              mr: 1,
-            }}
-          >
-            {host}
-            {isGrpc && (
-              <Typography
-                component="span"
-                sx={{
-                  fontSize: 10,
-                  color: dark.textDisabled,
-                  ml: 0.5,
-                }}
-              >
-                gRPC
-              </Typography>
-            )}
-          </Typography>
-          <Stack direction="row" alignItems="center" spacing={0.75} sx={{ flexShrink: 0 }}>
-            <Typography
-              component="span"
-              sx={{
-                fontSize: 11,
-                color: item.duration_ms >= 2000 ? "#ffa726" : dark.textDisabled,
-                fontFamily: mono,
-                fontWeight: item.duration_ms >= 2000 ? 600 : 400,
-              }}
-            >
-              {formatDuration(item.duration_ms)}
-            </Typography>
-            <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled }}>
-              {formatTime(item.timestamp)}
-            </Typography>
-            <StatusBadge status={item.status_code} />
-          </Stack>
-        </Stack>
+      <Box sx={{ pt: 0.25, flexShrink: 0 }}>
+        <EventTypeIcon eventType={item.event_type} dark level={eventLevel(item)} size={18} />
       </Box>
+      {item.event_type === "http" && <HttpRow item={item} />}
+      {item.event_type === "log" && <LogRow item={item} />}
+      {item.event_type === "exception" && <ExceptionRow item={item} />}
     </ListItemButton>
   );
 }

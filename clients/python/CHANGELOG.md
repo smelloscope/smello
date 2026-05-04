@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Exception capture**: Hook `sys.excepthook` and `threading.excepthook` to capture unhandled exceptions with full tracebacks, stack frames, and source context. Enabled by default (`capture_exceptions=True`). Events are flushed synchronously before the process exits.
+- **Frame source snippets**: Each captured exception frame now includes up to 5 lines of source code before and after the failing line (`pre_context`/`post_context`), so you can see the surrounding code on the dashboard without opening the file. Synthetic filenames (`<frozen ...>`, `<string>`) and unreadable sources gracefully fall back to empty lists.
+- **Log capture**: Hook `logging.Logger.callHandlers` to capture Python log records at or above a configurable level. Opt-in via `capture_logs=True` and `log_level` (default: WARNING). Smello's own loggers and `urllib3` are automatically excluded to prevent recursion.
+- **New `init()` parameters**: `capture_exceptions` (bool, default `True`), `capture_logs` (bool, default `False`), `log_level` (int, default `30`/WARNING).
+- **New environment variables**: `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`.
+- **New `smello run` flags** for the new options: `--capture-exceptions` / `--no-capture-exceptions`, `--capture-logs` / `--no-capture-logs`, and `--log-level LEVEL`. Each maps 1:1 to its `SMELLO_*` env var, keeping the wrapper feature-complete with the in-code `init()` API.
+
+### Changed
+
+- **Typed transport endpoints**: Patches now post to typed server endpoints — HTTP captures go to `/api/capture/http`, logs to `/api/capture/log`, and exceptions to `/api/capture/exception`. Previous releases posted HTTP captures to `/api/capture`. Requires `smello-server` with the typed-endpoint release.
+- **Internal transport API**: `transport.send()` is replaced with `transport.send_http()`, `transport.send_log()`, and `transport.send_exception()`. Anyone wrapping the transport directly (rather than going through `smello.init()`) needs to update their imports.
+
 ## [0.8.0] - 2026-05-02
 
 ### Changed

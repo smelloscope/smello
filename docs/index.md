@@ -1,4 +1,4 @@
 ---
 template: home.html
-title: Smello — HTTP Request Inspector for Python
+title: Smello — Debug Inspector for Python
 ---

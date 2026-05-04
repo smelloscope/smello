@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Typed event payloads**: `GET /api/events/{id}` now returns `data` as a Pydantic-discriminated union (`HttpEventData | LogEventData | ExceptionEventData`) instead of an opaque object. The OpenAPI schema exposes the discriminator so frontends can generate strongly-typed clients (the bundled dashboard now uses `openapi-typescript`). Old DB rows written before this change are hydrated transparently on read.
+- **HTTP meta promoted**: `python_version` and `smello_version` are now stored alongside `library` in the HTTP event payload (previously dropped at write time).
+- **`smello-server openapi-export`**: New CLI command that writes the FastAPI OpenAPI schema to a JSON file. Used by the frontend's type-generation step and the matching `just openapi-export` recipe.
+- **Unified event model**: Replace the HTTP-only `CapturedRequest` model with a unified `CapturedEvent` model that supports multiple event types — HTTP requests, log records, and exceptions — in a single timeline.
+- **Typed capture endpoints**: New `POST /api/capture/http`, `POST /api/capture/log`, and `POST /api/capture/exception` endpoints, each with a strict Pydantic input schema. The original HTTP-only `POST /api/capture` is preserved (deprecated) for older client wheels.
+- **Log event capture**: New `log` event type stores Python log records with level, logger name, message, source location, and extra attributes.
+- **Exception event capture**: New `exception` event type stores unhandled exceptions with type, message, full traceback text, and structured stack frames.
+- **`/api/events` endpoint**: New unified timeline endpoint returning all event types sorted by timestamp. Supports filtering by `event_type`, `host`, `method`, `status`, and full-text `search`.
+- **`/api/events/{id}` endpoint**: Returns full event detail with type-specific data in a `data` JSON field.
+- **Event type filter in meta**: `GET /api/meta` now returns `event_types` alongside `hosts` and `methods`.
+- **`DELETE /api/events`**: Clear all events (all types).
+- **`services/` layer**: Persistence and queries live in `services/capture.py` (writes) and `services/events.py` (reads). Routes are thin wrappers, so behavior can be tested directly against the service functions without an HTTP roundtrip.
+- **Open-in-editor icon in exception frames**: Each captured exception frame in the dashboard now shows a small VS Code icon next to `File:Line`. Clicking it opens the file at that line in VS Code (or any VS Code-based editor like Cursor) via the `vscode://file/...` URL scheme.
+- **Expandable source snippets in exception frames**: Click a frame row to expand a syntax-highlighted Python snippet showing the lines around the failing line, with the failing line highlighted. Powered by `pre_context`/`post_context` fields captured by the client SDK.
+
+### Changed
+
+- **Data model**: Events are stored in a single `captured_events` table with `event_type`, `summary`, and `data` (JSON) columns, replacing the previous multi-column `captured_requests` table.
+- **Dashboard**: The event list now shows HTTP requests, logs, and exceptions in a unified timeline with distinct visual styles — method badges for HTTP, level badges for logs, and traceback previews for exceptions. A new "All types" dropdown filters by event type.
+
+### Deprecated
+
+- **`POST /api/capture`**: The original HTTP-only capture endpoint is now marked `deprecated` in the OpenAPI spec. It still accepts the same payload shape so older client wheels keep working (they only ever posted HTTP captures here), but will be removed in a future release. Use the typed endpoints (`/api/capture/http`, `/api/capture/log`, `/api/capture/exception`) instead.
+
+### Removed
+
+- **BREAKING**: Removed the `/api/requests`, `/api/requests/{id}`, and `DELETE /api/requests` endpoints. Use `/api/events?event_type=http`, `/api/events/{id}`, and `DELETE /api/events` instead. Detail responses now return HTTP fields nested under `data` (e.g. `data.method`, `data.request_headers`) rather than at the top level.
+
 ## [0.5.0] - 2026-04-07
 
 ### Added

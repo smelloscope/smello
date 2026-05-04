@@ -6,97 +6,97 @@ from unittest.mock import patch
 
 import pytest
 import smello
-from smello._env import _env_bool, _env_list, _env_str
+from smello._env import env_bool, env_list, env_str
 
-# --- _env_str ---
+# --- env_str ---
 
 
-def test_env_str_returns_value():
+def testenv_str_returns_value():
     with patch.dict(os.environ, {"SMELLO_URL": "http://example.com:9000"}):
-        assert _env_str("URL") == "http://example.com:9000"
+        assert env_str("URL") == "http://example.com:9000"
 
 
-def test_env_str_strips_whitespace():
+def testenv_str_strips_whitespace():
     with patch.dict(os.environ, {"SMELLO_URL": "  http://host:1234  "}):
-        assert _env_str("URL") == "http://host:1234"
+        assert env_str("URL") == "http://host:1234"
 
 
-def test_env_str_returns_none_when_unset():
+def testenv_str_returns_none_when_unset():
     with patch.dict(os.environ, {}, clear=True):
-        assert _env_str("URL") is None
+        assert env_str("URL") is None
 
 
-def test_env_str_returns_none_when_empty():
+def testenv_str_returns_none_when_empty():
     with patch.dict(os.environ, {"SMELLO_URL": ""}):
-        assert _env_str("URL") is None
+        assert env_str("URL") is None
 
 
-def test_env_str_returns_none_when_only_whitespace():
+def testenv_str_returns_none_when_only_whitespace():
     with patch.dict(os.environ, {"SMELLO_URL": "   "}):
-        assert _env_str("URL") is None
+        assert env_str("URL") is None
 
 
-# --- _env_bool ---
+# --- env_bool ---
 
 
 @pytest.mark.parametrize("value", ["true", "True", "TRUE", "1", "yes", "Yes", "YES"])
-def test_env_bool_truthy(value):
+def testenv_bool_truthy(value):
     with patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": value}):
-        assert _env_bool("CAPTURE_ALL") is True
+        assert env_bool("CAPTURE_ALL") is True
 
 
 @pytest.mark.parametrize("value", ["false", "False", "FALSE", "0", "no", "No", "NO"])
-def test_env_bool_falsy(value):
+def testenv_bool_falsy(value):
     with patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": value}):
-        assert _env_bool("CAPTURE_ALL") is False
+        assert env_bool("CAPTURE_ALL") is False
 
 
-def test_env_bool_returns_none_when_unset():
+def testenv_bool_returns_none_when_unset():
     with patch.dict(os.environ, {}, clear=True):
-        assert _env_bool("CAPTURE_ALL") is None
+        assert env_bool("CAPTURE_ALL") is None
 
 
-def test_env_bool_returns_none_when_empty():
+def testenv_bool_returns_none_when_empty():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": ""}):
-        assert _env_bool("CAPTURE_ALL") is None
+        assert env_bool("CAPTURE_ALL") is None
 
 
-def test_env_bool_returns_none_for_unrecognised():
+def testenv_bool_returns_none_for_unrecognised():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": "maybe"}):
-        assert _env_bool("CAPTURE_ALL") is None
+        assert env_bool("CAPTURE_ALL") is None
 
 
-# --- _env_list ---
+# --- env_list ---
 
 
-def test_env_list_comma_separated():
+def testenv_list_comma_separated():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": "a.com,b.com,c.com"}):
-        assert _env_list("CAPTURE_HOSTS") == ["a.com", "b.com", "c.com"]
+        assert env_list("CAPTURE_HOSTS") == ["a.com", "b.com", "c.com"]
 
 
-def test_env_list_strips_items():
+def testenv_list_strips_items():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": " a.com , b.com "}):
-        assert _env_list("CAPTURE_HOSTS") == ["a.com", "b.com"]
+        assert env_list("CAPTURE_HOSTS") == ["a.com", "b.com"]
 
 
-def test_env_list_skips_empty_items():
+def testenv_list_skips_empty_items():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": "a.com,,b.com,"}):
-        assert _env_list("CAPTURE_HOSTS") == ["a.com", "b.com"]
+        assert env_list("CAPTURE_HOSTS") == ["a.com", "b.com"]
 
 
-def test_env_list_returns_none_when_unset():
+def testenv_list_returns_none_when_unset():
     with patch.dict(os.environ, {}, clear=True):
-        assert _env_list("CAPTURE_HOSTS") is None
+        assert env_list("CAPTURE_HOSTS") is None
 
 
-def test_env_list_returns_none_when_empty():
+def testenv_list_returns_none_when_empty():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": ""}):
-        assert _env_list("CAPTURE_HOSTS") is None
+        assert env_list("CAPTURE_HOSTS") is None
 
 
-def test_env_list_single_item():
+def testenv_list_single_item():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": "api.stripe.com"}):
-        assert _env_list("CAPTURE_HOSTS") == ["api.stripe.com"]
+        assert env_list("CAPTURE_HOSTS") == ["api.stripe.com"]
 
 
 # --- init() env var integration ---

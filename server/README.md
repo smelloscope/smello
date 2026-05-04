@@ -4,13 +4,13 @@
 
 # Smello Server
 
-A local web dashboard for inspecting outgoing HTTP requests captured by the [smello](https://pypi.org/project/smello/) client SDK — including gRPC calls made by Google Cloud libraries.
+A local web dashboard for inspecting HTTP requests, logs, and exceptions captured by the [smello](https://pypi.org/project/smello/) client SDK.
 
 ## Setup
 
 ```bash
 pip install smello-server
-smello-server run
+smello-server
 ```
 
 Or run with Docker:
@@ -31,7 +31,8 @@ pip install smello
 import smello
 smello.init(server_url="http://localhost:5110")
 
-# All outgoing requests are now captured (HTTP and gRPC)
+# HTTP requests, unhandled exceptions, and (optionally) log records
+# are now captured and visible in the dashboard
 ```
 
 Or run any program without code changes:
@@ -42,26 +43,29 @@ smello run --server http://localhost:5110 my_app.py
 
 ## API
 
-Smello Server provides a JSON API for exploring captured requests from the command line.
+Smello Server provides a JSON API for exploring captured events from the command line.
 
 ```bash
-# List all captured requests
-curl -s http://localhost:5110/api/requests | python -m json.tool
+# List all captured events (unified timeline)
+curl -s http://localhost:5110/api/events | python -m json.tool
+
+# Filter by event type (http, log, exception)
+curl -s 'http://localhost:5110/api/events?event_type=exception'
 
 # Filter by method, host, status, or full-text search
-curl -s 'http://localhost:5110/api/requests?method=POST&host=api.stripe.com'
+curl -s 'http://localhost:5110/api/events?method=POST&host=api.stripe.com'
 
-# Get full request/response details
-curl -s http://localhost:5110/api/requests/{id} | python -m json.tool
+# Get full event details
+curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 
-# Clear all requests
-curl -X DELETE http://localhost:5110/api/requests
+# Clear all events
+curl -X DELETE http://localhost:5110/api/events
 ```
 
 ## CLI Options
 
 ```bash
-smello-server run --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
+smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
 ```
 
 ## Requires

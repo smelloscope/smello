@@ -25,5 +25,4 @@ site/
 node_modules/
 frontend/dist/
 server/src/smello_server/_frontend/
-frontend/openapi.json
 *.tsbuildinfo

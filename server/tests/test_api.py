@@ -1,193 +1,160 @@
-"""Tests for the server API endpoints."""
+"""Route-level tests for the API endpoints.
+
+These tests verify HTTP wiring only — Pydantic validation, status codes,
+and that each route reaches the right service. Persistence and filter
+behavior live in `test_services_*`.
+"""
+
+from smello_server.types import (
+    EventDetail,
+    ExceptionEventData,
+    HttpEventData,
+    LogEventData,
+)
+
+# --- Typed capture endpoints ---
 
 
-def test_capture_returns_201(client, sample_payload):
-    resp = client.post("/api/capture", json=sample_payload)
+def test_capture_http_returns_201(client, http_payload):
+    resp = client.post("/api/capture/http", json=http_payload)
     assert resp.status_code == 201
     assert resp.json() == {"status": "ok"}
 
-
-def test_capture_stores_request(client, sample_payload):
-    client.post("/api/capture", json=sample_payload)
-    data = client.get("/api/requests").json()
-    assert len(data) == 1
-    assert data[0]["method"] == "GET"
-    assert data[0]["url"] == "https://api.example.com/v1/test"
-    assert data[0]["host"] == "api.example.com"
-    assert data[0]["status_code"] == 200
-    assert data[0]["duration_ms"] == 150
+    events = client.get("/api/events").json()
+    assert len(events) == 1
+    assert events[0]["event_type"] == "http"
 
 
-def test_capture_auto_generates_id(client, sample_payload):
-    sample_payload.pop("id")
+def test_capture_http_requires_request_and_response(client):
+    resp = client.post("/api/capture/http", json={"duration_ms": 0})
+    assert resp.status_code == 422
+
+
+def test_capture_log_returns_201(client, log_payload):
+    resp = client.post("/api/capture/log", json=log_payload)
+    assert resp.status_code == 201
+
+    events = client.get("/api/events").json()
+    assert events[0]["event_type"] == "log"
+
+
+def test_capture_log_requires_data(client):
+    resp = client.post("/api/capture/log", json={})
+    assert resp.status_code == 422
+
+
+def test_capture_exception_returns_201(client, exception_payload):
+    resp = client.post("/api/capture/exception", json=exception_payload)
+    assert resp.status_code == 201
+
+    events = client.get("/api/events").json()
+    assert events[0]["event_type"] == "exception"
+
+
+def test_capture_exception_requires_data(client):
+    resp = client.post("/api/capture/exception", json={})
+    assert resp.status_code == 422
+
+
+def test_capture_endpoints_marked_deprecated_in_openapi(client):
+    spec = client.get("/openapi.json").json()
+    assert spec["paths"]["/api/capture"]["post"].get("deprecated") is True
+    # Typed endpoints must NOT be deprecated.
+    for path in ("/api/capture/http", "/api/capture/log", "/api/capture/exception"):
+        assert not spec["paths"][path]["post"].get("deprecated")
+
+
+# --- Deprecated HTTP-only endpoint ---
+
+
+def test_deprecated_capture_accepts_http_payload(client, sample_payload):
     resp = client.post("/api/capture", json=sample_payload)
     assert resp.status_code == 201
-    data = client.get("/api/requests").json()
-    assert len(data) == 1
-    assert data[0]["id"]
+    events = client.get("/api/events").json()
+    assert events[0]["event_type"] == "http"
 
 
-def test_capture_extracts_host(client, make_payload):
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.stripe.com/v1/charges")
-    )
-    data = client.get("/api/requests").json()
-    assert data[0]["host"] == "api.stripe.com"
+def test_deprecated_capture_rejects_payload_without_request(client):
+    resp = client.post("/api/capture", json={"duration_ms": 0})
+    assert resp.status_code == 422
 
 
-def test_capture_uppercases_method(client, make_payload):
-    client.post("/api/capture", json=make_payload(method="post"))
-    data = client.get("/api/requests").json()
-    assert data[0]["method"] == "POST"
+# --- Read endpoints (smoke tests; bulk coverage in test_services_events.py) ---
 
 
-def test_empty_list(client):
-    resp = client.get("/api/requests")
-    assert resp.status_code == 200
-    assert resp.json() == []
+def test_event_detail_returns_full_data(client, http_payload):
+    client.post("/api/capture/http", json=http_payload)
+    detail = client.get(f"/api/events/{http_payload['id']}").json()
+    assert detail["event_type"] == "http"
+    assert detail["data"]["event_type"] == "http"
+    assert detail["data"]["method"] == "GET"
+    assert detail["data"]["url"] == "https://api.example.com/v1/test"
+    assert detail["data"]["host"] == "api.example.com"
+    assert detail["data"]["status_code"] == 200
 
 
-def test_filter_by_method(client, make_payload):
-    client.post("/api/capture", json=make_payload(method="GET"))
-    client.post("/api/capture", json=make_payload(method="POST"))
-    data = client.get("/api/requests", params={"method": "POST"}).json()
-    assert len(data) == 1
-    assert data[0]["method"] == "POST"
+def test_event_detail_validates_against_typed_union_http(client, http_payload):
+    client.post("/api/capture/http", json=http_payload)
+    raw = client.get(f"/api/events/{http_payload['id']}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, HttpEventData)
+    assert parsed.data.method == "GET"
+    assert parsed.data.python_version == "3.12.2"
+    assert parsed.data.smello_version == "0.1.0"
 
 
-def test_filter_by_host(client, make_payload):
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.stripe.com/v1/charges")
-    )
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.openai.com/v1/models")
-    )
-    data = client.get("/api/requests", params={"host": "api.stripe.com"}).json()
-    assert len(data) == 1
-    assert data[0]["host"] == "api.stripe.com"
+def test_event_detail_validates_against_typed_union_log(client, log_payload):
+    client.post("/api/capture/log", json=log_payload)
+    event_id = client.get("/api/events").json()[0]["id"]
+    raw = client.get(f"/api/events/{event_id}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, LogEventData)
+    assert parsed.data.level == "WARNING"
+    assert parsed.data.logger_name == "myapp.auth"
 
 
-def test_filter_by_status(client, make_payload):
-    client.post("/api/capture", json=make_payload(status_code=200))
-    client.post("/api/capture", json=make_payload(status_code=404))
-    data = client.get("/api/requests", params={"status": 404}).json()
-    assert len(data) == 1
-    assert data[0]["status_code"] == 404
+def test_event_detail_validates_against_typed_union_exception(
+    client, exception_payload
+):
+    client.post("/api/capture/exception", json=exception_payload)
+    event_id = client.get("/api/events").json()[0]["id"]
+    raw = client.get(f"/api/events/{event_id}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, ExceptionEventData)
+    assert parsed.data.exc_type == "ValueError"
+    assert parsed.data.frames[0].filename == "app.py"
 
 
-def test_search_by_url(client, make_payload):
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.stripe.com/v1/charges")
-    )
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.openai.com/v1/models")
-    )
-    data = client.get("/api/requests", params={"search": "stripe"}).json()
-    assert len(data) == 1
-    assert "stripe" in data[0]["url"]
+def test_openapi_schema_exposes_discriminated_union(client):
+    spec = client.get("/openapi.json").json()
+    schemas = spec["components"]["schemas"]
+    # Each output model is present.
+    assert "HttpEventData" in schemas
+    assert "LogEventData" in schemas
+    assert "ExceptionEventData" in schemas
+    # EventDetail.data is a discriminated union by event_type.
+    event_detail = schemas["EventDetail"]
+    data_prop = event_detail["properties"]["data"]
+    assert "discriminator" in data_prop
+    assert data_prop["discriminator"]["propertyName"] == "event_type"
 
 
-def test_search_by_request_header(client, make_payload):
-    """Search finds requests by header values."""
-    payload = make_payload()
-    payload["request"]["headers"] = {"X-Request-Id": "abc-trace-123"}
-    client.post("/api/capture", json=payload)
-    client.post("/api/capture", json=make_payload())  # default headers
-
-    data = client.get("/api/requests", params={"search": "abc-trace-123"}).json()
-    assert len(data) == 1
-
-
-def test_search_by_response_body(client, make_payload):
-    """Search finds requests by response body content."""
-    payload = make_payload()
-    payload["response"]["body"] = '{"error": "unique-sentinel-value"}'
-    client.post("/api/capture", json=payload)
-    client.post("/api/capture", json=make_payload())
-
-    data = client.get(
-        "/api/requests", params={"search": "unique-sentinel-value"}
-    ).json()
-    assert len(data) == 1
-
-
-def test_search_by_request_body(client, make_payload):
-    """Search finds requests by request body content."""
-    payload = make_payload(method="POST")
-    payload["request"]["body"] = '{"username": "specialuser42"}'
-    client.post("/api/capture", json=payload)
-    client.post("/api/capture", json=make_payload())
-
-    data = client.get("/api/requests", params={"search": "specialuser42"}).json()
-    assert len(data) == 1
-
-
-def test_search_by_response_header(client, make_payload):
-    """Search finds requests by response header values."""
-    payload = make_payload()
-    payload["response"]["headers"] = {"X-Trace-Id": "resp-trace-999"}
-    client.post("/api/capture", json=payload)
-    client.post("/api/capture", json=make_payload())
-
-    data = client.get("/api/requests", params={"search": "resp-trace-999"}).json()
-    assert len(data) == 1
-
-
-def test_limit(client, make_payload):
-    for _ in range(5):
-        client.post("/api/capture", json=make_payload())
-    data = client.get("/api/requests", params={"limit": 2}).json()
-    assert len(data) == 2
-
-
-def test_get_request_detail(client, sample_payload):
-    client.post("/api/capture", json=sample_payload)
-    resp = client.get(f"/api/requests/{sample_payload['id']}")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["id"] == sample_payload["id"]
-    assert data["method"] == "GET"
-    assert data["url"] == "https://api.example.com/v1/test"
-    assert data["request_headers"] == {"Content-Type": "application/json"}
-    assert data["response_body"] == '{"result": "success"}'
-    assert data["response_body_size"] == 21
-    assert data["library"] == "requests"
-
-
-def test_get_request_not_found(client):
-    resp = client.get("/api/requests/550e8400-e29b-41d4-a716-446655440000")
+def test_event_not_found(client):
+    resp = client.get("/api/events/550e8400-e29b-41d4-a716-446655440000")
     assert resp.status_code == 404
 
 
-def test_meta_empty(client):
-    resp = client.get("/api/meta")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data == {"hosts": [], "methods": []}
-
-
-def test_meta_returns_distinct_hosts_and_methods(client, make_payload):
-    client.post(
-        "/api/capture", json=make_payload(url="https://api.stripe.com/v1/charges")
-    )
-    client.post(
-        "/api/capture",
-        json=make_payload(method="POST", url="https://api.openai.com/v1/models"),
-    )
-    client.post(
-        "/api/capture",
-        json=make_payload(method="POST", url="https://api.stripe.com/v1/refunds"),
-    )
-
+def test_meta_endpoint(client, http_payload):
+    client.post("/api/capture/http", json=http_payload)
     data = client.get("/api/meta").json()
-    assert data["hosts"] == ["api.openai.com", "api.stripe.com"]
-    assert data["methods"] == ["GET", "POST"]
+    assert data["hosts"] == ["api.example.com"]
+    assert data["methods"] == ["GET"]
+    assert data["event_types"] == ["http"]
 
 
-def test_clear_all(client, sample_payload):
-    client.post("/api/capture", json=sample_payload)
-    assert len(client.get("/api/requests").json()) == 1
-
-    resp = client.delete("/api/requests")
+def test_clear_events(client, http_payload):
+    client.post("/api/capture/http", json=http_payload)
+    assert len(client.get("/api/events").json()) == 1
+    resp = client.delete("/api/events")
     assert resp.status_code == 204
-    assert len(client.get("/api/requests").json()) == 0
+    assert client.get("/api/events").json() == []

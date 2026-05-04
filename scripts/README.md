@@ -10,8 +10,9 @@ cd scripts && npm install   # one-time: installs puppeteer-core (~3MB, uses syst
 
 ### Generate a demo screenshot (recommended)
 
-Clears Smello, runs the httpbin demo to populate sample traffic, then captures a
-mockup with the first request selected:
+Clears Smello, runs the `all_in_one.py` demo to populate HTTP traffic, log
+events, and an unhandled exception, then captures a mockup with the first
+request selected:
 
 ```bash
 # Requires: smello-server on :5110 and frontend dev server on :5111
@@ -48,11 +49,13 @@ node scripts/demo-mockup.mjs --transparent false        # with branded gradient 
 
 ## How it works
 
-1. **Clear** — `DELETE /api/requests` removes all captured traffic.
-2. **Demo** — Runs `examples/python/demo_httpbin.py` (or a custom script) which
-   sends various HTTP requests through the Smello client SDK.
-3. **Pick** — Polls `GET /api/requests` until captures arrive, takes the first
-   request ID for deep-linking via URL hash.
+1. **Clear** — `DELETE /api/events` removes all captured traffic.
+2. **Demo** — Runs `examples/python/all_in_one.py` (or a custom script) which
+   sends HTTP requests, emits log events, and raises an unhandled exception
+   through the Smello client SDK. Non-zero exit codes from the demo script are
+   tolerated, since the default script intentionally raises.
+3. **Pick** — Polls `GET /api/events?event_type=http` until captures arrive, takes
+   the first request ID for deep-linking via URL hash.
 4. **Capture** — Puppeteer (using system Chrome) opens the frontend with the
    request pre-selected and takes a 2x retina screenshot.
 5. **Wrap** — A second Puppeteer page renders the screenshot inside an HTML/CSS

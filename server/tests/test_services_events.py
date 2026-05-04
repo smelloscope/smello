@@ -55,7 +55,7 @@ async def test_list_events_returns_summaries_newest_first(services_db):
     await _http(url="https://a.test/two")
     rows = await list_events()
     assert len(rows) == 2
-    assert {r["event_type"] for r in rows} == {"http"}
+    assert {r.event_type for r in rows} == {"http"}
 
 
 @pytest.mark.asyncio
@@ -64,7 +64,7 @@ async def test_list_events_filter_by_event_type(services_db):
     await _log(level="WARNING", message="boom")
     rows = await list_events(event_type="log")
     assert len(rows) == 1
-    assert rows[0]["event_type"] == "log"
+    assert rows[0].event_type == "log"
 
 
 @pytest.mark.asyncio
@@ -73,7 +73,7 @@ async def test_list_events_filter_by_method(services_db):
     await _http(method="POST")
     rows = await list_events(method="POST")
     assert len(rows) == 1
-    assert "POST" in rows[0]["summary"]
+    assert "POST" in rows[0].summary
 
 
 @pytest.mark.asyncio
@@ -82,7 +82,7 @@ async def test_list_events_filter_by_host(services_db):
     await _http(url="https://api.openai.com/v1/models")
     rows = await list_events(host="api.stripe.com")
     assert len(rows) == 1
-    assert "/v1/charges" in rows[0]["summary"]
+    assert "/v1/charges" in rows[0].summary
 
 
 @pytest.mark.asyncio
@@ -91,7 +91,7 @@ async def test_list_events_filter_by_status(services_db):
     await _http(status_code=404)
     rows = await list_events(status=404)
     assert len(rows) == 1
-    assert "404" in rows[0]["summary"]
+    assert "404" in rows[0].summary
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_list_events_search_summary(services_db):
     await _log(level="WARNING", message="Token expired")
     rows = await list_events(search="Token expired")
     assert len(rows) == 1
-    assert rows[0]["event_type"] == "log"
+    assert rows[0].event_type == "log"
 
 
 @pytest.mark.asyncio
@@ -125,17 +125,25 @@ async def test_get_event_returns_none_for_unknown(services_db):
 
 
 @pytest.mark.asyncio
-async def test_get_event_returns_event(services_db):
+async def test_get_event_returns_none_for_invalid_uuid(services_db):
+    assert await get_event("not-a-uuid") is None
+
+
+@pytest.mark.asyncio
+async def test_get_event_returns_typed_detail(services_db):
     created = await _http()
     found = await get_event(str(created.id))
     assert found is not None
     assert found.event_type == "http"
+    assert isinstance(found.data, HttpEventData)
 
 
 @pytest.mark.asyncio
 async def test_get_meta_empty(services_db):
     meta = await get_meta()
-    assert meta == {"hosts": [], "methods": [], "event_types": []}
+    assert meta.hosts == []
+    assert meta.methods == []
+    assert meta.event_types == []
 
 
 @pytest.mark.asyncio
@@ -145,9 +153,9 @@ async def test_get_meta_returns_hosts_methods_event_types(services_db):
     await _log(level="WARNING")
 
     meta = await get_meta()
-    assert meta["hosts"] == ["api.openai.com", "api.stripe.com"]
-    assert meta["methods"] == ["GET", "POST"]
-    assert sorted(meta["event_types"]) == ["http", "log"]
+    assert meta.hosts == ["api.openai.com", "api.stripe.com"]
+    assert meta.methods == ["GET", "POST"]
+    assert sorted(meta.event_types) == ["http", "log"]
 
 
 @pytest.mark.asyncio

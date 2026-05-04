@@ -5,11 +5,8 @@ Per the project convention, route handlers carry the `_api` suffix so they
 don't collide with service function names.
 """
 
-from datetime import datetime
-from typing import Self, cast
-
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
 from smello_server.services.capture import (
     create_exception_event,
@@ -20,17 +17,17 @@ from smello_server.services.events import (
     clear_events,
     get_event,
     get_meta,
-    hydrate_event_data,
     list_events,
 )
 from smello_server.types import (
-    EventData,
-    EventType,
+    EventDetail,
+    EventSummary,
     ExceptionData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
     LogData,
+    MetaResponse,
 )
 
 router = APIRouter(prefix="/api")
@@ -60,37 +57,8 @@ class ExceptionCapturePayload(BaseModel):
     data: ExceptionData
 
 
-# --- Response models ---
-
-
 class CaptureResponse(BaseModel):
     status: str
-
-
-class EventSummary(BaseModel):
-    id: str
-    timestamp: datetime
-    event_type: EventType
-    summary: str
-
-
-class EventDetail(EventSummary):
-    data: EventData
-
-    @model_validator(mode="after")
-    def _check_event_type_consistency(self) -> Self:
-        if self.event_type != self.data.event_type:
-            raise ValueError(
-                f"event_type mismatch: outer={self.event_type!r},"
-                f" data={self.data.event_type!r}"
-            )
-        return self
-
-
-class MetaResponse(BaseModel):
-    hosts: list[str]
-    methods: list[str]
-    event_types: list[EventType]
 
 
 OK = CaptureResponse(status="ok")
@@ -153,7 +121,7 @@ async def list_events_api(
     search: str | None = Query(None),
     limit: int = Query(50, le=200),
 ) -> list[EventSummary]:
-    rows = await list_events(
+    return await list_events(
         event_type=event_type,
         host=host,
         method=method,
@@ -161,19 +129,6 @@ async def list_events_api(
         search=search,
         limit=limit,
     )
-    return [
-        EventSummary(
-            id=r["id"],
-            timestamp=(
-                datetime.fromisoformat(r["timestamp"])
-                if isinstance(r["timestamp"], str)
-                else r["timestamp"]
-            ),
-            event_type=cast(EventType, r["event_type"]),
-            summary=r["summary"],
-        )
-        for r in rows
-    ]
 
 
 @router.get("/events/{event_id}", response_model=EventDetail)
@@ -181,19 +136,12 @@ async def get_event_api(event_id: str) -> EventDetail:
     event = await get_event(event_id)
     if event is None:
         raise HTTPException(status_code=404, detail="Event not found")
-    return EventDetail(
-        id=str(event.id),
-        timestamp=event.timestamp,
-        event_type=cast(EventType, event.event_type),
-        summary=event.summary,
-        data=hydrate_event_data(event.event_type, event.data),
-    )
+    return event
 
 
 @router.get("/meta", response_model=MetaResponse)
 async def get_meta_api() -> MetaResponse:
-    meta = await get_meta()
-    return MetaResponse.model_validate(meta)
+    return await get_meta()
 
 
 @router.delete("/events", status_code=204)

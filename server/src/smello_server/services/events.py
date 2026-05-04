@@ -1,12 +1,20 @@
 """Read-side queries for captured events: list, get, meta, clear."""
 
-from typing import Any
+import uuid
+from datetime import datetime
+from typing import Any, cast
 
 from pydantic import TypeAdapter
 from tortoise import connections
 
 from smello_server.models import CapturedEvent
-from smello_server.types import EventData
+from smello_server.types import (
+    EventData,
+    EventDetail,
+    EventSummary,
+    EventType,
+    MetaResponse,
+)
 
 _event_data_adapter: TypeAdapter[EventData] = TypeAdapter(EventData)
 
@@ -23,6 +31,10 @@ def hydrate_event_data(event_type: str, data: dict[str, Any]) -> EventData:
     return _event_data_adapter.validate_python(data)
 
 
+def _coerce_timestamp(value: datetime | str) -> datetime:
+    return datetime.fromisoformat(value) if isinstance(value, str) else value
+
+
 async def list_events(
     *,
     event_type: str | None = None,
@@ -31,11 +43,8 @@ async def list_events(
     status: int | None = None,
     search: str | None = None,
     limit: int = 50,
-) -> list[dict[str, Any]]:
-    """Return event summaries matching the filters, newest first.
-
-    Returns plain dicts with keys: id, timestamp, event_type, summary.
-    """
+) -> list[EventSummary]:
+    """Return event summaries matching the filters, newest first."""
     if search or host or method or status:
         where_parts: list[str] = []
         params: list[str | int] = []
@@ -69,12 +78,12 @@ async def list_events(
             [*params, limit],
         )
         return [
-            {
-                "id": str(r["id"]),
-                "timestamp": r["timestamp"],
-                "event_type": r["event_type"],
-                "summary": r["summary"],
-            }
+            EventSummary(
+                id=str(r["id"]),
+                timestamp=_coerce_timestamp(r["timestamp"]),
+                event_type=cast(EventType, r["event_type"]),
+                summary=r["summary"],
+            )
             for r in rows
         ]
 
@@ -83,24 +92,35 @@ async def list_events(
         qs = qs.filter(event_type=event_type)
     events = await qs.limit(limit)
     return [
-        {
-            "id": str(e.id),
-            "timestamp": e.timestamp,
-            "event_type": e.event_type,
-            "summary": e.summary,
-        }
+        EventSummary(
+            id=str(e.id),
+            timestamp=e.timestamp,
+            event_type=cast(EventType, e.event_type),
+            summary=e.summary,
+        )
         for e in events
     ]
 
 
-async def get_event(event_id: str) -> CapturedEvent | None:
+async def get_event(event_id: str) -> EventDetail | None:
+    """Return the typed event detail, or None if the id is invalid/missing."""
     try:
-        return await CapturedEvent.get(id=event_id)
-    except Exception:
+        uuid.UUID(event_id)
+    except ValueError:
         return None
+    event = await CapturedEvent.get_or_none(id=event_id)
+    if event is None:
+        return None
+    return EventDetail(
+        id=str(event.id),
+        timestamp=event.timestamp,
+        event_type=cast(EventType, event.event_type),
+        summary=event.summary,
+        data=hydrate_event_data(event.event_type, event.data),
+    )
 
 
-async def get_meta() -> dict[str, list[str]]:
+async def get_meta() -> MetaResponse:
     db = connections.get("default")
 
     _, host_rows = await db.execute_query(
@@ -119,11 +139,11 @@ async def get_meta() -> dict[str, list[str]]:
         await CapturedEvent.all().distinct().values_list("event_type", flat=True)
     )  # type: ignore[assignment]
 
-    return {
-        "hosts": hosts,
-        "methods": methods,
-        "event_types": sorted(set(event_types)),
-    }
+    return MetaResponse(
+        hosts=hosts,
+        methods=methods,
+        event_types=sorted({cast(EventType, t) for t in event_types}),
+    )
 
 
 async def clear_events() -> None:

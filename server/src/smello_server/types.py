@@ -11,9 +11,10 @@ Two layers:
   discriminator and the union ``EventData`` is what the read API exposes.
 """
 
-from typing import Annotated, Any, Literal
+from datetime import datetime
+from typing import Annotated, Any, Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # --- Input models (capture endpoints) ---
 
@@ -120,3 +121,32 @@ EventData = Annotated[
     HttpEventData | LogEventData | ExceptionEventData,
     Field(discriminator="event_type"),
 ]
+
+
+# --- API response models ---
+
+
+class EventSummary(BaseModel):
+    id: str
+    timestamp: datetime
+    event_type: EventType
+    summary: str
+
+
+class EventDetail(EventSummary):
+    data: EventData
+
+    @model_validator(mode="after")
+    def _check_event_type_consistency(self) -> Self:
+        if self.event_type != self.data.event_type:
+            raise ValueError(
+                f"event_type mismatch: outer={self.event_type!r},"
+                f" data={self.data.event_type!r}"
+            )
+        return self
+
+
+class MetaResponse(BaseModel):
+    hosts: list[str]
+    methods: list[str]
+    event_types: list[EventType]

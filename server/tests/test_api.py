@@ -5,8 +5,8 @@ and that each route reaches the right service. Persistence and filter
 behavior live in `test_services_*`.
 """
 
-from smello_server.routes.api import EventDetail
 from smello_server.types import (
+    EventDetail,
     ExceptionEventData,
     HttpEventData,
     LogEventData,

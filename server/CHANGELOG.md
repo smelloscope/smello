@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-04
+
 ### Added
 
 - **Typed event payloads**: `GET /api/events/{id}` now returns `data` as a Pydantic-discriminated union (`HttpEventData | LogEventData | ExceptionEventData`) instead of an opaque object. The OpenAPI schema exposes the discriminator so frontends can generate strongly-typed clients (the bundled dashboard now uses `openapi-typescript`). Old DB rows written before this change are hydrated transparently on read.

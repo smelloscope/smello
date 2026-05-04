@@ -26,7 +26,7 @@ def _bootstrap_dir() -> str:
     return os.path.join(os.path.dirname(os.path.abspath(smello.__file__)), "bootstrap")
 
 
-_PYTHON_SCRIPT_SUFFIXES = (".py", ".pyw")
+PYTHON_SCRIPT_SUFFIXES = (".py", ".pyw")
 
 
 def _resolve_executable(command: list[str]) -> tuple[str, list[str]]:
@@ -38,7 +38,7 @@ def _resolve_executable(command: list[str]) -> tuple[str, list[str]]:
     Otherwise, resolve via ``PATH``.
     """
     first = command[0]
-    if first.endswith(_PYTHON_SCRIPT_SUFFIXES):
+    if first.endswith(PYTHON_SCRIPT_SUFFIXES):
         return sys.executable, [sys.executable, *command]
     return shutil.which(first) or first, command
 

@@ -7,9 +7,10 @@ JSON in the ``data`` column.
 """
 
 import uuid
+from datetime import datetime
 from urllib.parse import urlparse
 
-from smello_server.models import CapturedEvent
+from smello_server.models import CapturedEvent, utcnow
 from smello_server.types import (
     ExceptionData,
     ExceptionEventData,
@@ -25,6 +26,7 @@ from smello_server.types import (
 async def create_http_event(
     *,
     event_id: str | None,
+    timestamp: datetime | None = None,
     duration_ms: int,
     request: HttpRequestData,
     response: HttpResponseData,
@@ -50,6 +52,7 @@ async def create_http_event(
     )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
+        timestamp=timestamp or utcnow(),
         event_type="http",
         summary=summary,
         data=event_data.model_dump(mode="json"),
@@ -62,7 +65,12 @@ def _build_http_summary(method: str, url: str, status_code: int) -> str:
     return f"{method.upper()} {path} → {status_code}"
 
 
-async def create_log_event(*, event_id: str | None, data: LogData) -> CapturedEvent:
+async def create_log_event(
+    *,
+    event_id: str | None,
+    timestamp: datetime | None = None,
+    data: LogData,
+) -> CapturedEvent:
     summary = _build_log_summary(data.level, data.logger_name, data.message)
     event_data = LogEventData(
         level=data.level,
@@ -76,6 +84,7 @@ async def create_log_event(*, event_id: str | None, data: LogData) -> CapturedEv
     )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
+        timestamp=timestamp or utcnow(),
         event_type="log",
         summary=summary,
         data=event_data.model_dump(mode="json"),
@@ -89,7 +98,10 @@ def _build_log_summary(level: str, logger_name: str, message: str) -> str:
 
 
 async def create_exception_event(
-    *, event_id: str | None, data: ExceptionData
+    *,
+    event_id: str | None,
+    timestamp: datetime | None = None,
+    data: ExceptionData,
 ) -> CapturedEvent:
     summary = _build_exception_summary(data.exc_type, data.exc_value)
     event_data = ExceptionEventData(
@@ -101,6 +113,7 @@ async def create_exception_event(
     )
     return await CapturedEvent.create(
         id=_resolve_id(event_id),
+        timestamp=timestamp or utcnow(),
         event_type="exception",
         summary=summary,
         data=event_data.model_dump(mode="json"),

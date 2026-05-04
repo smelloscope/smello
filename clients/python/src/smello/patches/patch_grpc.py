@@ -9,7 +9,7 @@ from smello.transport import send_http
 
 logger = logging.getLogger(__name__)
 
-_GRPC_STATUS_TO_HTTP = {
+GRPC_STATUS_TO_HTTP = {
     0: 200,  # OK
     1: 499,  # CANCELLED
     2: 500,  # UNKNOWN
@@ -59,7 +59,7 @@ def patch_grpc(config: SmelloConfig) -> None:
 
 
 def _grpc_status_to_http(code_value: int) -> int:
-    return _GRPC_STATUS_TO_HTTP.get(code_value, 500)
+    return GRPC_STATUS_TO_HTTP.get(code_value, 500)
 
 
 def _extract_host(target: str) -> str:

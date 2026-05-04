@@ -4,7 +4,7 @@ import atexit
 import logging
 from urllib.parse import urlparse
 
-from smello._env import _env_bool, _env_int, _env_list, _env_str
+from smello._env import env_bool, env_int, env_list, env_str
 from smello.config import SmelloConfig
 from smello.patches import apply_all as _apply_all
 from smello.transport import flush, shutdown
@@ -16,7 +16,7 @@ logger.addHandler(logging.NullHandler())
 __all__ = ["init", "flush", "shutdown"]
 __version__ = "0.8.0"
 
-_DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
+DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
 
 _config: SmelloConfig | None = None
 _patched: bool = False
@@ -72,7 +72,7 @@ def init(
 
     # Resolve: explicit param > env var
     if server_url is None:
-        server_url = _env_str("URL")
+        server_url = env_str("URL")
     if not server_url:
         logger.warning(
             "smello.init() called without a server URL. "
@@ -81,34 +81,34 @@ def init(
         return
 
     if capture_all is None:
-        env_val = _env_bool("CAPTURE_ALL")
+        env_val = env_bool("CAPTURE_ALL")
         capture_all = env_val if env_val is not None else True
 
     if capture_hosts is None:
-        capture_hosts = _env_list("CAPTURE_HOSTS") or []
+        capture_hosts = env_list("CAPTURE_HOSTS") or []
 
     if ignore_hosts is None:
-        ignore_hosts = _env_list("IGNORE_HOSTS") or []
+        ignore_hosts = env_list("IGNORE_HOSTS") or []
 
     if redact_headers is None:
-        env_headers = _env_list("REDACT_HEADERS")
+        env_headers = env_list("REDACT_HEADERS")
         redact_headers = (
-            env_headers if env_headers is not None else list(_DEFAULT_REDACT_HEADERS)
+            env_headers if env_headers is not None else list(DEFAULT_REDACT_HEADERS)
         )
 
     if redact_query_params is None:
-        redact_query_params = _env_list("REDACT_QUERY_PARAMS") or []
+        redact_query_params = env_list("REDACT_QUERY_PARAMS") or []
 
     if capture_exceptions is None:
-        env_val = _env_bool("CAPTURE_EXCEPTIONS")
+        env_val = env_bool("CAPTURE_EXCEPTIONS")
         capture_exceptions = env_val if env_val is not None else True
 
     if capture_logs is None:
-        env_val = _env_bool("CAPTURE_LOGS")
+        env_val = env_bool("CAPTURE_LOGS")
         capture_logs = env_val if env_val is not None else False
 
     if log_level is None:
-        env_val = _env_int("LOG_LEVEL")
+        env_val = env_int("LOG_LEVEL")
         log_level = env_val if env_val is not None else logging.WARNING
 
     resolved_url = server_url.rstrip("/")

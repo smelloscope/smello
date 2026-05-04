@@ -5,6 +5,8 @@ Per the project convention, route handlers carry the `_api` suffix so they
 don't collide with service function names.
 """
 
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
@@ -38,7 +40,7 @@ router = APIRouter(prefix="/api")
 
 class HttpCapturePayload(BaseModel):
     id: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     duration_ms: int = 0
     request: HttpRequestData
     response: HttpResponseData
@@ -47,13 +49,13 @@ class HttpCapturePayload(BaseModel):
 
 class LogCapturePayload(BaseModel):
     id: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     data: LogData
 
 
 class ExceptionCapturePayload(BaseModel):
     id: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     data: ExceptionData
 
 
@@ -71,6 +73,7 @@ OK = CaptureResponse(status="ok")
 async def capture_http_api(payload: HttpCapturePayload) -> CaptureResponse:
     await create_http_event(
         event_id=payload.id,
+        timestamp=payload.timestamp,
         duration_ms=payload.duration_ms,
         request=payload.request,
         response=payload.response,
@@ -81,13 +84,17 @@ async def capture_http_api(payload: HttpCapturePayload) -> CaptureResponse:
 
 @router.post("/capture/log", status_code=201, response_model=CaptureResponse)
 async def capture_log_api(payload: LogCapturePayload) -> CaptureResponse:
-    await create_log_event(event_id=payload.id, data=payload.data)
+    await create_log_event(
+        event_id=payload.id, timestamp=payload.timestamp, data=payload.data
+    )
     return OK
 
 
 @router.post("/capture/exception", status_code=201, response_model=CaptureResponse)
 async def capture_exception_api(payload: ExceptionCapturePayload) -> CaptureResponse:
-    await create_exception_event(event_id=payload.id, data=payload.data)
+    await create_exception_event(
+        event_id=payload.id, timestamp=payload.timestamp, data=payload.data
+    )
     return OK
 
 

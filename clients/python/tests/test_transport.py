@@ -17,13 +17,13 @@ from smello.transport import (
 )
 
 
-class _CaptureHandler(BaseHTTPRequestHandler):
+class CaptureHandler(BaseHTTPRequestHandler):
     captured: list = []
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         body = json.loads(self.rfile.read(length))
-        _CaptureHandler.captured.append({"path": self.path, "body": body})
+        CaptureHandler.captured.append({"path": self.path, "body": body})
         self.send_response(201)
         self.end_headers()
         self.wfile.write(b'{"status":"ok"}')
@@ -35,12 +35,12 @@ class _CaptureHandler(BaseHTTPRequestHandler):
 @pytest.fixture()
 def capture_server():
     """Start a minimal HTTP server that records POSTed payloads."""
-    _CaptureHandler.captured = []
-    server = HTTPServer(("127.0.0.1", 0), _CaptureHandler)
+    CaptureHandler.captured = []
+    server = HTTPServer(("127.0.0.1", 0), CaptureHandler)
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    yield f"http://127.0.0.1:{port}", _CaptureHandler.captured
+    yield f"http://127.0.0.1:{port}", CaptureHandler.captured
     server.shutdown()
 
 
@@ -72,10 +72,16 @@ def test_send_log_posts_to_capture_log(capture_server):
     url, captured = capture_server
     start_worker(url)
 
-    send_log({"level": "WARNING", "logger_name": "x", "message": "hi"})
+    send_log(
+        {
+            "id": "log-1",
+            "data": {"level": "WARNING", "logger_name": "x", "message": "hi"},
+        }
+    )
 
     _wait(captured, 1)
     assert captured[0]["path"] == "/api/capture/log"
+    assert captured[0]["body"]["id"] == "log-1"
     assert captured[0]["body"]["data"]["message"] == "hi"
 
 
@@ -83,10 +89,16 @@ def test_send_exception_posts_to_capture_exception(capture_server):
     url, captured = capture_server
     start_worker(url)
 
-    send_exception({"exc_type": "ValueError", "exc_value": "bad"})
+    send_exception(
+        {
+            "id": "exc-1",
+            "data": {"exc_type": "ValueError", "exc_value": "bad"},
+        }
+    )
 
     _wait(captured, 1)
     assert captured[0]["path"] == "/api/capture/exception"
+    assert captured[0]["body"]["id"] == "exc-1"
     assert captured[0]["body"]["data"]["exc_type"] == "ValueError"
 
 

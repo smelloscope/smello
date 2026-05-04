@@ -33,14 +33,14 @@ def send_http(payload: dict) -> None:
     _enqueue("/api/capture/http", payload)
 
 
-def send_log(data: dict) -> None:
+def send_log(payload: dict) -> None:
     """Queue a log capture payload for `/api/capture/log`."""
-    _enqueue("/api/capture/log", {"data": data})
+    _enqueue("/api/capture/log", payload)
 
 
-def send_exception(data: dict) -> None:
+def send_exception(payload: dict) -> None:
     """Queue an exception capture payload for `/api/capture/exception`."""
-    _enqueue("/api/capture/exception", {"data": data})
+    _enqueue("/api/capture/exception", payload)
 
 
 def flush(timeout: float = 2.0) -> bool:

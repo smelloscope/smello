@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 _patched = False
 
 # Number of source lines to capture before/after the failing line.
-_CONTEXT_LINES = 5
+CONTEXT_LINES = 5
 
 
 def patch_excepthook(config: SmelloConfig) -> None:
@@ -86,21 +86,23 @@ def _capture_exception(exc_type, exc_value, exc_tb):
 
     tb_text = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
 
-    data = {
-        "exc_type": exc_type.__name__,
-        "exc_value": str(exc_value),
-        "exc_module": getattr(exc_type, "__module__", None),
-        "traceback_text": tb_text,
-        "frames": frames,
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-
-    transport.send_exception(data)
+    transport.send_exception(
+        {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "data": {
+                "exc_type": exc_type.__name__,
+                "exc_value": str(exc_value),
+                "exc_module": getattr(exc_type, "__module__", None),
+                "traceback_text": tb_text,
+                "frames": frames,
+            },
+        }
+    )
 
 
 def _get_frame_source(
-    filename: str | None, lineno: int | None, count: int = _CONTEXT_LINES
+    filename: str | None, lineno: int | None, count: int = CONTEXT_LINES
 ) -> tuple[list[str], str | None, list[str]]:
     """Return (pre_lines, error_line, post_lines) from the source file.
 

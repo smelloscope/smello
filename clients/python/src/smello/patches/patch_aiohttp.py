@@ -26,7 +26,7 @@ from smello.transport import send_http
 
 logger = logging.getLogger(__name__)
 
-_MAX_BODY_CAPTURE = 1_048_576  # 1 MB
+MAX_BODY_CAPTURE = 1_048_576  # 1 MB
 
 
 class TraceContext(SimpleNamespace):
@@ -59,7 +59,7 @@ class AiohttpTracer:
         if ctx.skip or ctx.body_chunks is None:
             return
         ctx.body_chunks.append(params.chunk)
-        if sum(len(c) for c in ctx.body_chunks) > _MAX_BODY_CAPTURE:
+        if sum(len(c) for c in ctx.body_chunks) > MAX_BODY_CAPTURE:
             ctx.body_chunks = None  # stop accumulating
 
     @staticmethod

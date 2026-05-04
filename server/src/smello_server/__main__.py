@@ -22,8 +22,8 @@ from rich.text import Text
 
 logger = logging.getLogger("smello_server")
 
-_DEFAULT_DB_DIR = Path.home() / ".smello"
-_DEFAULT_DB_PATH = _DEFAULT_DB_DIR / "smello.db"
+DEFAULT_DB_DIR = Path.home() / ".smello"
+DEFAULT_DB_PATH = DEFAULT_DB_DIR / "smello.db"
 
 app = typer.Typer(add_completion=False)
 
@@ -66,7 +66,7 @@ def _start_server(
     if db_path:
         os.environ["SMELLO_DB_PATH"] = db_path
 
-    resolved_db = db_path or os.environ.get("SMELLO_DB_PATH") or str(_DEFAULT_DB_PATH)
+    resolved_db = db_path or os.environ.get("SMELLO_DB_PATH") or str(DEFAULT_DB_PATH)
     logging.basicConfig(level=logging.INFO)
     logger.info("Database: %s", resolved_db)
 
@@ -86,14 +86,14 @@ def _start_server(
     )
 
 
-_HOST_OPT = Annotated[str, typer.Option(help="Host to bind to.")]
-_PORT_OPT = Annotated[int, typer.Option(help="Port to bind to.")]
-_DB_PATH_OPT = Annotated[
+HOST_OPT = Annotated[str, typer.Option(help="Host to bind to.")]
+PORT_OPT = Annotated[int, typer.Option(help="Port to bind to.")]
+DB_PATH_OPT = Annotated[
     str | None,
-    typer.Option(help=f"Path to SQLite database file (default: {_DEFAULT_DB_PATH})."),
+    typer.Option(help=f"Path to SQLite database file (default: {DEFAULT_DB_PATH})."),
 ]
-_RELOAD_OPT = Annotated[bool, typer.Option(help="Enable auto-reload on code changes.")]
-_OPEN_BROWSER_OPT = Annotated[
+RELOAD_OPT = Annotated[bool, typer.Option(help="Enable auto-reload on code changes.")]
+OPEN_BROWSER_OPT = Annotated[
     bool,
     typer.Option("--open/--no-open", help="Open the dashboard in a browser."),
 ]
@@ -102,11 +102,11 @@ _OPEN_BROWSER_OPT = Annotated[
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
-    host: _HOST_OPT = "0.0.0.0",
-    port: _PORT_OPT = 5110,
-    db_path: _DB_PATH_OPT = None,
-    reload: _RELOAD_OPT = False,
-    open_browser: _OPEN_BROWSER_OPT = True,
+    host: HOST_OPT = "0.0.0.0",
+    port: PORT_OPT = 5110,
+    db_path: DB_PATH_OPT = None,
+    reload: RELOAD_OPT = False,
+    open_browser: OPEN_BROWSER_OPT = True,
 ):
     """Start the Smello server."""
     if ctx.invoked_subcommand is not None:
@@ -122,11 +122,11 @@ def main_callback(
 
 @app.command(hidden=True)
 def run(
-    host: _HOST_OPT = "0.0.0.0",
-    port: _PORT_OPT = 5110,
-    db_path: _DB_PATH_OPT = None,
-    reload: _RELOAD_OPT = False,
-    open_browser: _OPEN_BROWSER_OPT = True,
+    host: HOST_OPT = "0.0.0.0",
+    port: PORT_OPT = 5110,
+    db_path: DB_PATH_OPT = None,
+    reload: RELOAD_OPT = False,
+    open_browser: OPEN_BROWSER_OPT = True,
 ):
     """Start the Smello server (alias for the bare invocation)."""
     _start_server(

@@ -2,7 +2,6 @@
 
 import logging
 import logging.handlers
-import sys
 
 import pytest
 from smello.config import SmelloConfig
@@ -25,24 +24,6 @@ def _reset_logging_patch():
     yield
     patch_logging_mod._patched = False
     logging.Logger.callHandlers = _original_callhandlers
-
-
-@pytest.fixture
-def mock_transport(monkeypatch):
-    module = sys.modules["smello.patches.patch_logging"]
-    original = module.transport
-
-    class _Recorder:
-        def __init__(self):
-            self.send_log_calls = []
-
-        def send_log(self, data):
-            self.send_log_calls.append(data)
-
-    recorder = _Recorder()
-    monkeypatch.setattr(module, "transport", recorder)
-    yield recorder
-    monkeypatch.setattr(module, "transport", original)
 
 
 def test_skips_when_disabled():
@@ -69,7 +50,10 @@ def test_captures_log_record(mock_transport):
 
     # Assert
     assert len(mock_transport.send_log_calls) >= 1
-    data = mock_transport.send_log_calls[-1]
+    payload = mock_transport.send_log_calls[-1]
+    assert payload["id"]
+    assert payload["timestamp"]
+    data = payload["data"]
     assert data["level"] == "WARNING"
     assert data["logger_name"] == "test.capture"
     assert "something went wrong: details" in data["message"]
@@ -147,5 +131,5 @@ def test_captures_extra_attributes(mock_transport):
     test_logger.warning("with extra", extra={"user_id": 42})
 
     # Assert
-    data = mock_transport.send_log_calls[-1]
+    data = mock_transport.send_log_calls[-1]["data"]
     assert data["extra"]["user_id"] == 42

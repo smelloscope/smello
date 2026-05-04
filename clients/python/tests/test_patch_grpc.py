@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from smello.config import SmelloConfig
 from smello.patches.patch_grpc import (
-    _GRPC_STATUS_TO_HTTP,
+    GRPC_STATUS_TO_HTTP,
     _extract_host,
     _grpc_status_to_http,
     _intercept_unary_unary,
@@ -405,7 +405,7 @@ def test_send_capture(mock_serialize, mock_send, config):
 
 @pytest.mark.parametrize(
     ("grpc_code", "expected_http"),
-    list(_GRPC_STATUS_TO_HTTP.items()),
+    list(GRPC_STATUS_TO_HTTP.items()),
 )
 def test_grpc_status_to_http_mapping(grpc_code, expected_http):
     assert _grpc_status_to_http(grpc_code) == expected_http

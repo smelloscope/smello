@@ -31,7 +31,7 @@ from smello_server.app import create_app
 # -- Mock target API server ---------------------------------------------------
 
 
-class _MockTargetHandler(BaseHTTPRequestHandler):
+class MockTargetHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/redirect-me":
             self.send_response(302)
@@ -83,7 +83,7 @@ def _free_port():
 @pytest.fixture()
 def mock_target():
     """A mock HTTP server acting as the external API being called."""
-    server = HTTPServer(("127.0.0.1", 0), _MockTargetHandler)
+    server = HTTPServer(("127.0.0.1", 0), MockTargetHandler)
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()

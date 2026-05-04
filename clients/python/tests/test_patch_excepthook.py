@@ -20,31 +20,6 @@ def _reset_patched_flag():
     patch_excepthook._patched = False
 
 
-@pytest.fixture
-def mock_transport(monkeypatch):
-    transport_mod = sys.modules["smello.patches.patch_excepthook"].transport
-
-    class _Recorder:
-        def __init__(self):
-            self.send_exception_calls = []
-            self.flush_calls = 0
-
-        def send_exception(self, data):
-            self.send_exception_calls.append(data)
-
-        def flush(self, timeout=None):
-            self.flush_calls += 1
-
-    recorder = _Recorder()
-    monkeypatch.setattr(
-        sys.modules["smello.patches.patch_excepthook"], "transport", recorder
-    )
-    yield recorder
-    monkeypatch.setattr(
-        sys.modules["smello.patches.patch_excepthook"], "transport", transport_mod
-    )
-
-
 def test_installs_excepthook():
     # Arrange
     original = sys.excepthook
@@ -120,7 +95,10 @@ def test_sends_exception_event(mock_transport):
     # Assert
     try:
         assert len(mock_transport.send_exception_calls) == 1
-        data = mock_transport.send_exception_calls[0]
+        payload = mock_transport.send_exception_calls[0]
+        assert payload["id"]
+        assert payload["timestamp"]
+        data = payload["data"]
         assert data["exc_type"] == "ValueError"
         assert "test capture" in data["exc_value"]
         assert "Traceback" in data["traceback_text"]
@@ -140,7 +118,7 @@ def test_capture_exception_serializes_frames(mock_transport):
         patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
-    data = mock_transport.send_exception_calls[0]
+    data = mock_transport.send_exception_calls[0]["data"]
     assert data["exc_type"] == "RuntimeError"
     assert data["exc_value"] == "frame test"
     assert data["exc_module"] == "builtins"
@@ -167,7 +145,7 @@ def test_capture_exception_includes_pre_post_context(mock_transport):
         patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
-    data = mock_transport.send_exception_calls[0]
+    data = mock_transport.send_exception_calls[0]["data"]
     last_frame = data["frames"][-1]
     assert last_frame["function"] == "test_capture_exception_includes_pre_post_context"
     assert last_frame["pre_context"], "expected pre_context to be populated"

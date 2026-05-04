@@ -1,5 +1,7 @@
 """Service-level tests for capture (write) functions."""
 
+from datetime import datetime, timezone
+
 import pytest
 from smello_server.models import CapturedEvent
 from smello_server.services.capture import (
@@ -122,6 +124,36 @@ async def test_create_log_event_truncates_long_message(services_db):
     stored = await CapturedEvent.get(id=event.id)
     assert "…" in stored.summary
     assert len(stored.summary) < 250
+
+
+@pytest.mark.asyncio
+async def test_create_http_event_honors_client_timestamp(services_db):
+    client_ts = datetime(2025, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
+    event = await create_http_event(
+        event_id=None,
+        timestamp=client_ts,
+        duration_ms=0,
+        request=HttpRequestData(method="GET", url="https://x.test/", headers={}),
+        response=HttpResponseData(status_code=200, headers={}),
+        meta=HttpMeta(),
+    )
+    stored = await CapturedEvent.get(id=event.id)
+    assert stored.timestamp == client_ts
+
+
+@pytest.mark.asyncio
+async def test_create_http_event_defaults_timestamp_to_now(services_db):
+    before = datetime.now(timezone.utc)
+    event = await create_http_event(
+        event_id=None,
+        duration_ms=0,
+        request=HttpRequestData(method="GET", url="https://x.test/", headers={}),
+        response=HttpResponseData(status_code=200, headers={}),
+        meta=HttpMeta(),
+    )
+    after = datetime.now(timezone.utc)
+    stored = await CapturedEvent.get(id=event.id)
+    assert before <= stored.timestamp <= after
 
 
 @pytest.mark.asyncio

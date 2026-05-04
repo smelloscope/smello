@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-04
+
 ### Added
 
 - **Exception capture**: Hook `sys.excepthook` and `threading.excepthook` to capture unhandled exceptions with full tracebacks, stack frames, and source context. Enabled by default (`capture_exceptions=True`). Events are flushed synchronously before the process exits.

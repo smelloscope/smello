@@ -59,6 +59,15 @@ def init(
     log_level             ``SMELLO_LOG_LEVEL``            ``30`` (WARNING)
     ====================  ==============================  ==========================
 
+    .. note::
+
+       ``log_level`` is a capture filter, not a logger override. It controls
+       which records Smello keeps after they pass through Python's normal
+       logging pipeline.  It cannot capture records that the application's
+       loggers have already filtered out.  To capture DEBUG-level logs, the
+       application must configure its own logging level accordingly (e.g.
+       ``logging.basicConfig(level=logging.DEBUG)``).
+
     Boolean env vars accept ``true``/``1``/``yes`` and ``false``/``0``/``no``
     (case-insensitive).  List env vars are comma-separated.
 

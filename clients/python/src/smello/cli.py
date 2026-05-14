@@ -189,7 +189,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         metavar="LEVEL",
         default=None,
-        help="Minimum log level to capture as an int (e.g. 20=INFO, 30=WARNING).",
+        help=(
+            "Minimum log level to capture as an int (e.g. 20=INFO, 30=WARNING). "
+            "Acts as a filter on records that already pass the app's logger level — "
+            "it cannot override the app's logging configuration."
+        ),
     )
     run.add_argument(
         "command",

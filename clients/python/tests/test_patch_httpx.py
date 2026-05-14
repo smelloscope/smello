@@ -3,10 +3,12 @@
 import asyncio
 from unittest.mock import patch
 
-import httpx
 import pytest
-from smello.config import SmelloConfig
-from smello.patches.patch_httpx import patch_httpx
+
+httpx = pytest.importorskip("httpx")
+
+from smello.config import SmelloConfig  # noqa: E402
+from smello.patches.patch_httpx import patch_httpx  # noqa: E402
 
 
 @pytest.fixture()

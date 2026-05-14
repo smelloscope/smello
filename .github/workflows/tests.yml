@@ -47,6 +47,36 @@ jobs:
       - name: Run client tests
         run: .venv/bin/pytest clients/python/tests/ -v
 
+  client-patch-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv venv --python ${{ matrix.python-version }}
+          uv pip install -e clients/python pytest httpx
+
+      - name: Run client tests
+        run: .venv/bin/pytest clients/python/tests/ -v
+
   server-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10

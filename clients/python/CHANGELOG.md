@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-05-14
+
 ### Fixed
 
 - **httpx streaming responses now captured**: Streaming httpx responses (used by OpenAI, Anthropic, and Gemini SDKs for LLM API calls) were silently dropped because `response.content` raises `ResponseNotRead` on unread streams. The httpx patch now wraps the response byte-stream with a tee that accumulates chunks and sends the capture when the stream is closed. Response bodies larger than 1 MB are still captured (method, URL, headers, status, timing), but without the body.

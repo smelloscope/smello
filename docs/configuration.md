@@ -90,9 +90,9 @@ Set via env var: `SMELLO_CAPTURE_LOGS=true`.
 
 ### `log_level`
 
-Minimum log level to capture, as an integer. Default: `30` (WARNING). Uses standard Python logging levels: DEBUG=10, INFO=20, WARNING=30, ERROR=40, CRITICAL=50.
+Minimum log level to capture. Default: `30` (WARNING). Accepts an integer or a level name (case-insensitive): `DEBUG` (10), `INFO` (20), `WARNING` (30), `ERROR` (40), `CRITICAL` (50).
 
-Set via env var: `SMELLO_LOG_LEVEL=20` (captures INFO and above).
+Set via env var: `SMELLO_LOG_LEVEL=INFO` or `SMELLO_LOG_LEVEL=20`.
 
 !!! note "log_level is a capture filter, not a logger override"
     `log_level` controls which records Smello keeps *after* they pass through Python's normal logging pipeline. It cannot capture records that the application's loggers have already filtered out. For example, if your root logger is at WARNING (the default) and you set `log_level=10`, Smello still won't see DEBUG or INFO records — Python's `Logger.debug()` discards them before Smello's hook runs.

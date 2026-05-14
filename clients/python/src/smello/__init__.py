@@ -4,7 +4,7 @@ import atexit
 import logging
 from urllib.parse import urlparse
 
-from smello._env import env_bool, env_int, env_list, env_str
+from smello._env import env_bool, env_list, env_log_level, env_str, parse_log_level
 from smello.config import SmelloConfig
 from smello.patches import apply_all as _apply_all
 from smello.transport import flush, shutdown
@@ -32,7 +32,7 @@ def init(
     redact_query_params: list[str] | None = None,
     capture_exceptions: bool | None = None,
     capture_logs: bool | None = None,
-    log_level: int | None = None,
+    log_level: int | str | None = None,
 ) -> None:
     """Initialize Smello. Patches HTTP libraries, logging, and exception hooks.
 
@@ -58,6 +58,10 @@ def init(
     capture_logs          ``SMELLO_CAPTURE_LOGS``         ``False``
     log_level             ``SMELLO_LOG_LEVEL``            ``30`` (WARNING)
     ====================  ==============================  ==========================
+
+    ``log_level`` accepts an integer (``10``, ``20``, ``30``) or a standard
+    level name (``"DEBUG"``, ``"INFO"``, ``"WARNING"``), case-insensitive.
+    The same applies to the ``SMELLO_LOG_LEVEL`` environment variable.
 
     .. note::
 
@@ -117,8 +121,17 @@ def init(
         capture_logs = env_val if env_val is not None else False
 
     if log_level is None:
-        env_val = env_int("LOG_LEVEL")
+        env_val = env_log_level("LOG_LEVEL")
         log_level = env_val if env_val is not None else logging.WARNING
+    elif isinstance(log_level, str):
+        parsed = parse_log_level(log_level)
+        if parsed is None:
+            logger.warning(
+                "Unrecognised log_level %r, falling back to WARNING", log_level
+            )
+            log_level = logging.WARNING
+        else:
+            log_level = parsed
 
     resolved_url = server_url.rstrip("/")
     normalized_redact_headers = [h.lower() for h in redact_headers]

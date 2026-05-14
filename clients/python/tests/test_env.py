@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 import smello
-from smello._env import env_bool, env_list, env_str
+from smello._env import env_bool, env_list, env_log_level, env_str, parse_log_level
 
 # --- env_str ---
 
@@ -64,6 +64,61 @@ def testenv_bool_returns_none_when_empty():
 def testenv_bool_returns_none_for_unrecognised():
     with patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": "maybe"}):
         assert env_bool("CAPTURE_ALL") is None
+
+
+# --- parse_log_level ---
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("10", 10),
+        ("20", 20),
+        ("30", 30),
+        ("DEBUG", 10),
+        ("INFO", 20),
+        ("WARNING", 30),
+        ("ERROR", 40),
+        ("CRITICAL", 50),
+        ("debug", 10),
+        ("Info", 20),
+        ("warning", 30),
+    ],
+)
+def test_parse_log_level(value, expected):
+    assert parse_log_level(value) == expected
+
+
+def test_parse_log_level_returns_none_for_invalid():
+    assert parse_log_level("BOGUS") is None
+
+
+# --- env_log_level ---
+
+
+def test_env_log_level_numeric():
+    with patch.dict(os.environ, {"SMELLO_LOG_LEVEL": "20"}):
+        assert env_log_level("LOG_LEVEL") == 20
+
+
+def test_env_log_level_named():
+    with patch.dict(os.environ, {"SMELLO_LOG_LEVEL": "DEBUG"}):
+        assert env_log_level("LOG_LEVEL") == 10
+
+
+def test_env_log_level_case_insensitive():
+    with patch.dict(os.environ, {"SMELLO_LOG_LEVEL": "info"}):
+        assert env_log_level("LOG_LEVEL") == 20
+
+
+def test_env_log_level_returns_none_when_unset():
+    with patch.dict(os.environ, {}, clear=True):
+        assert env_log_level("LOG_LEVEL") is None
+
+
+def test_env_log_level_returns_none_for_invalid():
+    with patch.dict(os.environ, {"SMELLO_LOG_LEVEL": "BOGUS"}):
+        assert env_log_level("LOG_LEVEL") is None
 
 
 # --- env_list ---
@@ -261,6 +316,33 @@ def test_init_defaults_with_explicit_url():
         assert "test" in smello._config.ignore_hosts  # auto-added
         assert smello._config.redact_headers == ["authorization", "x-api-key"]
         assert smello._config.redact_query_params == []
+
+
+def test_init_log_level_string():
+    with (
+        patch.dict(os.environ, {}, clear=True),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello._patched = False
+        smello.init(server_url="http://test:5110", log_level="DEBUG")
+        assert smello._config.log_level == 10
+
+
+def test_init_log_level_string_from_env():
+    with (
+        patch.dict(
+            os.environ,
+            {"SMELLO_URL": "http://test:5110", "SMELLO_LOG_LEVEL": "INFO"},
+        ),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello._patched = False
+        smello.init()
+        assert smello._config.log_level == 20
 
 
 # --- init() idempotency ---

@@ -18,8 +18,20 @@ import sys
 from collections.abc import Sequence
 
 import smello
+from smello._env import parse_log_level
 
 DEFAULT_SERVER_URL = "http://localhost:5110"
+
+
+def _parse_log_level_arg(value: str) -> int:
+    """Argparse type for --log-level: accepts an int or a level name."""
+    result = parse_log_level(value)
+    if result is None:
+        raise argparse.ArgumentTypeError(
+            f"invalid log level: {value!r} "
+            "(use DEBUG, INFO, WARNING, ERROR, CRITICAL, or an integer)"
+        )
+    return result
 
 
 def _bootstrap_dir() -> str:
@@ -186,11 +198,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument(
         "--log-level",
-        type=int,
+        type=_parse_log_level_arg,
         metavar="LEVEL",
         default=None,
         help=(
-            "Minimum log level to capture as an int (e.g. 20=INFO, 30=WARNING). "
+            "Minimum log level to capture (e.g. DEBUG, INFO, WARNING, or 10, 20, 30). "
             "Acts as a filter on records that already pass the app's logger level — "
             "it cannot override the app's logging configuration."
         ),

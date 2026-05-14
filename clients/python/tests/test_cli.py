@@ -134,6 +134,21 @@ def test_overrides_capture_logs_with_level():
     assert overrides == {"SMELLO_CAPTURE_LOGS": "true", "SMELLO_LOG_LEVEL": "10"}
 
 
+def test_log_level_accepts_name():
+    c = _capture_execvpe(["run", "--log-level", "DEBUG", "echo"])
+    assert c["env"]["SMELLO_LOG_LEVEL"] == "10"
+
+
+def test_log_level_accepts_name_case_insensitive():
+    c = _capture_execvpe(["run", "--log-level", "info", "echo"])
+    assert c["env"]["SMELLO_LOG_LEVEL"] == "20"
+
+
+def test_log_level_rejects_invalid(capsys):
+    with pytest.raises(SystemExit):
+        cli.main(["run", "--log-level", "BOGUS", "echo"])
+
+
 # --- _build_child_env (composes os.environ + overrides + PYTHONPATH + URL default) ---
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
 TRUTHY = frozenset({"true", "1", "yes"})
@@ -47,6 +48,31 @@ def env_int(name: str) -> int | None:
         return int(raw)
     except ValueError:
         return None
+
+
+def env_log_level(name: str) -> int | None:
+    """Read ``SMELLO_{name}`` as a log level (int or name like ``DEBUG``).
+
+    Returns ``None`` if unset, empty, or unrecognised.
+    """
+    raw = env_str(name)
+    if raw is None:
+        return None
+    return parse_log_level(raw)
+
+
+def parse_log_level(value: str) -> int | None:
+    """Parse a log level string that is either numeric or a level name.
+
+    Accepts ``"10"``, ``"DEBUG"``, ``"debug"``, etc.
+    Returns ``None`` for unrecognised values.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    level = logging.getLevelNamesMapping().get(value.upper())
+    return level
 
 
 def env_list(name: str) -> list[str] | None:

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-05-14
+
 ### Changed
 
 - **`log_level` now accepts level names**: `--log-level DEBUG`, `SMELLO_LOG_LEVEL=INFO`, and `smello.init(log_level="WARNING")` all work in addition to numeric values. Case-insensitive.

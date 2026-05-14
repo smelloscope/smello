@@ -158,7 +158,7 @@ eliminates `getattr`/`hasattr` guards.
 | Library    | Approach     | Patch point                              |
 |------------|-------------|------------------------------------------|
 | requests   | Tier 2      | `Session.send(prepared_request)`         |
-| httpx      | Tier 2      | `Client.send(request)` + `AsyncClient.send(request)` |
+| httpx      | Tier 1      | Event hooks via `__init__` patch + stream tee |
 | botocore   | Tier 2      | `URLLib3Session.send(request)`           |
 | grpc       | Tier 2      | Channel wrapping via interceptor         |
 | aiohttp    | Tier 1      | `TraceConfig` signals via `__init__` patch |

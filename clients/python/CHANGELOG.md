@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Fixed
+
+- **httpx streaming responses now captured**: Streaming httpx responses (used by OpenAI, Anthropic, and Gemini SDKs for LLM API calls) were silently dropped because `response.content` raises `ResponseNotRead` on unread streams. The httpx patch now wraps the response byte-stream with a tee that accumulates chunks and sends the capture when the stream is closed. Response bodies larger than 1 MB are still captured (method, URL, headers, status, timing), but without the body.
+
+### Changed
+
+- **httpx patch upgraded to Tier 1**: Replaced `Client.send()` / `AsyncClient.send()` monkey-patches with `__init__` patching that injects event hooks, the same pattern the aiohttp patch uses. User-provided event hooks are preserved.
+
 ## [0.9.0] - 2026-05-04
 
 ### Added

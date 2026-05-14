@@ -112,6 +112,14 @@ export SMELLO_LOG_LEVEL=20
 
 Without `SMELLO_URL`, `init()` is a no-op — safe for production. Useful for Docker Compose, CI, and `.env` files.
 
+## Body capture limits
+
+Smello caps captured request and response bodies at **1 MB**. When a body exceeds the limit, the request is still captured (method, URL, headers, status code, timing), but the body field is omitted.
+
+For streaming responses (common with LLM APIs), Smello accumulates chunks in memory as they pass through. Once the 1 MB threshold is crossed, accumulated data is discarded and no further chunks are stored. Your application receives all bytes normally; only the captured copy is affected.
+
+The limit is not configurable. It prevents memory pressure when large downloads or file transfers pass through an instrumented application.
+
 ## Flushing and shutdown
 
 Smello sends captures in a background thread so it never blocks your application. This means your process may exit before all captures reach the server — especially in short-lived scripts or CLI tools.

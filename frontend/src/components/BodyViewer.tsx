@@ -3,6 +3,7 @@ import JsonView from "react18-json-view";
 import { Highlight, themes } from "prism-react-renderer";
 import { XMLParser } from "fast-xml-parser";
 import { customizeNode } from "../annotations";
+import SseViewer, { parseSseEvents, type SseEvent } from "./SseViewer";
 import "react18-json-view/src/style.css";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -12,6 +13,7 @@ import Typography from "@mui/material/Typography";
 type ParsedBody =
   | { type: "json"; parsed: unknown; raw: string }
   | { type: "xml"; parsed: unknown; raw: string }
+  | { type: "sse"; events: SseEvent[]; raw: string }
   | { type: "text"; raw: string };
 
 const preSx = {
@@ -50,6 +52,12 @@ function parseBody(data: string): ParsedBody {
     return { type: "json", parsed: JSON.parse(data), raw: data };
   } catch {
     // not JSON
+  }
+
+  // Try SSE
+  const sseEvents = parseSseEvents(data);
+  if (sseEvents) {
+    return { type: "sse", events: sseEvents, raw: data };
   }
 
   // Try XML
@@ -149,6 +157,32 @@ export default function BodyViewer({ data }: { data: string | null }) {
       <Typography component="pre" sx={preSx}>
         {body.raw}
       </Typography>
+    );
+  }
+
+  // SSE — Events / Raw tabs
+  if (body.type === "sse") {
+    return (
+      <Box>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          sx={{
+            minHeight: 0,
+            mb: 1,
+            "& .MuiTab-root": { minHeight: 0, py: 0.5, px: 1.5, fontSize: 12 },
+          }}
+        >
+          <Tab label={`Events (${body.events.length})`} />
+          <Tab label="Raw" />
+        </Tabs>
+        {tab === 0 && <SseViewer events={body.events} />}
+        {tab === 1 && (
+          <Typography component="pre" sx={preSx}>
+            {body.raw}
+          </Typography>
+        )}
+      </Box>
     );
   }
 

@@ -125,13 +125,15 @@ async def get_meta() -> MetaResponse:
 
     _, host_rows = await db.execute_query(
         "SELECT DISTINCT json_extract(data, '$.host') as host"
-        " FROM captured_events WHERE event_type = 'http' AND host IS NOT NULL"
+        " FROM captured_events"
+        " WHERE event_type IN ('http', 'http_incoming') AND host IS NOT NULL"
     )
     hosts = sorted({r["host"] for r in host_rows if r["host"]})
 
     _, method_rows = await db.execute_query(
         "SELECT DISTINCT json_extract(data, '$.method') as method"
-        " FROM captured_events WHERE event_type = 'http' AND method IS NOT NULL"
+        " FROM captured_events"
+        " WHERE event_type IN ('http', 'http_incoming') AND method IS NOT NULL"
     )
     methods = sorted({r["method"] for r in method_rows if r["method"]})
 

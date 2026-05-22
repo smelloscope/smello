@@ -136,6 +136,36 @@ def log_payload():
 
 
 @pytest.fixture()
+def http_incoming_payload():
+    """Incoming HTTP payload for `/api/capture/http_incoming`."""
+    return {
+        "duration_ms": 45,
+        "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "url": "http://localhost:8000/api/users",
+            "headers": {
+                "host": "localhost:8000",
+                "content-type": "application/json",
+            },
+            "body": '{"name": "Alice"}',
+            "body_size": 17,
+        },
+        "response": {
+            "status_code": 201,
+            "headers": {"content-type": "application/json"},
+            "body": '{"id": 1, "name": "Alice"}',
+            "body_size": 26,
+        },
+        "meta": {
+            "framework": "fastapi",
+            "route": "/api/users",
+            "client_ip": "127.0.0.1",
+        },
+    }
+
+
+@pytest.fixture()
 def exception_payload():
     """Exception payload for the typed `/api/capture/exception` endpoint."""
     return {

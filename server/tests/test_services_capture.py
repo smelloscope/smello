@@ -7,11 +7,15 @@ from smello_server.models import CapturedEvent
 from smello_server.services.capture import (
     create_exception_event,
     create_http_event,
+    create_http_incoming_event,
     create_log_event,
 )
 from smello_server.types import (
     ExceptionData,
     ExceptionFrame,
+    HttpIncomingMeta,
+    HttpIncomingRequestData,
+    HttpIncomingResponseData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
@@ -183,3 +187,72 @@ async def test_create_exception_event_persists_row(services_db):
     assert stored.data["exc_type"] == "ValueError"
     assert stored.data["frames"][0]["filename"] == "app.py"
     assert stored.data["frames"][0]["pre_context"] == []
+
+
+@pytest.mark.asyncio
+async def test_create_http_incoming_event_persists_row(services_db):
+    event = await create_http_incoming_event(
+        event_id="660e8400-e29b-41d4-a716-446655440000",
+        duration_ms=45,
+        request=HttpIncomingRequestData(
+            method="post",
+            path="/api/users",
+            url="http://localhost:8000/api/users",
+            headers={"host": "localhost:8000", "content-type": "application/json"},
+            body='{"name": "Alice"}',
+            body_size=17,
+        ),
+        response=HttpIncomingResponseData(
+            status_code=201,
+            headers={"content-type": "application/json"},
+            body='{"id": 1}',
+            body_size=10,
+        ),
+        meta=HttpIncomingMeta(
+            framework="fastapi",
+            route="/api/users",
+            client_ip="127.0.0.1",
+        ),
+    )
+
+    stored = await CapturedEvent.get(id=event.id)
+    assert stored.event_type == "http_incoming"
+    assert stored.summary == "← POST /api/users → 201"
+    assert stored.data["event_type"] == "http_incoming"
+    assert stored.data["method"] == "POST"
+    assert stored.data["host"] == "localhost:8000"
+    assert stored.data["path"] == "/api/users"
+    assert stored.data["framework"] == "fastapi"
+    assert stored.data["route"] == "/api/users"
+    assert stored.data["client_ip"] == "127.0.0.1"
+    assert stored.data["duration_ms"] == 45
+
+
+@pytest.mark.asyncio
+async def test_create_http_incoming_event_auto_generates_id(services_db):
+    event = await create_http_incoming_event(
+        event_id=None,
+        duration_ms=0,
+        request=HttpIncomingRequestData(
+            method="GET", path="/", url="http://x.test/", headers={}
+        ),
+        response=HttpIncomingResponseData(status_code=200, headers={}),
+        meta=HttpIncomingMeta(),
+    )
+    assert event.id is not None
+
+
+@pytest.mark.asyncio
+async def test_create_http_incoming_event_uppercases_method(services_db):
+    event = await create_http_incoming_event(
+        event_id=None,
+        duration_ms=0,
+        request=HttpIncomingRequestData(
+            method="get", path="/health", url="http://x.test/health", headers={}
+        ),
+        response=HttpIncomingResponseData(status_code=200, headers={}),
+        meta=HttpIncomingMeta(),
+    )
+    stored = await CapturedEvent.get(id=event.id)
+    assert stored.data["method"] == "GET"
+    assert "GET" in stored.summary

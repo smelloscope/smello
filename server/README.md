@@ -74,5 +74,7 @@ smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
 
 ## Links
 
-- [Documentation & Source](https://github.com/smelloscope/smello)
+- [Documentation](https://smello.io)
+- [Source & Issues](https://github.com/smelloscope/smello)
+- [Changelog](https://github.com/smelloscope/smello/blob/main/server/CHANGELOG.md)
 - [smello client SDK on PyPI](https://pypi.org/project/smello/)

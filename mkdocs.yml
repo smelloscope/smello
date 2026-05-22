@@ -25,6 +25,13 @@ theme:
 
 extra:
   generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/smelloscope/smello
+      name: Source on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/smello/
+      name: Client SDK on PyPI
 
 extra_css:
   - stylesheets/extra.css
@@ -46,3 +53,4 @@ nav:
   - API: api.md
   - Keyboard Shortcuts: keyboard-shortcuts.md
   - AI Skills: ai-skills.md
+  - Changelog: changelog.md

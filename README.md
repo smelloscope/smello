@@ -269,6 +269,11 @@ smello/
 └── examples/python/
 ```
 
+## Changelog
+
+- [Client SDK changelog](https://github.com/smelloscope/smello/blob/main/clients/python/CHANGELOG.md)
+- [Server changelog](https://github.com/smelloscope/smello/blob/main/server/CHANGELOG.md)
+
 ## Contact
 
 Questions, feedback, or ideas? Reach out at [roman@smello.io](mailto:roman@smello.io).

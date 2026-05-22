@@ -130,5 +130,7 @@ The server URL is the activation signal — `init()` does nothing unless `server
 
 ## Links
 
-- [Documentation & Source](https://github.com/smelloscope/smello)
+- [Documentation](https://smello.io)
+- [Source & Issues](https://github.com/smelloscope/smello)
+- [Changelog](https://github.com/smelloscope/smello/blob/main/clients/python/CHANGELOG.md)
 - [smello-server on PyPI](https://pypi.org/project/smello-server/)

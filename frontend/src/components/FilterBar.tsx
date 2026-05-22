@@ -32,7 +32,8 @@ export default function FilterBar() {
   };
 
   const eventTypeLabels: Record<string, string> = {
-    http: "HTTP",
+    http: "HTTP (outgoing)",
+    http_incoming: "HTTP (incoming)",
     log: "Logs",
     exception: "Exceptions",
   };

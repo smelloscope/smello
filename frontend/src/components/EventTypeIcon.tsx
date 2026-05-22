@@ -1,22 +1,26 @@
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import SubjectIcon from "@mui/icons-material/Subject";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import type { EventType } from "../api/events";
 
 const Icons: Record<EventType, typeof SwapHorizIcon> = {
   http: SwapHorizIcon,
+  http_incoming: CallReceivedIcon,
   log: SubjectIcon,
   exception: BugReportIcon,
 };
 
 const baseColorsDark: Record<EventType, string> = {
   http: "#64b5f6",
+  http_incoming: "#81c784",
   log: "#90a4ae",
   exception: "#ef9a9a",
 };
 
 const baseColorsLight: Record<EventType, string> = {
   http: "#1565c0",
+  http_incoming: "#2e7d32",
   log: "#546e7a",
   exception: "#c62828",
 };

@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useGetEvent } from "../api/events";
 import HttpDetail from "./detail/HttpDetail";
+import HttpIncomingDetail from "./detail/HttpIncomingDetail";
 import LogDetail from "./detail/LogDetail";
 import ExceptionDetail from "./detail/ExceptionDetail";
 import { headersOpenAtom, bodyOpenAtom, queryParamsOpenAtom } from "../atoms/sectionState";
@@ -49,6 +50,8 @@ export default function RequestDetail({ requestId }: { requestId: string }) {
   switch (detail.data.event_type) {
     case "http":
       return <HttpDetail detail={{ ...detail, data: detail.data }} />;
+    case "http_incoming":
+      return <HttpIncomingDetail detail={{ ...detail, data: detail.data }} />;
     case "log":
       return <LogDetail detail={{ ...detail, data: detail.data }} />;
     case "exception":

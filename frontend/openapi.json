@@ -43,6 +43,44 @@
         }
       }
     },
+    "/api/capture/http_incoming": {
+      "post": {
+        "summary": "Capture Http Incoming Api",
+        "operationId": "capture_http_incoming_api_api_capture_http_incoming_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpIncomingCapturePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/capture/log": {
       "post": {
         "summary": "Capture Log Api",
@@ -377,7 +415,7 @@
           },
           "event_type": {
             "type": "string",
-            "enum": ["http", "log", "exception"],
+            "enum": ["http", "http_incoming", "log", "exception"],
             "title": "Event Type"
           },
           "summary": {
@@ -388,6 +426,9 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/HttpEventData"
+              },
+              {
+                "$ref": "#/components/schemas/HttpIncomingEventData"
               },
               {
                 "$ref": "#/components/schemas/LogEventData"
@@ -402,6 +443,7 @@
               "mapping": {
                 "exception": "#/components/schemas/ExceptionEventData",
                 "http": "#/components/schemas/HttpEventData",
+                "http_incoming": "#/components/schemas/HttpIncomingEventData",
                 "log": "#/components/schemas/LogEventData"
               }
             }
@@ -424,7 +466,7 @@
           },
           "event_type": {
             "type": "string",
-            "enum": ["http", "log", "exception"],
+            "enum": ["http", "http_incoming", "log", "exception"],
             "title": "Event Type"
           },
           "summary": {
@@ -781,6 +823,348 @@
         "title": "HttpEventData",
         "description": "HTTP capture as stored and served. Flat by convention."
       },
+      "HttpIncomingCapturePayload": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "request": {
+            "$ref": "#/components/schemas/HttpIncomingRequestData"
+          },
+          "response": {
+            "$ref": "#/components/schemas/HttpIncomingResponseData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/HttpIncomingMeta",
+            "default": {
+              "framework": "unknown",
+              "python_version": "",
+              "smello_version": ""
+            }
+          }
+        },
+        "type": "object",
+        "required": ["request", "response"],
+        "title": "HttpIncomingCapturePayload"
+      },
+      "HttpIncomingEventData": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "const": "http_incoming",
+            "title": "Event Type",
+            "default": "http_incoming"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "host": {
+            "type": "string",
+            "title": "Host"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "client_ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Ip"
+          },
+          "request_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Request Headers"
+          },
+          "request_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Body"
+          },
+          "request_body_size": {
+            "type": "integer",
+            "title": "Request Body Size",
+            "default": 0
+          },
+          "status_code": {
+            "type": "integer",
+            "title": "Status Code"
+          },
+          "response_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Response Headers"
+          },
+          "response_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Body"
+          },
+          "response_body_size": {
+            "type": "integer",
+            "title": "Response Body Size",
+            "default": 0
+          },
+          "exc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Type"
+          },
+          "exc_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Value"
+          },
+          "framework": {
+            "type": "string",
+            "title": "Framework",
+            "default": "unknown"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "default": ""
+          },
+          "smello_version": {
+            "type": "string",
+            "title": "Smello Version",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_ms",
+          "method",
+          "path",
+          "url",
+          "host",
+          "request_headers",
+          "status_code",
+          "response_headers"
+        ],
+        "title": "HttpIncomingEventData",
+        "description": "Incoming HTTP request as stored and served."
+      },
+      "HttpIncomingMeta": {
+        "properties": {
+          "framework": {
+            "type": "string",
+            "title": "Framework",
+            "default": "unknown"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "client_ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Ip"
+          },
+          "exc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Type"
+          },
+          "exc_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Value"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "default": ""
+          },
+          "smello_version": {
+            "type": "string",
+            "title": "Smello Version",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "HttpIncomingMeta"
+      },
+      "HttpIncomingRequestData": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "body_size": {
+            "type": "integer",
+            "title": "Body Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": ["method", "path", "url", "headers"],
+        "title": "HttpIncomingRequestData"
+      },
+      "HttpIncomingResponseData": {
+        "properties": {
+          "status_code": {
+            "type": "integer",
+            "title": "Status Code"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "body_size": {
+            "type": "integer",
+            "title": "Body Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": ["status_code", "headers"],
+        "title": "HttpIncomingResponseData"
+      },
       "HttpMeta": {
         "properties": {
           "library": {
@@ -1083,7 +1467,7 @@
           "event_types": {
             "items": {
               "type": "string",
-              "enum": ["http", "log", "exception"]
+              "enum": ["http", "http_incoming", "log", "exception"]
             },
             "type": "array",
             "title": "Event Types"

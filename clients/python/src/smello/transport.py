@@ -38,6 +38,11 @@ def send_log(payload: dict) -> None:
     _enqueue("/api/capture/log", payload)
 
 
+def send_http_incoming(payload: dict) -> None:
+    """Queue an incoming HTTP capture payload for `/api/capture/http_incoming`."""
+    _enqueue("/api/capture/http_incoming", payload)
+
+
 def send_exception(payload: dict) -> None:
     """Queue an exception capture payload for `/api/capture/exception`."""
     _enqueue("/api/capture/exception", payload)

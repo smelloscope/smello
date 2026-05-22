@@ -47,6 +47,19 @@ def test_ignore_takes_precedence_over_capture_hosts():
     assert config.should_capture("api.stripe.com") is False
 
 
+def test_ignore_loggers_defaults_to_empty():
+    config = SmelloConfig(server_url="http://test:5110")
+    assert config.ignore_loggers == []
+
+
+def test_ignore_loggers_accepts_list():
+    config = SmelloConfig(
+        server_url="http://test:5110",
+        ignore_loggers=["uvicorn.access", "uvicorn.error"],
+    )
+    assert config.ignore_loggers == ["uvicorn.access", "uvicorn.error"]
+
+
 def test_ignore_takes_precedence_over_capture_all():
     config = SmelloConfig(
         server_url="http://test:5110",

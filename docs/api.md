@@ -48,7 +48,7 @@ Summary formats by event type:
 
 ## Get event details
 
-Returns the full event data — the shape of `data` depends on the event type.
+Returns the full event data. The shape of `data` depends on the event type.
 
 ```bash
 curl -s http://localhost:5110/api/events/{id} | python -m json.tool
@@ -128,7 +128,7 @@ curl -X DELETE http://localhost:5110/api/events
 
 ## Capture endpoints
 
-The Smello client SDK posts captured events to typed endpoints, one per event type. You can also post directly from a script or tool — useful for capturing events from non-Python services.
+The Smello client SDK posts captured events to typed endpoints, one per event type. You can also post directly from a script or tool, useful for capturing events from non-Python services.
 
 ### `POST /api/capture/http`
 

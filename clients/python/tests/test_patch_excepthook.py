@@ -115,7 +115,7 @@ def test_capture_exception_serializes_frames(mock_transport):
         raise RuntimeError("frame test")
     except RuntimeError:
         exc_type, exc_value, exc_tb = sys.exc_info()
-        patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
+        patch_excepthook.capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
     data = mock_transport.send_exception_calls[0]["data"]
@@ -130,7 +130,7 @@ def test_capture_exception_serializes_frames(mock_transport):
 
 def test_capture_exception_skips_none(mock_transport):
     # Act
-    patch_excepthook._capture_exception(None, None, None)
+    patch_excepthook.capture_exception(None, None, None)
 
     # Assert
     assert mock_transport.send_exception_calls == []
@@ -142,7 +142,7 @@ def test_capture_exception_includes_pre_post_context(mock_transport):
         raise RuntimeError("context test")
     except RuntimeError:
         exc_type, exc_value, exc_tb = sys.exc_info()
-        patch_excepthook._capture_exception(exc_type, exc_value, exc_tb)
+        patch_excepthook.capture_exception(exc_type, exc_value, exc_tb)
 
     # Assert
     data = mock_transport.send_exception_calls[0]["data"]

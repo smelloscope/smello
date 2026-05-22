@@ -71,7 +71,9 @@ def parse_log_level(value: str) -> int | None:
         return int(value)
     except ValueError:
         pass
-    level = logging.getLevelNamesMapping().get(value.upper())
+    level = logging.getLevelName(value.upper())
+    if not isinstance(level, int):
+        return None
     return level
 
 

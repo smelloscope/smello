@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-05-22
+
 ### Added
 
 - **FastAPI incoming request middleware**: New `SmelloMiddleware` in `smello.integrations.fastapi` captures incoming HTTP requests handled by a FastAPI/Starlette app. Captures request/response headers, bodies (up to 1 MB), timing, matched route pattern, client IP, and exception info. Add it with `app.add_middleware(SmelloMiddleware)` after calling `smello.init()`. Supports `ignore_paths` to skip noisy paths like `/docs` or `/favicon.ico`.

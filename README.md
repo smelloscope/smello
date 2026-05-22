@@ -6,7 +6,7 @@
 
 Capture outgoing and incoming HTTP requests, Python logs, and unhandled exceptions in a local web dashboard.
 
-Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output. HTTP traffic in both directions, log records, and crash tracebacks, all in one timeline. Add two lines to your code and open `http://localhost:5110`.
+Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output. HTTP traffic in both directions, log records, and crash tracebacks, all in one timeline. No code changes — just prefix your command with `smello run`.
 
 > **Why port 5110?** Read it as **5-1-1-0** → **S-L-L-O** → **smello**.
 
@@ -16,10 +16,10 @@ Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output. 
 
 ## Quick start
 
-### 1. Start the server
+### 1. Install and start the server
 
 ```bash
-pip install smello-server
+pip install smello smello-server
 smello-server
 ```
 
@@ -29,49 +29,41 @@ Or run with Docker:
 docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
-### 2. Add to your code
-
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-# HTTP requests are captured automatically
-import requests
-resp = requests.get("https://api.stripe.com/v1/charges")
-
-# Enable log capture
-import logging
-logging.warning("Something went wrong")  # appears in the dashboard
-
-# Unhandled exceptions are captured with full tracebacks
-```
-
-Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
-
-### Run without modifying code
-
-For programs you don't want to (or can't) edit, wrap them with `smello run`:
+### 2. Run your code with Smello
 
 ```bash
-smello run my_app.py                                    # .py files run with current Python
-smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run my_app.py
+smello run pytest tests/
 smello run uvicorn app:app
 ```
 
-Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically, so wrapping `gunicorn` also captures traffic from worker processes.
+That's it. Outgoing HTTP requests, unhandled exceptions, and (optionally) log records are captured automatically — no code changes needed. Subprocess instrumentation propagates automatically, so `smello run gunicorn app:app` also captures traffic from worker processes.
 
-### FastAPI middleware
+Browse captured events at [http://localhost:5110](http://localhost:5110).
 
-To capture incoming requests in a FastAPI app, add the Smello middleware:
+### Using `smello.init()` instead
+
+If you prefer to activate Smello from within your code (e.g., for programmatic configuration or projects with a custom `sitecustomize.py`):
 
 ```python
 import smello
+smello.init()  # activates only when SMELLO_URL is set
+```
+
+### FastAPI middleware
+
+To capture incoming requests in a FastAPI app, add the Smello middleware and run with `smello run`:
+
+```python
 from smello.integrations.fastapi import SmelloMiddleware
 from fastapi import FastAPI
 
-smello.init()
 app = FastAPI()
 app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
+```
+
+```bash
+smello run uvicorn app:app
 ```
 
 Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. Unhandled exceptions are captured with full tracebacks.
@@ -219,19 +211,13 @@ curl -X DELETE http://localhost:5110/api/events
 
 ### AWS libraries (boto3)
 
-boto3 uses `botocore`, which calls `urllib3` directly, bypassing `requests` and `httpx`. Smello patches botocore's HTTP session to capture AWS API calls:
+boto3 uses `botocore`, which calls `urllib3` directly, bypassing `requests` and `httpx`. Smello patches botocore's HTTP session to capture all AWS API calls. Just run your script with `smello run`:
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-import boto3
-s3 = boto3.client("s3")
-buckets = s3.list_buckets()
-
-# AWS calls appear at http://localhost:5110 — XML responses
-# show as a collapsible tree, just like JSON.
+```bash
+smello run my_aws_script.py
 ```
+
+AWS calls appear at `http://localhost:5110` — XML responses show as a collapsible tree, just like JSON.
 
 ### Google Cloud libraries
 
@@ -276,8 +262,8 @@ Run `just` to see all available recipes.
 ## Architecture
 
 ```
-Your Python App ──→ Smello Server ──→ Web Dashboard
-(smello.init())     (FastAPI+SQLite)   (localhost:5110)
+smello run my_app.py ──→ Smello Server ──→ Web Dashboard
+                         (FastAPI+SQLite)   (localhost:5110)
 ```
 
 - **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Includes a FastAPI middleware for incoming request capture. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.

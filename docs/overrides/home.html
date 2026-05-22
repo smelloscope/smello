@@ -213,9 +213,11 @@
       font-size: 0.95rem;
       color: white;
       transition: border-color 0.2s;
+      text-decoration: none;
     }
     .integration-card:hover {
       border-color: #FFA600;
+      color: white;
     }
     .integration-card .ic-icon {
       width: 22px;
@@ -305,7 +307,7 @@
       <img src="assets/logo-dark.png" alt="Smello logo">
       <h1>Smello</h1>
     </div>
-    <p class="tagline">See every HTTP request your Python app sends or receives, plus logs and exceptions. All in one local dashboard.</p>
+    <p class="tagline">Debug your Python app locally. HTTP traffic, logs, and exceptions in one dashboard. Zero code changes.</p>
     <div class="hero-buttons">
       <a href="getting-started/" class="primary">Get Started</a>
       <a href="https://github.com/smelloscope/smello" class="secondary">GitHub</a>
@@ -323,16 +325,16 @@
     <h2>Why Smello?</h2>
     <div class="features">
       <div class="feature">
-        <h3>Two lines of code</h3>
-        <p><code>import smello</code> and <code>smello.init()</code> in your entrypoint. HTTP requests, exceptions, and logs, all captured.</p>
+        <h3>Zero code changes</h3>
+        <p>Prefix any command with <code>smello run</code>. HTTP requests, exceptions, and logs, all captured. No imports, no init calls.</p>
       </div>
       <div class="feature">
         <h3>Unified timeline</h3>
-        <p>HTTP traffic, log records, and crash tracebacks in one scrollable view. Filter by event type, search across everything.</p>
+        <p>HTTP traffic, log records, and crash tracebacks in one scrollable view. Filter by type, search across everything.</p>
       </div>
       <div class="feature">
-        <h3>Client and server side</h3>
-        <p>Auto-patches <code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, and <code>botocore</code> for outgoing traffic. Add the FastAPI middleware to capture incoming requests too.</p>
+        <h3>Full-stack visibility</h3>
+        <p>Outgoing calls to any API (<code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, <code>botocore</code>), incoming requests via the FastAPI middleware, plus Python logs and unhandled exceptions.</p>
       </div>
     </div>
   </section>
@@ -343,12 +345,12 @@
     <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 900px;">
       <div class="feature">
         <h3><a href="ai-skills/#smello-setup-project-integration" style="color: inherit; text-decoration: none;">/smello-setup</a></h3>
-        <p>Your AI agent explores your code and adds Smello automatically.</p>
+        <p>Your AI agent detects your stack, installs Smello, and wires up <code>smello run</code> in your workflow.</p>
         <p style="margin-top: 0.75rem;"><a href="ai-skills/#smello-setup-project-integration" style="color: #FFA600;">Learn more &rarr;</a></p>
       </div>
       <div class="feature">
         <h3><a href="ai-skills/#smello-debugger-event-inspection" style="color: inherit; text-decoration: none;">/smello-debugger</a></h3>
-        <p>Inspect captured traffic, logs, exceptions — find failures and analyze events.</p>
+        <p>Your AI agent queries captured events to diagnose failures: API errors, crashes, and log patterns.</p>
         <p style="margin-top: 0.75rem;"><a href="ai-skills/#smello-debugger-event-inspection" style="color: #FFA600;">Learn more &rarr;</a></p>
       </div>
     </div>
@@ -368,39 +370,39 @@
     <h2>Works with</h2>
     <p class="subtitle">Outgoing HTTP and RPC libraries (auto-patched)</p>
     <div class="integrations-grid">
-      <div class="integration-card">
+      <a class="integration-card" href="guides/debug-requests/">
         <img class="ic-icon" src="assets/logos/requests.svg" alt="requests"> requests
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-httpx/">
         <img class="ic-icon" src="assets/logos/httpx.svg" alt="httpx"> httpx
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-aiohttp/">
         <img class="ic-icon" src="assets/logos/aiohttp.svg" alt="aiohttp"> aiohttp
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-grpc/">
         <img class="ic-icon" src="assets/logos/grpc.svg" alt="gRPC"> gRPC
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-boto3/">
         <img class="ic-icon" src="assets/logos/aws.svg" alt="boto3"> boto3 / AWS
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-google-cloud/">
         <img class="ic-icon" src="assets/logos/googlecloud.svg" alt="Google Cloud"> Google Cloud
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-openai/">
         <img class="ic-icon" src="assets/logos/openai.svg" alt="OpenAI"> OpenAI SDK
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-anthropic/">
         <img class="ic-icon" src="assets/logos/anthropic.svg" alt="Anthropic"> Anthropic SDK
-      </div>
-      <div class="integration-card">
+      </a>
+      <a class="integration-card" href="guides/debug-stripe/">
         <img class="ic-icon" src="assets/logos/stripe.svg" alt="Stripe"> Stripe SDK
-      </div>
+      </a>
     </div>
     <p class="subtitle" style="margin-top: 2.5rem;">Server frameworks (incoming request capture)</p>
     <div class="integrations-grid">
-      <div class="integration-card">
+      <a class="integration-card" href="guides/debug-fastapi/">
         <img class="ic-icon" src="assets/logos/fastapi.svg" alt="FastAPI"> FastAPI
-      </div>
+      </a>
     </div>
   </section>
 
@@ -411,22 +413,22 @@
       <div class="step">
         <div class="step-num">1</div>
         <div class="step-body">
-          <div class="step-label">Set the env var</div>
-          <code>export SMELLO_URL=http://localhost:5110</code>
+          <div class="step-label">Install</div>
+          <code>pip install smello smello-server</code>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-body">
-          <div class="step-label">Add two lines</div>
-          <code>import smello; smello.init()</code>
+          <div class="step-label">Start the server</div>
+          <code>smello-server</code>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div class="step-body">
-          <div class="step-label">Run the server</div>
-          <code>smello-server run</code>
+          <div class="step-label">Run your code</div>
+          <code>smello run my_app.py</code>
         </div>
       </div>
       <div class="step">
@@ -439,18 +441,16 @@
     </div>
     <div class="code-wrap">
       <div class="highlight">
-        <pre><code class="language-python"><span class="kn">import</span> <span class="nn">smello</span>
-<span class="n">smello</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>  <span class="c1"># reads SMELLO_URL env var, or pass server_url="..."</span>
+        <pre><code class="language-bash"><span class="c1"># Run any Python script or command</span>
+<span class="nv">$ </span>smello run my_app.py
+<span class="nv">$ </span>smello run pytest tests/
+<span class="nv">$ </span>smello run uvicorn app:app
 
-<span class="c1"># Outgoing HTTP requests are captured automatically</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://api.stripe.com/v1/charges"</span><span class="p">)</span>
+<span class="c1"># Enable log capture</span>
+<span class="nv">$ </span>smello run --capture-logs --log-level INFO my_app.py
 
-<span class="c1"># Incoming requests too, with the FastAPI middleware</span>
-<span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">FastAPI</span>
-<span class="kn">from</span> <span class="nn">smello.integrations.fastapi</span> <span class="kn">import</span> <span class="n">SmelloMiddleware</span>
-<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
-<span class="n">app</span><span class="o">.</span><span class="n">add_middleware</span><span class="p">(</span><span class="n">SmelloMiddleware</span><span class="p">)</span></code></pre>
+<span class="c1"># Filter to specific hosts</span>
+<span class="nv">$ </span>smello run --capture-host api.stripe.com my_app.py</code></pre>
       </div>
     </div>
   </section>
@@ -472,8 +472,8 @@
         <p>Authorization and cookie headers are redacted by default. You can configure additional headers to redact or filter specific hosts via the <code>ignore_hosts</code> option.</p>
       </details>
       <details>
-        <summary>Can I use Smello without modifying my code?</summary>
-        <p>Yes. Use <code>smello run my_app.py</code> to wrap any Python script, or <code>smello run uvicorn app:app</code> for console scripts. Smello activates in the wrapped process before user code runs, so you don't need to add <code>smello.init()</code> anywhere. Instrumentation propagates to subprocesses, so wrapping <code>gunicorn</code> also captures traffic from worker processes.</p>
+        <summary>Do I need to modify my code?</summary>
+        <p>No. <code>smello run my_app.py</code> activates Smello before your code runs. No imports or init calls needed. The only exception is FastAPI incoming request capture, which requires adding one middleware line. Instrumentation propagates to subprocesses, so <code>smello run gunicorn app:app</code> also captures traffic from worker processes.</p>
       </details>
       <details>
         <summary>Does it work with async code?</summary>

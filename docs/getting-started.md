@@ -2,10 +2,15 @@
 
 ## Install
 
-Install and start the server:
+Install the client SDK and the server:
 
 ```bash
-pip install smello-server
+pip install smello smello-server
+```
+
+Start the server:
+
+```bash
 smello-server
 ```
 
@@ -15,70 +20,29 @@ Or run with Docker:
 docker run -p 5110:5110 ghcr.io/smelloscope/smello
 ```
 
-Install the client SDK:
-
-```bash
-pip install smello
-```
-
 The server listens at [http://localhost:5110](http://localhost:5110).
 
 !!! tip "Why port 5110?"
     Read it as **5-1-1-0** → **S-L-L-O** → **smello**.
 
-## Add to your code
+## Run your code with Smello
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-```
-
-That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic, hooks `sys.excepthook` to capture unhandled exceptions, and optionally hooks into Python's `logging` module. For incoming request capture, see [FastAPI middleware](#fastapi-middleware) below.
-
-```python
-import requests
-resp = requests.get("https://api.stripe.com/v1/charges")
-
-import httpx
-resp = httpx.get("https://api.openai.com/v1/models")
-
-# Browse captured events at http://localhost:5110
-```
-
-### Activation model
-
-Smello only activates when a server URL is provided — either via the `server_url` parameter or the `SMELLO_URL` environment variable. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
-
-Leave `smello.init()` in your code and control activation via the environment:
-
-```python
-import smello
-smello.init()  # does nothing unless SMELLO_URL is set
-```
+Prefix any Python command with `smello run`:
 
 ```bash
-# Activate in development
-export SMELLO_URL=http://localhost:5110
-```
-
-Like Sentry's `SENTRY_DSN`, this keeps instrumentation in place with zero production overhead.
-
-### Run without modifying code
-
-If you don't want to (or can't) edit the program you're debugging, use `smello run` to wrap any command:
-
-```bash
-smello run my_app.py                                    # .py files run with current Python
-smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run my_app.py
+smello run pytest tests/
 smello run uvicorn app:app
 ```
 
-Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically, so `smello run gunicorn app:app` also captures traffic from worker processes.
+That's it. Smello activates before your code runs and monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic. It also hooks `sys.excepthook` to capture unhandled exceptions. No code changes needed.
 
-Use `--` to disambiguate when smello flags would otherwise be confused with the wrapped command's own flags:
+Subprocess instrumentation propagates automatically, so `smello run gunicorn app:app` also captures traffic from worker processes.
+
+Use `--` to disambiguate when smello flags conflict with the wrapped command's flags:
 
 ```bash
-smello run --server http://localhost:5110 -- python -m my_module --debug
+smello run --capture-logs --log-level INFO -- python -m my_module --debug
 ```
 
 CLI flags map 1:1 to the [environment variables](configuration.md):
@@ -92,20 +56,40 @@ CLI flags map 1:1 to the [environment variables](configuration.md):
 | `--redact-header`       | `SMELLO_REDACT_HEADERS`       |
 | `--redact-query-param`  | `SMELLO_REDACT_QUERY_PARAMS`  |
 
-The `--` separator is optional but recommended when passing flags to the wrapped command.
+### Using `smello.init()` instead
+
+If you prefer to activate Smello from within your code, call `smello.init()`:
+
+```python
+import smello
+smello.init()
+```
+
+Smello only activates when a server URL is provided, either via the `server_url` parameter or the `SMELLO_URL` environment variable. Without a URL, `init()` is a safe no-op: no monkey-patching, no background threads, no side effects.
+
+```bash
+# Activate in development
+export SMELLO_URL=http://localhost:5110
+```
+
+Like Sentry's `SENTRY_DSN`, this keeps instrumentation in place with zero production overhead. `smello.init()` is also the right choice for projects with a custom `sitecustomize.py`, where `smello run` can't be used.
 
 ### FastAPI middleware
 
 To capture incoming HTTP requests in a FastAPI app, add the Smello middleware:
 
 ```python
-import smello
 from smello.integrations.fastapi import SmelloMiddleware
 from fastapi import FastAPI
 
-smello.init()
 app = FastAPI()
 app.add_middleware(SmelloMiddleware)
+```
+
+Then run your server with `smello run`:
+
+```bash
+smello run uvicorn app:app
 ```
 
 Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. If a route handler raises an unhandled exception, the middleware captures the traceback before re-raising.
@@ -122,79 +106,50 @@ The middleware is a raw ASGI middleware (not Starlette's `BaseHTTPMiddleware`), 
 
 Log capture is opt-in. Enable it to see Python log records alongside your HTTP traffic and exceptions in the same timeline:
 
+```bash
+smello run --capture-logs --log-level INFO my_app.py
+```
+
+Or with `smello.init()`:
+
 ```python
 import smello
-smello.init(
-    server_url="http://localhost:5110",
-    capture_logs=True,      # hook into logging module
-    log_level=20,           # capture INFO and above
-)
-
-import logging
-logger = logging.getLogger("myapp")
-logger.warning("Token expired for user %s", user_id)
-
-# Log records appear in the dashboard alongside HTTP requests
+smello.init(capture_logs=True, log_level=20)
 ```
 
 Smello's own loggers (`smello.*`) and `urllib3` loggers are always excluded to prevent recursion. You can suppress other noisy loggers with `ignore_loggers`:
 
-```python
-smello.init(
-    capture_logs=True,
-    ignore_loggers=["uvicorn.access", "uvicorn.error"],
-)
+```bash
+smello run --capture-logs --ignore-logger uvicorn.access --ignore-logger uvicorn.error my_app.py
 ```
 
 Matching is hierarchical: `"uvicorn"` suppresses `uvicorn`, `uvicorn.access`, `uvicorn.error`, etc. See [ignore_loggers](configuration.md#ignore_loggers) for details.
 
 ### Capturing exceptions
 
-Unhandled exceptions are captured by default — no configuration needed. When your program crashes, Smello captures the full traceback with stack frames and source context, then flushes the event before the process exits.
+Unhandled exceptions are captured by default. No configuration needed. When your program crashes, Smello captures the full traceback with stack frames and source context, then flushes the event before the process exits.
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-# If this raises, the exception appears in the dashboard
-# with the full traceback and frame details
-data = process_input(user_data)
-```
-
-To disable exception capture: `smello.init(capture_exceptions=False)`.
+To disable exception capture: `smello run --no-capture-exceptions my_app.py` or `smello.init(capture_exceptions=False)`.
 
 ### Google Cloud libraries
 
-Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically — no extra setup needed:
+Many Google Cloud Python libraries use gRPC under the hood. Smello captures these calls automatically. No extra setup needed:
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-# BigQuery, Firestore, Pub/Sub, Analytics (GA4), Vertex AI,
-# Speech-to-Text, Vision, Translation — all captured via gRPC
-from google.cloud import bigquery
-client = bigquery.Client()
-rows = client.query("SELECT 1").result()
+```bash
+smello run my_bigquery_script.py
 ```
 
-Any Python library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is captured.
+BigQuery, Firestore, Pub/Sub, Analytics (GA4), Vertex AI, Speech-to-Text, Vision, Translation: anything that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is captured.
 
 ### AWS libraries (boto3)
 
-boto3 uses `botocore`, which calls `urllib3` directly, bypassing `requests` and `httpx`. Smello patches botocore's HTTP session to capture AWS API calls:
+boto3 uses `botocore`, which calls `urllib3` directly, bypassing `requests` and `httpx`. Smello patches botocore's HTTP session to capture all AWS API calls:
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-import boto3
-s3 = boto3.client("s3")
-buckets = s3.list_buckets()
-
-# AWS calls appear at http://localhost:5110 — XML responses
-# show as a collapsible tree, just like JSON.
+```bash
+smello run my_aws_script.py
 ```
+
+AWS calls appear at `http://localhost:5110`. XML responses show as a collapsible tree, just like JSON.
 
 ## What Smello captures
 
@@ -207,7 +162,7 @@ For every outgoing HTTP and gRPC call:
 - Duration in milliseconds
 - Library used (requests, httpx, aiohttp, grpc, or botocore)
 
-The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs — Tree shows an expandable tree, Raw shows syntax-highlighted source.
+The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs. Tree shows an expandable tree; Raw shows syntax-highlighted source.
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
 

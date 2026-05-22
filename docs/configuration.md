@@ -42,7 +42,7 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 
 ### `server_url`
 
-URL of the Smello server and the activation signal — without a URL, `init()` does nothing. No patching, no background threads, no side effects.
+URL of the Smello server and the activation signal. Without a URL, `init()` does nothing. No patching, no background threads, no side effects.
 
 Set via env var: `SMELLO_URL=http://smello:5110`.
 
@@ -105,7 +105,7 @@ Set via env var: `SMELLO_IGNORE_LOGGERS=uvicorn.access,uvicorn.error` (comma-sep
 Matching is hierarchical: `ignore_loggers=["uvicorn"]` suppresses `uvicorn`, `uvicorn.access`, `uvicorn.error`, etc. It does **not** match unrelated loggers that happen to share a prefix (e.g., `"uv"` does not suppress `"uvicorn"`).
 
 !!! note "log_level is a capture filter, not a logger override"
-    `log_level` controls which records Smello keeps *after* they pass through Python's normal logging pipeline. It cannot capture records that the application's loggers have already filtered out. For example, if your root logger is at WARNING (the default) and you set `log_level=10`, Smello still won't see DEBUG or INFO records — Python's `Logger.debug()` discards them before Smello's hook runs.
+    `log_level` controls which records Smello keeps *after* they pass through Python's normal logging pipeline. It cannot capture records that the application's loggers have already filtered out. For example, if your root logger is at WARNING (the default) and you set `log_level=10`, Smello still won't see DEBUG or INFO records. Python's `Logger.debug()` discards them before Smello's hook runs.
 
     To capture DEBUG-level logs, configure your application's logging level accordingly:
 
@@ -116,21 +116,24 @@ Matching is hierarchical: `ignore_loggers=["uvicorn"]` suppresses `uvicorn`, `uv
 
 ## Environment-only configuration
 
-For projects where you want zero code changes, add `smello.init()` without arguments and control activation via the `SMELLO_URL` environment variable:
-
-```python
-import smello
-smello.init()  # activates only when SMELLO_URL is set
-```
+For zero code changes, use `smello run` and control everything via environment variables:
 
 ```bash
 export SMELLO_URL=http://localhost:5110
 export SMELLO_IGNORE_HOSTS=localhost,internal.svc
 export SMELLO_CAPTURE_LOGS=true
 export SMELLO_LOG_LEVEL=20
+
+smello run my_app.py
 ```
 
-Without `SMELLO_URL`, `init()` is a no-op — safe for production. Useful for Docker Compose, CI, and `.env` files.
+Or equivalently, pass the options as CLI flags:
+
+```bash
+smello run --ignore-host localhost --capture-logs --log-level INFO my_app.py
+```
+
+Without `SMELLO_URL`, Smello is inactive: no patching, no side effects. Useful for Docker Compose, CI, and `.env` files.
 
 ## Body capture limits
 
@@ -142,7 +145,7 @@ The limit is not configurable. It prevents memory pressure when large downloads 
 
 ## Flushing and shutdown
 
-Smello sends captures in a background thread so it never blocks your application. This means your process may exit before all captures reach the server — especially in short-lived scripts or CLI tools.
+Smello sends captures in a background thread so it never blocks your application. This means your process may exit before all captures reach the server, especially in short-lived scripts or CLI tools.
 
 `smello.init()` registers an `atexit` hook that automatically flushes pending captures (with a 2-second timeout) when the program exits. For exception capture, Smello also flushes synchronously before calling the original `sys.excepthook`, ensuring the crash event reaches the server before the process dies.
 
@@ -160,7 +163,7 @@ In test suites or scripts where you need to verify captures arrived, call `smell
 
 ## Logging
 
-Smello uses Python's standard `logging` module for its own diagnostics. By default it is silent — a `NullHandler` is attached to the `smello` logger so no output is produced unless you opt in.
+Smello uses Python's standard `logging` module for its own diagnostics. By default it is silent. A `NullHandler` is attached to the `smello` logger so no output is produced unless you opt in.
 
 To see warnings (dropped payloads, server connectivity issues):
 
@@ -178,14 +181,14 @@ logging.basicConfig()
 logging.getLogger("smello").setLevel(logging.DEBUG)
 ```
 
-You can also route Smello logs to a file or integrate them with your application's existing logging configuration — just configure the `"smello"` logger however you like.
+You can also route Smello logs to a file or integrate them with your application's existing logging configuration. Just configure the `"smello"` logger however you like.
 
 !!! note "Smello diagnostics vs. log capture"
     These are two separate things. **Smello diagnostics** (`logging.getLogger("smello")`) controls Smello's own debug output. **Log capture** (`capture_logs=True`) captures your application's log records and sends them to the dashboard. Smello never captures its own loggers to avoid recursion.
 
 ## Client CLI: `smello run`
 
-`smello run` wraps any Python program and activates Smello in the wrapped process without modifying its source. It works by prepending a bootstrap directory to `PYTHONPATH` and executing your command, so subprocess instrumentation propagates automatically — wrapping `gunicorn` patches its workers too.
+`smello run` wraps any Python program and activates Smello in the wrapped process without modifying its source. It works by prepending a bootstrap directory to `PYTHONPATH` and executing your command, so subprocess instrumentation propagates automatically. Wrapping `gunicorn` patches its workers too.
 
 ```bash
 # .py files run with the current Python interpreter
@@ -219,7 +222,7 @@ CLI-specific behavior worth knowing:
 
 - **`.py` script detection**: if the wrapped command ends in `.py` or `.pyw`, `smello run` prepends `sys.executable` so the script runs even without an executable bit or shebang. Same UX as `coverage run script.py`.
 - **`--capture-host` implies `--no-capture-all`**: passing `--capture-host` without an explicit `--capture-all` switches the wrapper into "only these hosts" mode. Pass `--capture-all` explicitly if you want both an allowlist and the catch-all.
-- **`smello.init()` is idempotent**: wrapping a program that already calls `smello.init()` is safe — the wrapper's bootstrap init runs first, then the program's `init()` updates the live config in place without re-applying patches (no double-capture).
+- **`smello.init()` is idempotent**: wrapping a program that already calls `smello.init()` is safe. The wrapper's bootstrap init runs first, then the program's `init()` updates the live config in place without re-applying patches (no double-capture).
 - **Subprocess propagation**: the bootstrap dir stays on `PYTHONPATH` for the lifetime of the process tree, so child Pythons spawned by `subprocess.run([sys.executable, ...])`, `gunicorn` workers, `celery` workers, etc., all get instrumented automatically.
 
 ## Server CLI options

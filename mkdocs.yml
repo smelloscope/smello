@@ -20,7 +20,6 @@ theme:
         name: Switch to light mode
   features:
     - content.code.copy
-    - navigation.sections
     - navigation.footer
 
 extra:
@@ -40,6 +39,7 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.snippets
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -54,3 +54,15 @@ nav:
   - Keyboard Shortcuts: keyboard-shortcuts.md
   - AI Skills: ai-skills.md
   - Changelog: changelog.md
+  - Guides:
+    - guides/index.md
+    - guides/debug-requests.md
+    - guides/debug-httpx.md
+    - guides/debug-aiohttp.md
+    - guides/debug-grpc.md
+    - guides/debug-boto3.md
+    - guides/debug-google-cloud.md
+    - guides/debug-openai.md
+    - guides/debug-anthropic.md
+    - guides/debug-stripe.md
+    - guides/debug-fastapi.md

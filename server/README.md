@@ -21,25 +21,14 @@ docker run -p 5110:5110 ghcr.io/smelloscope/smello
 
 The server listens at `http://localhost:5110`.
 
-Then add the client SDK to your Python code:
+Then install the client SDK and run your code with Smello:
 
 ```bash
 pip install smello
+smello run my_app.py
 ```
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-# HTTP requests, unhandled exceptions, and (optionally) log records
-# are now captured and visible in the dashboard
-```
-
-Or run any program without code changes:
-
-```bash
-smello run --server http://localhost:5110 my_app.py
-```
+Outgoing HTTP requests, unhandled exceptions, and (optionally) log records are captured automatically — no code changes needed.
 
 ## API
 

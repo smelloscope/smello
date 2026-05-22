@@ -22,48 +22,43 @@ Start the server:
 smello-server
 ```
 
-Add two lines to your code:
-
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-import requests
-resp = requests.get("https://api.stripe.com/v1/charges")
-
-# Browse captured events at http://localhost:5110
-```
-
-Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. It also hooks into `sys.excepthook` to capture unhandled exceptions with full tracebacks, and optionally into Python's `logging` module to capture log records. For server-side capture, add the FastAPI middleware.
-
-Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. No URL, no side effects.
-
-### Run without modifying code
-
-For programs you don't want to (or can't) edit, wrap them with `smello run`:
+Run your code with Smello:
 
 ```bash
-smello run my_app.py                                    # .py files run with current Python
-smello run --server http://localhost:5110 pytest tests/  # console scripts work directly
+smello run my_app.py
+smello run pytest tests/
 smello run uvicorn app:app
 ```
 
-Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically through `PYTHONPATH`, so wrapping `gunicorn` also captures traffic from worker processes.
+That's it. Smello activates before your code runs and monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. It also hooks `sys.excepthook` to capture unhandled exceptions with full tracebacks, and optionally captures Python log records. No code changes needed.
 
-CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`.
+Subprocess instrumentation propagates automatically through `PYTHONPATH`, so `smello run gunicorn app:app` also captures traffic from worker processes.
 
-### FastAPI middleware
+CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-logs`, `--log-level`.
 
-To capture incoming requests, add the Smello middleware to your FastAPI app:
+### Using `smello.init()` instead
+
+If you prefer to activate Smello from within your code (e.g., for programmatic configuration or projects with a custom `sitecustomize.py`):
 
 ```python
 import smello
+smello.init()  # activates only when SMELLO_URL is set
+```
+
+### FastAPI middleware
+
+To capture incoming requests, add the Smello middleware to your FastAPI app and run with `smello run`:
+
+```python
 from smello.integrations.fastapi import SmelloMiddleware
 from fastapi import FastAPI
 
-smello.init()
 app = FastAPI()
 app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
+```
+
+```bash
+smello run uvicorn app:app
 ```
 
 The middleware captures method, path, status code, duration, route pattern, client IP, and request/response bodies. Unhandled exceptions are captured with full tracebacks. When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
@@ -72,15 +67,8 @@ The middleware captures method, path, status code, duration, route pattern, clie
 
 Many Google Cloud Python libraries — BigQuery, Firestore, Pub/Sub, Analytics Data API (GA4), Vertex AI, Speech-to-Text, Vision, Translation, and others — use gRPC under the hood. Smello captures these calls automatically:
 
-```python
-import smello
-smello.init(server_url="http://localhost:5110")
-
-from google.cloud import bigquery
-client = bigquery.Client()
-rows = client.query("SELECT 1").result()
-
-# gRPC calls to bigquery.googleapis.com appear at http://localhost:5110
+```bash
+smello run my_bigquery_script.py
 ```
 
 Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is automatically captured.

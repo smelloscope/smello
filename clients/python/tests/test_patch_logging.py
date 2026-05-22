@@ -120,6 +120,50 @@ def test_log_still_works(mock_transport):
     test_logger.removeHandler(handler)
 
 
+def test_ignores_user_specified_loggers(mock_transport):
+    config = _make_config(ignore_loggers=["uvicorn.access"])
+    patch_logging_mod.patch_logging(config)
+    test_logger = logging.getLogger("uvicorn.access")
+    test_logger.setLevel(logging.DEBUG)
+
+    test_logger.warning("access log noise")
+
+    assert mock_transport.send_log_calls == []
+
+
+def test_ignores_children_of_specified_loggers(mock_transport):
+    config = _make_config(ignore_loggers=["uvicorn"])
+    patch_logging_mod.patch_logging(config)
+    test_logger = logging.getLogger("uvicorn.access")
+    test_logger.setLevel(logging.DEBUG)
+
+    test_logger.warning("child logger noise")
+
+    assert mock_transport.send_log_calls == []
+
+
+def test_ignore_loggers_does_not_suppress_unrelated(mock_transport):
+    config = _make_config(ignore_loggers=["uvicorn"])
+    patch_logging_mod.patch_logging(config)
+    test_logger = logging.getLogger("myapp")
+    test_logger.setLevel(logging.DEBUG)
+
+    test_logger.warning("should be captured")
+
+    assert len(mock_transport.send_log_calls) >= 1
+
+
+def test_ignore_loggers_no_false_prefix_match(mock_transport):
+    config = _make_config(ignore_loggers=["uv"])
+    patch_logging_mod.patch_logging(config)
+    test_logger = logging.getLogger("uvicorn.access")
+    test_logger.setLevel(logging.DEBUG)
+
+    test_logger.warning("should be captured despite uv prefix")
+
+    assert len(mock_transport.send_log_calls) >= 1
+
+
 def test_captures_extra_attributes(mock_transport):
     # Arrange
     config = _make_config()

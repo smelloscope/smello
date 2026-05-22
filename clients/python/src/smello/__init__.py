@@ -33,6 +33,7 @@ def init(
     capture_exceptions: bool | None = None,
     capture_logs: bool | None = None,
     log_level: int | str | None = None,
+    ignore_loggers: list[str] | None = None,
 ) -> None:
     """Initialize Smello. Patches HTTP libraries, logging, and exception hooks.
 
@@ -57,6 +58,7 @@ def init(
     capture_exceptions    ``SMELLO_CAPTURE_EXCEPTIONS``   ``True``
     capture_logs          ``SMELLO_CAPTURE_LOGS``         ``False``
     log_level             ``SMELLO_LOG_LEVEL``            ``30`` (WARNING)
+    ignore_loggers        ``SMELLO_IGNORE_LOGGERS``       ``[]``
     ====================  ==============================  ==========================
 
     ``log_level`` accepts an integer (``10``, ``20``, ``30``) or a standard
@@ -120,6 +122,9 @@ def init(
         env_val = env_bool("CAPTURE_LOGS")
         capture_logs = env_val if env_val is not None else False
 
+    if ignore_loggers is None:
+        ignore_loggers = env_list("IGNORE_LOGGERS") or []
+
     if log_level is None:
         env_val = env_log_level("LOG_LEVEL")
         log_level = env_val if env_val is not None else logging.WARNING
@@ -148,6 +153,7 @@ def init(
             capture_exceptions=capture_exceptions,
             capture_logs=capture_logs,
             log_level=log_level,
+            ignore_loggers=ignore_loggers,
         )
     else:
         # Mutate in place so closures captured by the existing patches see
@@ -161,6 +167,7 @@ def init(
         _config.capture_exceptions = capture_exceptions
         _config.capture_logs = capture_logs
         _config.log_level = log_level
+        _config.ignore_loggers = ignore_loggers
 
     # Always ignore the smello server itself
     server_host = urlparse(_config.server_url).hostname

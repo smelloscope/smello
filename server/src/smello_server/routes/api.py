@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from smello_server.services.capture import (
     create_exception_event,
     create_http_event,
+    create_http_incoming_event,
     create_log_event,
 )
 from smello_server.services.events import (
@@ -25,6 +26,9 @@ from smello_server.types import (
     EventDetail,
     EventSummary,
     ExceptionData,
+    HttpIncomingMeta,
+    HttpIncomingRequestData,
+    HttpIncomingResponseData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
@@ -59,6 +63,15 @@ class ExceptionCapturePayload(BaseModel):
     data: ExceptionData
 
 
+class HttpIncomingCapturePayload(BaseModel):
+    id: str | None = None
+    timestamp: datetime | None = None
+    duration_ms: int = 0
+    request: HttpIncomingRequestData
+    response: HttpIncomingResponseData
+    meta: HttpIncomingMeta = HttpIncomingMeta()
+
+
 class CaptureResponse(BaseModel):
     status: str
 
@@ -72,6 +85,21 @@ OK = CaptureResponse(status="ok")
 @router.post("/capture/http", status_code=201, response_model=CaptureResponse)
 async def capture_http_api(payload: HttpCapturePayload) -> CaptureResponse:
     await create_http_event(
+        event_id=payload.id,
+        timestamp=payload.timestamp,
+        duration_ms=payload.duration_ms,
+        request=payload.request,
+        response=payload.response,
+        meta=payload.meta,
+    )
+    return OK
+
+
+@router.post("/capture/http_incoming", status_code=201, response_model=CaptureResponse)
+async def capture_http_incoming_api(
+    payload: HttpIncomingCapturePayload,
+) -> CaptureResponse:
+    await create_http_incoming_event(
         event_id=payload.id,
         timestamp=payload.timestamp,
         duration_ms=payload.duration_ms,

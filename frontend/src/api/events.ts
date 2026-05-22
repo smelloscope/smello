@@ -15,6 +15,7 @@ import type { components } from "./schema";
 export type EventSummary = components["schemas"]["EventSummary"];
 export type EventDetail = components["schemas"]["EventDetail"];
 export type HttpEventData = components["schemas"]["HttpEventData"];
+export type HttpIncomingEventData = components["schemas"]["HttpIncomingEventData"];
 export type LogEventData = components["schemas"]["LogEventData"];
 export type ExceptionEventData = components["schemas"]["ExceptionEventData"];
 export type ExceptionFrame = components["schemas"]["ExceptionFrame"];

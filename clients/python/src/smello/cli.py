@@ -88,6 +88,8 @@ def _smello_env_overrides(args: argparse.Namespace) -> dict[str, str]:
         overrides["SMELLO_CAPTURE_LOGS"] = "true" if args.capture_logs else "false"
     if args.log_level is not None:
         overrides["SMELLO_LOG_LEVEL"] = str(args.log_level)
+    if args.ignore_logger:
+        overrides["SMELLO_IGNORE_LOGGERS"] = ",".join(args.ignore_logger)
 
     return overrides
 
@@ -206,6 +208,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "Acts as a filter on records that already pass the app's logger level — "
             "it cannot override the app's logging configuration."
         ),
+    )
+    run.add_argument(
+        "--ignore-logger",
+        action="append",
+        metavar="LOGGER",
+        help="Ignore this logger name for log capture (repeatable). Sets SMELLO_IGNORE_LOGGERS.",
     )
     run.add_argument(
         "command",

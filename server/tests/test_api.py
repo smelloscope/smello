@@ -9,6 +9,7 @@ from smello_server.types import (
     EventDetail,
     ExceptionEventData,
     HttpEventData,
+    HttpIncomingEventData,
     LogEventData,
 )
 
@@ -54,6 +55,36 @@ def test_capture_exception_returns_201(client, exception_payload):
 def test_capture_exception_requires_data(client):
     resp = client.post("/api/capture/exception", json={})
     assert resp.status_code == 422
+
+
+def test_capture_http_incoming_returns_201(client, http_incoming_payload):
+    resp = client.post("/api/capture/http_incoming", json=http_incoming_payload)
+    assert resp.status_code == 201
+    assert resp.json() == {"status": "ok"}
+
+    events = client.get("/api/events").json()
+    assert len(events) == 1
+    assert events[0]["event_type"] == "http_incoming"
+
+
+def test_capture_http_incoming_requires_request_and_response(client):
+    resp = client.post("/api/capture/http_incoming", json={"duration_ms": 0})
+    assert resp.status_code == 422
+
+
+def test_event_detail_validates_against_typed_union_http_incoming(
+    client, http_incoming_payload
+):
+    client.post("/api/capture/http_incoming", json=http_incoming_payload)
+    event_id = client.get("/api/events").json()[0]["id"]
+    raw = client.get(f"/api/events/{event_id}").json()
+    parsed = EventDetail.model_validate(raw)
+    assert isinstance(parsed.data, HttpIncomingEventData)
+    assert parsed.data.method == "POST"
+    assert parsed.data.path == "/api/users"
+    assert parsed.data.framework == "fastapi"
+    assert parsed.data.route == "/api/users"
+    assert parsed.data.client_ip == "127.0.0.1"
 
 
 def test_capture_endpoints_marked_deprecated_in_openapi(client):

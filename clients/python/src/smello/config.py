@@ -17,6 +17,7 @@ class SmelloConfig:
     capture_exceptions: bool = True
     capture_logs: bool = False
     log_level: int = logging.WARNING
+    ignore_loggers: list[str] = field(default_factory=list)
 
     def should_capture(self, host: str) -> bool:
         """Decide whether to capture a request to the given host."""

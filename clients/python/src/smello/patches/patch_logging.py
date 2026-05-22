@@ -56,7 +56,15 @@ def patch_logging(config: SmelloConfig) -> None:
     def patched_callhandlers(self, record):
         original_callhandlers(self, record)
         try:
-            if any(self.name.startswith(p) for p in IGNORED_PREFIXES):
+            if any(
+                self.name == p or self.name.startswith(p + ".")
+                for p in IGNORED_PREFIXES
+            ):
+                return
+            if any(
+                self.name == lg or self.name.startswith(lg + ".")
+                for lg in config.ignore_loggers
+            ):
                 return
             if record.levelno < config.log_level:
                 return

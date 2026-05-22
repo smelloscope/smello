@@ -318,6 +318,34 @@ def test_init_defaults_with_explicit_url():
         assert smello._config.redact_query_params == []
 
 
+def test_init_ignore_loggers_from_env():
+    with (
+        patch.dict(
+            os.environ,
+            {
+                "SMELLO_URL": "http://test:5110",
+                "SMELLO_IGNORE_LOGGERS": "uvicorn.access,uvicorn.error",
+            },
+        ),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello.init()
+        assert smello._config.ignore_loggers == ["uvicorn.access", "uvicorn.error"]
+
+
+def test_init_ignore_loggers_default_empty():
+    with (
+        patch.dict(os.environ, {"SMELLO_URL": "http://test:5110"}, clear=True),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello.init()
+        assert smello._config.ignore_loggers == []
+
+
 def test_init_log_level_string():
     with (
         patch.dict(os.environ, {}, clear=True),

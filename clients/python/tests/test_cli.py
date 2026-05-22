@@ -39,6 +39,7 @@ def _make_args(**overrides) -> argparse.Namespace:
         "capture_exceptions": None,
         "capture_logs": None,
         "log_level": None,
+        "ignore_logger": None,
     }
     defaults.update(overrides)
     return argparse.Namespace(**defaults)
@@ -127,6 +128,13 @@ def test_overrides_capture_logs(flag, expected):
 def test_overrides_log_level():
     overrides = cli._smello_env_overrides(_make_args(log_level=20))
     assert overrides == {"SMELLO_LOG_LEVEL": "20"}
+
+
+def test_overrides_ignore_loggers():
+    overrides = cli._smello_env_overrides(
+        _make_args(ignore_logger=["uvicorn.access", "uvicorn.error"])
+    )
+    assert overrides == {"SMELLO_IGNORE_LOGGERS": "uvicorn.access,uvicorn.error"}
 
 
 def test_overrides_capture_logs_with_level():

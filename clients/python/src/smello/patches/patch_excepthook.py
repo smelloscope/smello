@@ -31,13 +31,9 @@ def patch_excepthook(config: SmelloConfig) -> None:
     original_excepthook = sys.excepthook
 
     def smello_excepthook(exc_type, exc_value, exc_tb):
-        try:
-            _capture_exception(exc_type, exc_value, exc_tb)
-            transport.flush(timeout=2.0)
-        except Exception:
-            logger.debug("Failed to capture exception", exc_info=True)
-        finally:
-            original_excepthook(exc_type, exc_value, exc_tb)
+        capture_exception(exc_type, exc_value, exc_tb)
+        transport.flush(timeout=2.0)
+        original_excepthook(exc_type, exc_value, exc_tb)
 
     sys.excepthook = smello_excepthook
 
@@ -48,57 +44,56 @@ def patch_excepthook(config: SmelloConfig) -> None:
     original_threading_excepthook = threading.excepthook
 
     def smello_threading_excepthook(args):
-        try:
-            _capture_exception(args.exc_type, args.exc_value, args.exc_traceback)
-        except Exception:
-            logger.debug("Failed to capture thread exception", exc_info=True)
-        finally:
-            original_threading_excepthook(args)
+        capture_exception(args.exc_type, args.exc_value, args.exc_traceback)
+        original_threading_excepthook(args)
 
     threading.excepthook = smello_threading_excepthook
 
 
-def _capture_exception(exc_type, exc_value, exc_tb):
-    """Serialize and send an exception event."""
-    if exc_type is None or exc_value is None:
-        return
+def capture_exception(exc_type, exc_value, exc_tb):
+    """Serialize and send an exception event.
 
-    frames = []
-    if exc_tb is not None:
-        for frame_info in traceback.extract_tb(exc_tb):
-            pre_context, error_line, post_context = _get_frame_source(
-                frame_info.filename, frame_info.lineno
-            )
-            # Prefer linecache's unstripped error line so it lines up with the
-            # surrounding context. Fall back to traceback's stripped line when
-            # the source isn't available (synthetic filenames, zipped wheels…).
-            context_line = error_line if error_line is not None else frame_info.line
-            frames.append(
-                {
-                    "filename": frame_info.filename,
-                    "lineno": frame_info.lineno,
-                    "function": frame_info.name,
-                    "context_line": context_line,
-                    "pre_context": pre_context,
-                    "post_context": post_context,
-                }
-            )
+    Safe to call from any context — never raises.
+    """
+    try:
+        if exc_type is None or exc_value is None:
+            return
 
-    tb_text = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        frames = []
+        if exc_tb is not None:
+            for frame_info in traceback.extract_tb(exc_tb):
+                pre_context, error_line, post_context = _get_frame_source(
+                    frame_info.filename, frame_info.lineno
+                )
+                context_line = error_line if error_line is not None else frame_info.line
+                frames.append(
+                    {
+                        "filename": frame_info.filename,
+                        "lineno": frame_info.lineno,
+                        "function": frame_info.name,
+                        "context_line": context_line,
+                        "pre_context": pre_context,
+                        "post_context": post_context,
+                    }
+                )
 
-    transport.send_exception(
-        {
-            "id": str(uuid.uuid4()),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "data": {
-                "exc_type": exc_type.__name__,
-                "exc_value": str(exc_value),
-                "exc_module": getattr(exc_type, "__module__", None),
-                "traceback_text": tb_text,
-                "frames": frames,
-            },
-        }
-    )
+        tb_text = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+
+        transport.send_exception(
+            {
+                "id": str(uuid.uuid4()),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "data": {
+                    "exc_type": exc_type.__name__,
+                    "exc_value": str(exc_value),
+                    "exc_module": getattr(exc_type, "__module__", None),
+                    "traceback_text": tb_text,
+                    "frames": frames,
+                },
+            }
+        )
+    except Exception:
+        logger.debug("Failed to capture exception", exc_info=True)
 
 
 def _get_frame_source(

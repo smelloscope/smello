@@ -15,6 +15,10 @@ from smello_server.types import (
     ExceptionData,
     ExceptionEventData,
     HttpEventData,
+    HttpIncomingEventData,
+    HttpIncomingMeta,
+    HttpIncomingRequestData,
+    HttpIncomingResponseData,
     HttpMeta,
     HttpRequestData,
     HttpResponseData,
@@ -63,6 +67,56 @@ def _build_http_summary(method: str, url: str, status_code: int) -> str:
     parsed = urlparse(url)
     path = parsed.path or "/"
     return f"{method.upper()} {path} → {status_code}"
+
+
+async def create_http_incoming_event(
+    *,
+    event_id: str | None,
+    timestamp: datetime | None = None,
+    duration_ms: int,
+    request: HttpIncomingRequestData,
+    response: HttpIncomingResponseData,
+    meta: HttpIncomingMeta,
+) -> CapturedEvent:
+    host = next(
+        (v for k, v in request.headers.items() if k.lower() == "host"),
+        "unknown",
+    )
+    summary = _build_http_incoming_summary(
+        request.method, request.path, response.status_code
+    )
+    event_data = HttpIncomingEventData(
+        duration_ms=duration_ms,
+        method=request.method.upper(),
+        path=request.path,
+        url=request.url,
+        host=host,
+        route=meta.route,
+        client_ip=meta.client_ip,
+        request_headers=request.headers,
+        request_body=request.body,
+        request_body_size=request.body_size,
+        status_code=response.status_code,
+        response_headers=response.headers,
+        response_body=response.body,
+        response_body_size=response.body_size,
+        exc_type=meta.exc_type,
+        exc_value=meta.exc_value,
+        framework=meta.framework,
+        python_version=meta.python_version,
+        smello_version=meta.smello_version,
+    )
+    return await CapturedEvent.create(
+        id=_resolve_id(event_id),
+        timestamp=timestamp or utcnow(),
+        event_type="http_incoming",
+        summary=summary,
+        data=event_data.model_dump(mode="json"),
+    )
+
+
+def _build_http_incoming_summary(method: str, path: str, status_code: int) -> str:
+    return f"← {method.upper()} {path} → {status_code}"
 
 
 async def create_log_event(

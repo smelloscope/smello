@@ -19,8 +19,10 @@ function formatTime(ts: string): string {
   return d.toLocaleTimeString("en-US", { hour12: false });
 }
 
+const httpSummaryRe = /^(?:←\s+)?(\w+)\s+(.+?)\s+→\s+(\d+)$/;
+
 function HttpRow({ item }: { item: EventSummary }) {
-  const match = item.summary.match(/^(\w+)\s+(.+?)\s+→\s+(\d+)$/);
+  const match = item.summary.match(httpSummaryRe);
   const method = match?.[1] ?? "???";
   const path = match?.[2] ?? item.summary;
   const status = match?.[3] ? parseInt(match[3], 10) : 0;
@@ -214,7 +216,9 @@ export default function RequestListItem({ item, selected, onClick }: RequestList
       <Box sx={{ pt: 0.25, flexShrink: 0 }}>
         <EventTypeIcon eventType={item.event_type} dark level={eventLevel(item)} size={18} />
       </Box>
-      {item.event_type === "http" && <HttpRow item={item} />}
+      {(item.event_type === "http" || item.event_type === "http_incoming") && (
+        <HttpRow item={item} />
+      )}
       {item.event_type === "log" && <LogRow item={item} />}
       {item.event_type === "exception" && <ExceptionRow item={item} />}
     </ListItemButton>

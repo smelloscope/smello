@@ -2,7 +2,7 @@
 
 Two layers:
 
-- **Input** models — what clients POST to `/api/capture/{http,log,exception}`.
+- **Input** models — what clients POST to `/api/capture/{http,log,exception,http_incoming}`.
   Open (``extra="allow"``) where it matters so older/forward clients can send
   unrecognized fields without rejection.
 - **Output** models — what the server stores in ``CapturedEvent.data`` and
@@ -115,10 +115,61 @@ class ExceptionEventData(BaseModel):
     frames: list[ExceptionFrame] = []
 
 
-EventType = Literal["http", "log", "exception"]
+class HttpIncomingRequestData(BaseModel):
+    method: str
+    path: str
+    url: str
+    headers: dict[str, str]
+    body: str | None = None
+    body_size: int = 0
+
+
+class HttpIncomingResponseData(BaseModel):
+    status_code: int
+    headers: dict[str, str]
+    body: str | None = None
+    body_size: int = 0
+
+
+class HttpIncomingMeta(BaseModel):
+    framework: str = "unknown"
+    route: str | None = None
+    client_ip: str | None = None
+    exc_type: str | None = None
+    exc_value: str | None = None
+    python_version: str = ""
+    smello_version: str = ""
+
+
+class HttpIncomingEventData(BaseModel):
+    """Incoming HTTP request as stored and served."""
+
+    event_type: Literal["http_incoming"] = "http_incoming"
+    duration_ms: int
+    method: str
+    path: str
+    url: str
+    host: str
+    route: str | None = None
+    client_ip: str | None = None
+    request_headers: dict[str, str]
+    request_body: str | None = None
+    request_body_size: int = 0
+    status_code: int
+    response_headers: dict[str, str]
+    response_body: str | None = None
+    response_body_size: int = 0
+    exc_type: str | None = None
+    exc_value: str | None = None
+    framework: str = "unknown"
+    python_version: str = ""
+    smello_version: str = ""
+
+
+EventType = Literal["http", "http_incoming", "log", "exception"]
 
 EventData = Annotated[
-    HttpEventData | LogEventData | ExceptionEventData,
+    HttpEventData | HttpIncomingEventData | LogEventData | ExceptionEventData,
     Field(discriminator="event_type"),
 ]
 

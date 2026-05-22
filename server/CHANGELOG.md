@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-22
+
 ### Added
 
 - **Incoming HTTP request capture**: New `http_incoming` event type and `POST /api/capture/http_incoming` endpoint for capturing server-side incoming requests. Stores method, path, URL, request/response headers and bodies, route pattern, client IP, framework name, and exception info if the handler raised.

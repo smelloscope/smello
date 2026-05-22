@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-05-22
+
 ### Fixed
 
 - **Named log levels broken on Python 3.10**: The `log_level` name resolution (added in 0.10.1) used `logging.getLevelNamesMapping()` which is Python 3.11+. Replaced with the backwards-compatible `logging.getLevelName()`.

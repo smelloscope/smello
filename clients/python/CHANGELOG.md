@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **FastAPI incoming request middleware**: New `SmelloMiddleware` in `smello.integrations.fastapi` captures incoming HTTP requests handled by a FastAPI/Starlette app. Captures request/response headers, bodies (up to 1 MB), timing, matched route pattern, client IP, and exception info. Add it with `app.add_middleware(SmelloMiddleware)` after calling `smello.init()`. Supports `ignore_paths` to skip noisy paths like `/docs` or `/favicon.ico`.
+- **`ignore_loggers`**: New `smello.init(ignore_loggers=["uvicorn.access"])` option prevents log records from specified loggers (and their children) from being captured. Also available as `SMELLO_IGNORE_LOGGERS` env var and `--ignore-logger` CLI flag.
+
 ## [0.10.2] - 2026-05-22
 
 ### Fixed

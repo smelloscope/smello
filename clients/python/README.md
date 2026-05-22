@@ -4,7 +4,7 @@
 
 # Smello
 
-Capture HTTP requests, Python logs, and unhandled exceptions from your code and browse them in a local web dashboard.
+Capture outgoing and incoming HTTP requests, Python logs, and unhandled exceptions in a local web dashboard.
 
 Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output.
 
@@ -34,9 +34,9 @@ resp = requests.get("https://api.stripe.com/v1/charges")
 # Browse captured events at http://localhost:5110
 ```
 
-Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. It also hooks into `sys.excepthook` to capture unhandled exceptions with full tracebacks, and optionally into Python's `logging` module to capture log records.
+Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. It also hooks into `sys.excepthook` to capture unhandled exceptions with full tracebacks, and optionally into Python's `logging` module to capture log records. For server-side capture, add the FastAPI middleware.
 
-Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment — no URL, no side effects.
+Or leave `smello.init()` without arguments and set `SMELLO_URL` in your environment. No URL, no side effects.
 
 ### Run without modifying code
 
@@ -51,6 +51,22 @@ smello run uvicorn app:app
 Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically through `PYTHONPATH`, so wrapping `gunicorn` also captures traffic from worker processes.
 
 CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`.
+
+### FastAPI middleware
+
+To capture incoming requests, add the Smello middleware to your FastAPI app:
+
+```python
+import smello
+from smello.integrations.fastapi import SmelloMiddleware
+from fastapi import FastAPI
+
+smello.init()
+app = FastAPI()
+app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
+```
+
+The middleware captures method, path, status code, duration, route pattern, client IP, and request/response bodies. Unhandled exceptions are captured with full tracebacks. When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
 
 ### Google Cloud libraries
 
@@ -69,9 +85,11 @@ rows = client.query("SELECT 1").result()
 
 Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is automatically captured.
 
-## What Smello Captures
+## What Smello captures
 
-**HTTP requests** — method, URL, headers, body, response status/headers/body, duration, and library used (requests, httpx, aiohttp, grpc, or botocore).
+**Outgoing HTTP requests** — method, URL, headers, body, response status/headers/body, duration, and library used (requests, httpx, aiohttp, grpc, or botocore).
+
+**Incoming HTTP requests** (via FastAPI middleware) — method, path, route pattern, status code, duration, client IP, request/response headers and bodies, plus exception tracebacks if a handler raises.
 
 **Unhandled exceptions** (enabled by default) — exception type, message, full traceback, and stack frames with source context.
 
@@ -96,6 +114,7 @@ smello.init(
     capture_exceptions=True,                   # capture unhandled exceptions (default)
     capture_logs=False,                        # capture log records (opt-in)
     log_level=30,                              # minimum log level to capture (WARNING)
+    ignore_loggers=["uvicorn.access"],         # suppress noisy framework loggers
 )
 ```
 
@@ -112,10 +131,11 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 | `capture_exceptions` | `SMELLO_CAPTURE_EXCEPTIONS` | `True` |
 | `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
 | `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
+| `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `[]` |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
-## Supported Libraries
+## Supported libraries
 
 - **requests** — patches `Session.send()`
 - **httpx** — patches `Client.send()` and `AsyncClient.send()`

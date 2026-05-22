@@ -4,7 +4,7 @@
 
 # Smello Server
 
-A local web dashboard for inspecting HTTP requests, logs, and exceptions captured by the [smello](https://pypi.org/project/smello/) client SDK.
+A local web dashboard for inspecting outgoing and incoming HTTP requests, logs, and exceptions captured by the [smello](https://pypi.org/project/smello/) client SDK.
 
 ## Setup
 
@@ -49,7 +49,7 @@ Smello Server provides a JSON API for exploring captured events from the command
 # List all captured events (unified timeline)
 curl -s http://localhost:5110/api/events | python -m json.tool
 
-# Filter by event type (http, log, exception)
+# Filter by event type (http, http_incoming, log, exception)
 curl -s 'http://localhost:5110/api/events?event_type=exception'
 
 # Filter by method, host, status, or full-text search

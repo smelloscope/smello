@@ -4,9 +4,9 @@
 
 # Smello
 
-Capture HTTP requests, Python logs, and unhandled exceptions from your code and browse them in a local web dashboard.
+Capture outgoing and incoming HTTP requests, Python logs, and unhandled exceptions in a local web dashboard.
 
-Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output — HTTP traffic, log records, and crash tracebacks, all in one timeline. Add two lines to your code and open `http://localhost:5110`.
+Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output. HTTP traffic in both directions, log records, and crash tracebacks, all in one timeline. Add two lines to your code and open `http://localhost:5110`.
 
 > **Why port 5110?** Read it as **5-1-1-0** → **S-L-L-O** → **smello**.
 
@@ -14,7 +14,7 @@ Like [Mailpit](https://mailpit.axllent.org/), but for your entire debug output �
   <img src="docs/assets/screenshot.png" alt="Smello dashboard" width="800">
 </p>
 
-## Quick Start
+## Quick start
 
 ### 1. Start the server
 
@@ -60,7 +60,23 @@ smello run uvicorn app:app
 
 Smello activates in the wrapped process before user code runs. Subprocess instrumentation propagates automatically, so wrapping `gunicorn` also captures traffic from worker processes.
 
-## AI Agent Skills
+### FastAPI middleware
+
+To capture incoming requests in a FastAPI app, add the Smello middleware:
+
+```python
+import smello
+from smello.integrations.fastapi import SmelloMiddleware
+from fastapi import FastAPI
+
+smello.init()
+app = FastAPI()
+app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
+```
+
+Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. Unhandled exceptions are captured with full tracebacks.
+
+## AI agent skills
 
 Smello ships with [Agent Skills](https://agentskills.io) for Claude Code, Cursor, GitHub Copilot, and [20+ other AI coding tools](https://skills.sh/).
 
@@ -73,9 +89,9 @@ npx skills add smelloscope/smello
 | `/smello-setup`    | `npx skills add smelloscope/smello --skill smello-setup`    | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval.         |
 | `/smello-debugger` | `npx skills add smelloscope/smello --skill smello-debugger` | Queries the Smello API to inspect captured events — HTTP traffic, log records, and exceptions. Also activates automatically when you ask about debugging. |
 
-## What Smello Captures
+## What Smello captures
 
-### HTTP requests
+### Outgoing HTTP requests
 
 For every outgoing HTTP and gRPC call:
 
@@ -85,6 +101,15 @@ For every outgoing HTTP and gRPC call:
 - Library used (requests, httpx, aiohttp, grpc, or botocore)
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf bodies are automatically serialized to JSON. Sensitive headers (`Authorization`, `X-Api-Key`) are redacted by default.
+
+### Incoming HTTP requests
+
+With the FastAPI middleware, Smello captures every request your server handles:
+
+- Method, path, full URL, and route pattern
+- Request and response headers and bodies
+- Status code, duration, and client IP
+- Exception type and traceback (if the handler raises)
 
 ### Logs
 
@@ -119,6 +144,7 @@ smello.init(
     capture_exceptions=True,                   # capture unhandled exceptions (default)
     capture_logs=False,                        # capture log records (opt-in)
     log_level=30,                              # minimum log level to capture (WARNING)
+    ignore_loggers=["uvicorn.access"],         # suppress noisy framework loggers
 )
 ```
 
@@ -135,6 +161,7 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 | `capture_exceptions`  | `SMELLO_CAPTURE_EXCEPTIONS`    | `True`                           |
 | `capture_logs`        | `SMELLO_CAPTURE_LOGS`          | `False`                          |
 | `log_level`           | `SMELLO_LOG_LEVEL`             | `30` (WARNING)                   |
+| `ignore_loggers`      | `SMELLO_IGNORE_LOGGERS`        | `[]`                             |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
@@ -175,14 +202,14 @@ curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 curl -X DELETE http://localhost:5110/api/events
 ```
 
-## Python Version Support
+## Python version support
 
 | Package                 | Python  |
 | ----------------------- | ------- |
 | **smello** (client SDK) | >= 3.10 |
 | **smello-server**       | >= 3.14 |
 
-## Supported Libraries
+## Supported libraries
 
 - **requests** — patches `Session.send()`
 - **httpx** — patches `Client.send()` and `AsyncClient.send()`
@@ -253,10 +280,10 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 (smello.init())     (FastAPI+SQLite)   (localhost:5110)
 ```
 
-- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture traffic. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.
+- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Includes a FastAPI middleware for incoming request capture. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.
 - **smello-server**: FastAPI app with SQLite. Receives captured events and serves a JSON API plus a React web dashboard with a unified timeline.
 
-## Project Structure
+## Project structure
 
 ```
 smello/

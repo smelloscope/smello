@@ -64,6 +64,8 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **JSON value annotations** (`frontend/src/annotations/`): Recognizes patterns like Unix timestamps in JSON bodies and shows tooltip icons. To add a new annotator, create a detector function and register it in `registry.ts`. See `frontend/src/annotations/README.md`.
 - **SPA serving**: The PyPI wheel ships pre-built frontend assets in `_frontend/`. `SMELLO_FRONTEND_DIR` env var overrides the bundled path (used in Docker). Precedence: env var > bundled `_frontend/` > API-only mode.
 - **Client SDK has no dependencies**: Transport uses `urllib.request` directly to avoid patching recursion. The server's own hostname is auto-added to `ignore_hosts`.
+- **Client SDK module boundaries**: Shared helpers (body serialization, header/query param redaction, Python version string) live in `smello/utils.py`. Integration modules (`smello.integrations.*`) should import from `smello.utils` and `smello.transport`, never from `smello.capture` (which is outgoing-HTTP-specific). When a helper outgrows its original module, move it to `utils.py`.
+- **`capture_exception()`** in `smello.patches.patch_excepthook` is the shared function for emitting exception events from any context (excepthook, threading hook, middleware). It swallows all errors internally — callers don't need try/except wrappers.
 - **Server tests** use `FastAPI.TestClient` with a fresh SQLite DB per test (see `server/tests/conftest.py`). Tortoise ORM global context is reset between tests via `_reset_tortoise_global_context()`.
 - **E2E tests** spin up a real uvicorn server and a mock HTTP target, then verify the full capture pipeline via the API.
 - **Adding or changing a client config option**: Every option is exposed across three call surfaces backed by one data model. Update all of them together, otherwise the surfaces drift:
@@ -74,6 +76,8 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Three README files** must stay in sync: `README.md` (root), `clients/python/README.md` (PyPI page for smello), and `server/README.md` (PyPI page for smello-server). Update all three after significant changes.
 - **Changelogs**: Each package has its own `CHANGELOG.md` — `server/CHANGELOG.md` and `clients/python/CHANGELOG.md`. Follow [Keep a Changelog](https://keepachangelog.com/) format. **Before committing**, review whether the changes are user-facing or changelog-worthy. If so, update the `[Unreleased]` section in the relevant changelog as a separate step before creating the commit. Bumping versions moves `[Unreleased]` entries to a versioned section automatically via bump-my-version.
 - **Documentation site** (`docs/`): After significant changes to client or server logic, update the relevant pages (`docs/getting-started.md`, `docs/configuration.md`, `docs/api.md`).
+- **Tech debt** (`docs/tech_debt.md`): When you notice something worth addressing later but out of scope for the current task, add it to the tech debt file instead of fixing it inline.
+- **No verification checklists in PRs.** Don't add "## Verification" or "## Test plan" checkbox lists to PR descriptions. Nobody uses them.
 
 ## Screenshots
 

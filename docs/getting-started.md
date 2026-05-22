@@ -33,7 +33,7 @@ import smello
 smello.init(server_url="http://localhost:5110")
 ```
 
-That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic, hooks `sys.excepthook` to capture unhandled exceptions, and optionally hooks into Python's `logging` module.
+That's it. Smello monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture all outgoing traffic, hooks `sys.excepthook` to capture unhandled exceptions, and optionally hooks into Python's `logging` module. For incoming request capture, see [FastAPI middleware](#fastapi-middleware) below.
 
 ```python
 import requests
@@ -94,6 +94,30 @@ CLI flags map 1:1 to the [environment variables](configuration.md):
 
 The `--` separator is optional but recommended when passing flags to the wrapped command.
 
+### FastAPI middleware
+
+To capture incoming HTTP requests in a FastAPI app, add the Smello middleware:
+
+```python
+import smello
+from smello.integrations.fastapi import SmelloMiddleware
+from fastapi import FastAPI
+
+smello.init()
+app = FastAPI()
+app.add_middleware(SmelloMiddleware)
+```
+
+Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. If a route handler raises an unhandled exception, the middleware captures the traceback before re-raising.
+
+By default, all paths are captured. Use `ignore_paths` to skip noisy endpoints like health checks and OpenAPI schema routes. Matching is prefix-based:
+
+```python
+app.add_middleware(SmelloMiddleware, ignore_paths=["/health", "/openapi.json", "/docs"])
+```
+
+The middleware is a raw ASGI middleware (not Starlette's `BaseHTTPMiddleware`), so it works with streaming responses and background tasks. When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
+
 ### Capturing logs
 
 Log capture is opt-in. Enable it to see Python log records alongside your HTTP traffic and exceptions in the same timeline:
@@ -112,6 +136,17 @@ logger.warning("Token expired for user %s", user_id)
 
 # Log records appear in the dashboard alongside HTTP requests
 ```
+
+Smello's own loggers (`smello.*`) and `urllib3` loggers are always excluded to prevent recursion. You can suppress other noisy loggers with `ignore_loggers`:
+
+```python
+smello.init(
+    capture_logs=True,
+    ignore_loggers=["uvicorn.access", "uvicorn.error"],
+)
+```
+
+Matching is hierarchical: `"uvicorn"` suppresses `uvicorn`, `uvicorn.access`, `uvicorn.error`, etc. See [ignore_loggers](configuration.md#ignore_loggers) for details.
 
 ### Capturing exceptions
 
@@ -163,7 +198,7 @@ buckets = s3.list_buckets()
 
 ## What Smello captures
 
-### HTTP requests
+### Outgoing HTTP requests
 
 For every outgoing HTTP and gRPC call:
 
@@ -175,6 +210,18 @@ For every outgoing HTTP and gRPC call:
 The dashboard recognizes Unix timestamps in JSON bodies and shows the human-readable date in a tooltip. XML responses (common in AWS S3, STS, EC2) appear as a collapsible tree, just like JSON. Both formats offer Tree and Raw tabs — Tree shows an expandable tree, Raw shows syntax-highlighted source.
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and response bodies are automatically serialized to JSON.
+
+### Incoming HTTP requests
+
+When you add the [FastAPI middleware](#fastapi-middleware), Smello captures every request your server handles:
+
+- Method, path, full URL, and route pattern (e.g., `/api/users/{id}`)
+- Request and response headers and bodies
+- Response status code and duration
+- Client IP address
+- Exception type and traceback (if the handler raises)
+
+Request and response bodies are capped at 1 MB, matching the outgoing capture limit.
 
 ### Logs
 

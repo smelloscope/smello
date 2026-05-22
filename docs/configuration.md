@@ -17,6 +17,7 @@ smello.init(
     capture_exceptions=True,                   # capture unhandled exceptions (default)
     capture_logs=False,                        # capture log records (opt-in)
     log_level=30,                              # minimum log level to capture (WARNING)
+    ignore_loggers=["uvicorn.access"],         # suppress noisy framework loggers
 )
 ```
 
@@ -35,6 +36,7 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 | `capture_exceptions` | `SMELLO_CAPTURE_EXCEPTIONS` | `True` |
 | `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
 | `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
+| `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `[]` |
 
 **Precedence**: explicit parameter > environment variable > hardcoded default. The same env vars are also surfaced as flags on the [`smello run`](#client-cli-smello-run) wrapper.
 
@@ -93,6 +95,14 @@ Set via env var: `SMELLO_CAPTURE_LOGS=true`.
 Minimum log level to capture. Default: `30` (WARNING). Accepts an integer or a level name (case-insensitive): `DEBUG` (10), `INFO` (20), `WARNING` (30), `ERROR` (40), `CRITICAL` (50).
 
 Set via env var: `SMELLO_LOG_LEVEL=INFO` or `SMELLO_LOG_LEVEL=20`.
+
+### `ignore_loggers`
+
+List of logger names to exclude from capture. Records from the named loggers and their children are silently dropped. Useful for suppressing noisy framework loggers like `uvicorn.access` that duplicate information already captured by the incoming HTTP middleware.
+
+Set via env var: `SMELLO_IGNORE_LOGGERS=uvicorn.access,uvicorn.error` (comma-separated).
+
+Matching is hierarchical: `ignore_loggers=["uvicorn"]` suppresses `uvicorn`, `uvicorn.access`, `uvicorn.error`, etc. It does **not** match unrelated loggers that happen to share a prefix (e.g., `"uv"` does not suppress `"uvicorn"`).
 
 !!! note "log_level is a capture filter, not a logger override"
     `log_level` controls which records Smello keeps *after* they pass through Python's normal logging pipeline. It cannot capture records that the application's loggers have already filtered out. For example, if your root logger is at WARNING (the default) and you set `log_level=10`, Smello still won't see DEBUG or INFO records — Python's `Logger.debug()` discards them before Smello's hook runs.
@@ -203,6 +213,7 @@ Each flag maps 1:1 to a `SMELLO_*` environment variable documented above. The fl
 | `--capture-exceptions` / `--no-capture-exceptions` | `SMELLO_CAPTURE_EXCEPTIONS`  | `True`                 |
 | `--capture-logs` / `--no-capture-logs` | `SMELLO_CAPTURE_LOGS`        | `False`                |
 | `--log-level LEVEL`                   | `SMELLO_LOG_LEVEL`           | `30` (WARNING)         |
+| `--ignore-logger LOGGER` (repeatable) | `SMELLO_IGNORE_LOGGERS`      | `[]`                   |
 
 CLI-specific behavior worth knowing:
 

@@ -44,7 +44,7 @@ Renders a mock Claude Code terminal session and captures it as a PNG with
 macOS window chrome:
 
 ```bash
-node scripts/claude-code-mockup.mjs                          # built-in smello-debugger demo
+node scripts/claude-code-mockup.mjs                          # built-in smello demo
 node scripts/claude-code-mockup.mjs --session session.json   # custom session
 node scripts/claude-code-mockup.mjs --width 900              # custom width
 ```

@@ -50,22 +50,22 @@ Open the Smello dashboard. You'll see every `POST` to `api.anthropic.com/v1/mess
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 ```bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 Then ask your agent:
 
 ```
-/smello-debugger
+/smello
 My Claude tool-use loop is making too many API calls
 ```
 
-![Claude Code session using smello-debugger to diagnose excessive API calls](assets/debug-anthropic-claude.png)
+![Claude Code session using smello to diagnose excessive API calls](assets/debug-anthropic-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 

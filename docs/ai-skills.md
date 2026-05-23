@@ -14,7 +14,7 @@ Or install them individually:
 
 ```bash
 npx skills add smelloscope/smello --skill smello-setup
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 The command places skills in your project's `.claude/skills/` directory (or equivalent for other agents). They're available immediately.
@@ -29,7 +29,7 @@ Explores your codebase and sets up `smello run` as part of your development work
 2. Finds HTTP, gRPC, and logging library usage (`requests`, `httpx`, `aiohttp`, `grpc`, `botocore`, Google Cloud libraries, `logging`)
 3. Locates how you run your app (Django, Flask, FastAPI, CLI scripts, etc.)
 4. Checks for Docker Compose files and run scripts
-5. Proposes wiring `smello run` into your dev commands, adding FastAPI middleware if applicable, and enabling log capture
+5. Proposes wiring `smello run` into your dev commands, adding FastAPI/Django middleware if applicable, and enabling log capture
 
 The skill does **not** make any changes: it only proposes. You approve each step before anything is modified.
 
@@ -39,7 +39,7 @@ The skill does **not** make any changes: it only proposes. You approve each step
 /smello-setup
 ```
 
-### `/smello-debugger`: Debug with captured events
+### `/smello`: Debug with captured events
 
 Helps you debug issues using events captured by a running Smello instance. The skill queries the Smello API to:
 
@@ -53,7 +53,7 @@ This skill is also invoked automatically when you ask your AI agent about debugg
 **Usage:**
 
 ```
-/smello-debugger
+/smello
 ```
 
 Or just ask naturally:

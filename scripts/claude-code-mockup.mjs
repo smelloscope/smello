@@ -39,7 +39,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
 // ---------------------------------------------------------------------------
-// Default demo session: using the smello-debugger skill
+// Default demo session: using the smello skill
 // ---------------------------------------------------------------------------
 
 const DEFAULT_SESSION = {
@@ -54,7 +54,7 @@ const DEFAULT_SESSION = {
     {
       role: "tool_call",
       tool: "Skill",
-      header: "smello-debugger",
+      header: "smello",
       collapsed: true,
     },
     {
@@ -176,7 +176,7 @@ async function main() {
     session = JSON.parse(readFileSync(sessionPath, "utf-8"));
     console.log(`Loaded session from ${sessionPath}`);
   } else {
-    console.log("Using built-in demo session (smello-debugger)");
+    console.log("Using built-in demo session (smello)");
   }
 
   const width = parseInt(args.width);

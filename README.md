@@ -96,7 +96,7 @@ npx skills add smelloscope/smello
 | Skill            | Install individually                                      | Description                                                                                                                                                                       |
 | ---------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/smello-setup`    | `npx skills add smelloscope/smello --skill smello-setup`    | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval.         |
-| `/smello-debugger` | `npx skills add smelloscope/smello --skill smello-debugger` | Queries the Smello API to inspect captured events — HTTP traffic, log records, and exceptions. Also activates automatically when you ask about debugging. |
+| `/smello` | `npx skills add smelloscope/smello --skill smello` | Queries the Smello API to inspect captured events — HTTP traffic, log records, and exceptions. Also activates automatically when you ask about debugging. |
 
 ## What Smello captures
 

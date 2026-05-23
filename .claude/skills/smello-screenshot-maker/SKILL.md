@@ -153,7 +153,7 @@ In guide markdown, reference screenshots with a relative path:
   - Claude Code screenshot in "AI Agent Skills" section (`max-width: 700px`)
 - **Integration guides** (`docs/guides/debug-*.md`):
   - Dashboard screenshot after "Debug in the dashboard"
-  - Claude Code screenshot after the `/smello-debugger` example
+  - Claude Code screenshot after the `/smello` example
 
 ## Key files
 

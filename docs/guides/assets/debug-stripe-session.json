@@ -10,7 +10,7 @@
     {
       "role": "tool_call",
       "tool": "Skill",
-      "header": "smello-debugger",
+      "header": "smello",
       "collapsed": true
     },
     {

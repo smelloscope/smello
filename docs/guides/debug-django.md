@@ -62,22 +62,22 @@ Open the Smello dashboard. You'll see the incoming request and all the outgoing 
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 ```bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 Then ask your agent:
 
 ```
-/smello-debugger
+/smello
 Why is /api/checkout returning 500?
 ```
 
-![Claude Code session using smello-debugger to diagnose the issue](assets/debug-django-claude.png)
+![Claude Code session using smello to diagnose the issue](assets/debug-django-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 

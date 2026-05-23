@@ -1,5 +1,5 @@
 ---
-name: smello-debugger
+name: smello
 description: Debug HTTP requests, logs, and exceptions captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, check captured logs or exceptions, or understand what their code is doing. Also use when the user pastes a Smello dashboard URL like http://localhost:5110/#<uuid> or http://localhost:5111/#<uuid> — extract the UUID after the hash as the event ID. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
 allowed-tools: Bash(curl *), Read, Grep, Glob
 ---

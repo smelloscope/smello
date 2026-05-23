@@ -42,22 +42,22 @@ Open the Smello dashboard. The captured request shows:
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 ```bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 Then ask your agent:
 
 ```
-/smello-debugger
+/smello
 Why am I getting AccessDenied from S3?
 ```
 
-![Claude Code session using smello-debugger to diagnose S3 access errors](assets/debug-boto3-claude.png)
+![Claude Code session using smello to diagnose S3 access errors](assets/debug-boto3-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 

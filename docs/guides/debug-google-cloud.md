@@ -42,22 +42,22 @@ The timeline view shows the full sequence and timing, so you can see where the 4
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 ```bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 Then ask your agent:
 
 ```
-/smello-debugger
+/smello
 Why is my BigQuery query taking 45 seconds from Python?
 ```
 
-![Claude Code session using smello-debugger to diagnose slow BigQuery queries](assets/debug-google-cloud-claude.png)
+![Claude Code session using smello to diagnose slow BigQuery queries](assets/debug-google-cloud-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 

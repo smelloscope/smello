@@ -80,22 +80,22 @@ Every integration guide in `docs/guides/` follows this structure. Read an existi
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 \`\`\`bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 \`\`\`
 
 Then ask your agent:
 
 \`\`\`
-/smello-debugger
+/smello
 {Natural language question matching the scenario}
 \`\`\`
 
-![Claude Code session using smello-debugger to diagnose the issue](assets/debug-{name}-claude.png)
+![Claude Code session using smello to diagnose the issue](assets/debug-{name}-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 
@@ -135,14 +135,14 @@ The landing page (`docs/overrides/home.html`) is a Jinja2 template. Read it to s
 Every guide should include screenshots for both debugging workflows:
 
 1. **Dashboard screenshot** after the "Debug in the dashboard" heading
-2. **Claude Code screenshot** after the `/smello-debugger` example
+2. **Claude Code screenshot** after the `/smello` example
 
 Use the `/smello-screenshot-maker` skill to generate them. Screenshots go in `docs/guides/assets/`
 and session JSON files live alongside them. Reference with relative paths:
 
 ```markdown
 ![Smello dashboard showing captured requests](assets/debug-{name}-dashboard.png)
-![Claude Code session using smello-debugger](assets/debug-{name}-claude.png)
+![Claude Code session using smello](assets/debug-{name}-claude.png)
 ```
 
 When creating or updating a guide, generate both screenshots as part of the work.

@@ -43,22 +43,22 @@ Open the Smello dashboard at `http://localhost:5110`. Click the failed request t
 
 ### Debug with an AI agent
 
-If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello-debugger` skill can query captured events and cross-reference them with your source code. Install it once:
+If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
 
 ```bash
-npx skills add smelloscope/smello --skill smello-debugger
+npx skills add smelloscope/smello --skill smello
 ```
 
 Then ask your agent:
 
 ```
-/smello-debugger
+/smello
 Why am I getting 401 from api.acme.com?
 ```
 
-![Claude Code session using smello-debugger to diagnose a 401 error](assets/debug-requests-claude.png)
+![Claude Code session using smello to diagnose a 401 error](assets/debug-requests-claude.png)
 
-The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
+The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
 ## Tips
 

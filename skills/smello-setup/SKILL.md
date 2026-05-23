@@ -23,6 +23,7 @@ Investigate the project to understand:
    - `if __name__ == "__main__":` blocks
    - Framework-specific entrypoints: Django (`manage.py`, `wsgi.py`, `asgi.py`), Flask (`app = Flask(...)`, `create_app()`), FastAPI (`app = FastAPI()`), etc.
    - CLI entrypoints in `pyproject.toml` (`[project.scripts]`)
+   - For FastAPI or Django apps, note the app object / settings file location (needed for middleware setup)
 5. **Docker setup**: Check for `docker-compose.yml`, `docker-compose.dev.yml`, `compose.yml`, `compose.dev.yml`, `Dockerfile`, or similar files. Identify development-specific compose files vs production ones.
 6. **Environment-based config**: Check if the project uses environment variables, `.env` files, or settings modules to toggle dev-only features (this informs where to gate `smello.init()`).
 
@@ -55,7 +56,7 @@ Smello can be activated in two ways. Recommend **one** based on what fits the pr
 - The user just wants a one-off debugging session and doesn't want to touch source.
 - Subprocess instrumentation needs to propagate to workers automatically (it does — PYTHONPATH is inherited).
 
-`smello run` exposes the same `SMELLO_*` config as flags: `--server`, `--capture-host`, `--ignore-host`, `--capture-all`/`--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-exceptions`/`--no-capture-exceptions`, `--capture-logs`/`--no-capture-logs`, `--log-level`. Flags win over env vars. Use `--` to disambiguate when the wrapped command's flags would collide (`smello run --server URL -- python -m mod --debug`).
+`smello run` exposes the same `SMELLO_*` config as flags: `--server`, `--capture-host`, `--ignore-host`, `--capture-all`/`--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-exceptions`/`--no-capture-exceptions`, `--capture-logs`/`--no-capture-logs`, `--log-level`, `--ignore-logger`. Flags win over env vars. Use `--` to disambiguate when the wrapped command's flags would collide (`smello run --server URL -- python -m mod --debug`).
 
 #### B1. If using `smello.init()`
 
@@ -101,11 +102,18 @@ import smello
 smello.init(capture_logs=True, log_level=20)  # capture INFO and above
 ```
 
+If the project uses noisy framework loggers (e.g., `uvicorn.access`, `django.request`), suggest suppressing them:
+
+```python
+smello.init(capture_logs=True, log_level=20, ignore_loggers=["uvicorn.access"])
+```
+
 Or via environment variables:
 
 ```bash
 SMELLO_CAPTURE_LOGS=true
 SMELLO_LOG_LEVEL=20
+SMELLO_IGNORE_LOGGERS=uvicorn.access
 ```
 
 Exception capture is enabled by default — no configuration needed.
@@ -145,6 +153,7 @@ SMELLO_URL=http://localhost:5110                  # server URL (activates Smello
 # SMELLO_REDACT_HEADERS=Authorization,X-Api-Key   # headers to redact
 # SMELLO_CAPTURE_LOGS=true                         # capture Python log records
 # SMELLO_LOG_LEVEL=20                              # minimum log level (INFO=20, WARNING=30)
+# SMELLO_IGNORE_LOGGERS=uvicorn.access             # suppress noisy loggers
 ```
 
 All parameters can also be passed explicitly to `smello.init()`, which takes precedence over env vars:
@@ -153,12 +162,42 @@ All parameters can also be passed explicitly to `smello.init()`, which takes pre
 - If there are internal services to skip, suggest `SMELLO_IGNORE_HOSTS=...` or `ignore_hosts=[...]`
 - If a non-default server URL is needed (e.g., Docker networking), suggest `SMELLO_URL=http://smello:5110` or `server_url="http://smello:5110"`
 - If the project uses logging heavily, suggest `SMELLO_CAPTURE_LOGS=true` with an appropriate `SMELLO_LOG_LEVEL`
+- If framework loggers are noisy, suggest `SMELLO_IGNORE_LOGGERS=uvicorn.access` or `ignore_loggers=["uvicorn.access"]`
 - Always mention that `Authorization` and `X-Api-Key` headers are redacted by default
 - Mention that unhandled exception capture is on by default
 
 Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
-### D. Set up the server
+### D. Add incoming request middleware (if applicable)
+
+If the project is a **FastAPI** or **Django** web application, suggest adding the Smello middleware to capture incoming HTTP requests. This is the one integration that always requires a code change (it cannot be done via `smello run` alone).
+
+#### FastAPI
+
+```python
+from smello.integrations.fastapi import SmelloMiddleware
+from fastapi import FastAPI
+
+app = FastAPI()
+app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
+```
+
+#### Django
+
+```python
+# settings.py
+MIDDLEWARE = [
+    "smello.integrations.django.SmelloMiddleware",
+    ...
+]
+SMELLO_IGNORE_PATHS = ["/health/", "/admin/"]
+```
+
+The middleware captures every request your server handles: method, path, status code, duration, route pattern, and client IP. Unhandled exceptions are captured with full tracebacks.
+
+Only suggest this if the project is a web application. For CLI tools, scripts, or background workers, skip this section.
+
+### E. Set up the server
 
 **Ask the user** which server setup they prefer:
 
@@ -214,7 +253,7 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 - Smello client SDK: `pip install smello` (Python >= 3.10, zero dependencies)
 - Smello server: `pip install smello-server` (Python >= 3.14, includes web dashboard) or Docker `ghcr.io/smelloscope/smello`
 - Dashboard: http://localhost:5110 (served by both pip install and Docker)
-- Captures: HTTP requests (`requests`, `httpx`, `aiohttp`, `grpc`, `botocore`), unhandled exceptions (`sys.excepthook`), and Python log records (`logging`)
+- Captures: outgoing HTTP requests (`requests`, `httpx`, `aiohttp`, `grpc`, `botocore`), incoming HTTP requests (FastAPI/Django middleware), unhandled exceptions (`sys.excepthook`), and Python log records (`logging`)
 - Default redacted headers: `Authorization`, `X-Api-Key`
 - Default server URL: `http://localhost:5110`
 - `smello run` wrapper: zero-code activation via `PYTHONPATH` bootstrap; subprocess-instrumentation safe; flags mirror `SMELLO_*` env vars 1:1.
@@ -232,5 +271,6 @@ After presenting the plan, ask the user which parts they want to proceed with. D
 | `SMELLO_CAPTURE_EXCEPTIONS` | bool | `true` |
 | `SMELLO_CAPTURE_LOGS` | bool | `false` |
 | `SMELLO_LOG_LEVEL` | int | `30` (WARNING) |
+| `SMELLO_IGNORE_LOGGERS` | comma-separated list | `[]` |
 
 Precedence: explicit `init()` parameter > env var > hardcoded default.

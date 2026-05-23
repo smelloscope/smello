@@ -897,7 +897,7 @@ source = { editable = "clients/python" }
 
 [[package]]
 name = "smello-server"
-version = "0.7.0"
+version = "0.7.1"
 source = { editable = "server" }
 dependencies = [
     { name = "aiosqlite" },

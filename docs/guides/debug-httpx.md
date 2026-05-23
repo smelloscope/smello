@@ -36,6 +36,8 @@ async with httpx.AsyncClient() as client:
 
 Open the Smello dashboard. The captured response shows:
 
+![Smello dashboard showing captured httpx requests](assets/debug-httpx-dashboard.png)
+
 - **Status code**: confirms the server returned 200 (not a 5xx mid-stream).
 - **Response headers**: check `Content-Type`, `Transfer-Encoding`, and any API-specific headers like rate limit counters.
 - **Response body**: the full body as received by httpx, so you can see exactly where it ended.
@@ -55,6 +57,8 @@ Then ask your agent:
 /smello-debugger
 My streaming response from api.example.com is getting truncated
 ```
+
+![Claude Code session using smello-debugger to diagnose truncated streaming responses](assets/debug-httpx-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

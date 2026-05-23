@@ -41,6 +41,8 @@ while True:
 
 Open the Smello dashboard. You'll see every `POST` to `api.anthropic.com/v1/messages`:
 
+![Smello dashboard showing captured Anthropic API calls](assets/debug-anthropic-dashboard.png)
+
 - **Request bodies**: see how the `messages` array grows with each loop iteration. Are previous tool results being appended correctly?
 - **Response bodies**: check `stop_reason` for each response. Is Claude returning `tool_use` when it should be returning `end_turn`?
 - **Token usage**: each response includes `usage.input_tokens` and `usage.output_tokens`. Watch how input tokens grow as the conversation gets longer.
@@ -60,6 +62,8 @@ Then ask your agent:
 /smello-debugger
 My Claude tool-use loop is making too many API calls
 ```
+
+![Claude Code session using smello-debugger to diagnose excessive API calls](assets/debug-anthropic-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

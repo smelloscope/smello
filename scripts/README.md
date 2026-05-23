@@ -38,14 +38,52 @@ node scripts/demo-mockup.mjs --transparent false        # with branded gradient 
 | `SMELLO_URL`   | `http://localhost:5110`  | Smello API base URL             |
 | `FRONTEND_URL` | `http://localhost:5111`  | Frontend URL to screenshot      |
 
+### Generate a Claude Code session screenshot
+
+Renders a mock Claude Code terminal session and captures it as a PNG with
+macOS window chrome:
+
+```bash
+node scripts/claude-code-mockup.mjs                          # built-in smello-debugger demo
+node scripts/claude-code-mockup.mjs --session session.json   # custom session
+node scripts/claude-code-mockup.mjs --width 900              # custom width
+```
+
+Output: `docs/assets/claude-code-screenshot.png` (transparent background).
+
+#### Session JSON format
+
+```json
+{
+  "cwd": "~/project",
+  "model": "claude-sonnet-4-6",
+  "project": "my-project",
+  "messages": [
+    { "role": "user", "text": "What's broken?" },
+    { "role": "assistant", "text": "Let me check..." },
+    { "role": "tool_call", "tool": "Bash", "header": "npm test", "content": "4 passed" },
+    { "role": "tool_call", "tool": "Read", "header": "src/app.py", "collapsed": true },
+    { "role": "tool_call", "tool": "Edit", "header": "src/app.py", "diff": { "removed": ["old line"], "added": ["new line"] } },
+    { "role": "end", "text": "Sautéed for 2m 15s", "cost": "$0.05" }
+  ]
+}
+```
+
+Message roles: `user`, `assistant` (supports `**bold**` and `` `code` `` in text),
+`tool_call` (with `tool`, `header`, optional `content`/`diff`/`collapsed`),
+`end` (with `text` and optional `cost`).
+
 ## Files
 
-| File                | Role                                                       |
-|---------------------|------------------------------------------------------------|
-| `demo-mockup.mjs`   | Entry point — clear, run demo, capture, generate mockup   |
-| `lib/mockup.mjs`    | Library — `generateMockup()` and `findChrome()` exports   |
-| `lib/template.mjs`  | HTML/CSS browser chrome template (supports transparent bg) |
-| `lib/colors.mjs`    | Smello brand palette and light/dark chrome color tokens    |
+| File                          | Role                                                       |
+|-------------------------------|-------------------------------------------------------------|
+| `demo-mockup.mjs`             | Entry point — clear, run demo, capture, generate mockup    |
+| `claude-code-mockup.mjs`      | Claude Code terminal session mockup generator              |
+| `lib/mockup.mjs`              | Library — `generateMockup()` and `findChrome()` exports    |
+| `lib/template.mjs`            | HTML/CSS browser chrome template (supports transparent bg)  |
+| `lib/claude-code-template.mjs`| HTML/CSS Claude Code terminal mock template                 |
+| `lib/colors.mjs`              | Smello brand palette and light/dark chrome color tokens     |
+| `assets/claude-code-icon.png` | Claude Code icon (from lobehub/lobe-icons)                  |
 
 ## How it works
 

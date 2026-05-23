@@ -81,26 +81,7 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 
 ## Screenshots
 
-The landing page hero image (`docs/assets/screenshot.png`) is generated automatically.
-To regenerate after UI changes:
-
-```bash
-# Prerequisites: smello-server on :5110, frontend dev server on :5111
-cd scripts && npm install   # one-time
-
-# Full pipeline: clear data → run demo → capture → mockup
-node scripts/demo-mockup.mjs
-```
-
-The screenshot uses a transparent background so it blends into the landing page gradient.
-See `scripts/README.md` for all options (dark mode, custom viewport, custom demo script).
-
-You can also use the library directly from Node.js:
-
-```js
-import { generateMockup } from "./scripts/lib/mockup.mjs";
-await generateMockup({ url: "http://localhost:5111", output: "out.png" });
-```
+Landing page screenshots (dashboard hero + Claude Code session) are generated via scripts in `scripts/`. Use the `/screenshot-maker` skill for full instructions, options, and session format.
 
 ## Brand Color Palette
 

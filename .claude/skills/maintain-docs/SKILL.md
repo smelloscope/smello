@@ -73,6 +73,8 @@ Every integration guide in `docs/guides/` follows this structure. Read an existi
 
 {Open the Smello dashboard. Bullet list of what to look at, with bold panel names:}
 
+![Smello dashboard showing captured {library} requests](assets/debug-{name}-dashboard.png)
+
 - **Request body**: {what to check}
 - **Response body**: {what to check}
 
@@ -90,6 +92,8 @@ Then ask your agent:
 /smello-debugger
 {Natural language question matching the scenario}
 \`\`\`
+
+![Claude Code session using smello-debugger to diagnose the issue](assets/debug-{name}-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 
@@ -125,6 +129,25 @@ The landing page (`docs/overrides/home.html`) is a Jinja2 template. Read it to s
 - Integration cards are `<a>` tags with `href="guides/debug-{name}/"` linking to the corresponding guide
 - Logos are white SVGs in `docs/assets/logos/`
 - The "How it works" section leads with `smello run`, not `smello.init()`
+
+## Screenshots
+
+Every guide should include screenshots for both debugging workflows:
+
+1. **Dashboard screenshot** after the "Debug in the dashboard" heading
+2. **Claude Code screenshot** after the `/smello-debugger` example
+
+Use the `/screenshot-maker` skill to generate them. Screenshots go in `docs/guides/assets/`
+and session JSON files live alongside them. Reference with relative paths:
+
+```markdown
+![Smello dashboard showing captured requests](assets/debug-{name}-dashboard.png)
+![Claude Code session using smello-debugger](assets/debug-{name}-claude.png)
+```
+
+When creating or updating a guide, generate both screenshots as part of the work.
+See `/screenshot-maker` for the full workflow (two-step approach for dashboard,
+`--session` flag for Claude Code).
 
 ## Key messaging
 

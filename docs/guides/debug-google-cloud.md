@@ -32,6 +32,8 @@ rows = client.query(query).result()
 
 Open the Smello dashboard. You'll see multiple gRPC calls that the BigQuery client makes:
 
+![Smello dashboard showing captured Google Cloud gRPC calls](assets/debug-google-cloud-dashboard.png)
+
 - **`google.cloud.bigquery.v2.JobService/InsertJob`**: the initial query submission. Check the request payload to confirm the SQL and any query parameters.
 - **`google.cloud.bigquery.v2.JobService/GetJob`**: the client polls for completion. Count how many poll requests there are and their timing: the polling interval might be the bottleneck.
 - **`google.cloud.bigquery.v2.JobService/GetQueryResults`**: fetching results. A large result set means multiple fetches.
@@ -52,6 +54,8 @@ Then ask your agent:
 /smello-debugger
 Why is my BigQuery query taking 45 seconds from Python?
 ```
+
+![Claude Code session using smello-debugger to diagnose slow BigQuery queries](assets/debug-google-cloud-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

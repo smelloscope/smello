@@ -37,6 +37,8 @@ charge = stripe.Charge.create(
 
 Open the Smello dashboard and filter to `api.stripe.com`:
 
+![Smello dashboard showing captured Stripe API calls](assets/debug-stripe-dashboard.png)
+
 - **Request body**: see the exact parameters sent to Stripe. Is the `amount` correct? Is the `source` token valid?
 - **Response body**: Stripe returns detailed charge objects. Check `status`, `paid`, `failure_code`, and `failure_message`. A charge can return 200 but still have `status: "failed"`.
 - **Multiple API calls**: creating a charge might trigger additional calls (customer lookup, payment method validation). You'll see all of them in sequence.
@@ -55,6 +57,8 @@ Then ask your agent:
 /smello-debugger
 My Stripe charge returns 200 but the customer wasn't charged
 ```
+
+![Claude Code session using smello-debugger to diagnose a silent payment failure](assets/debug-stripe-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

@@ -1,0 +1,45 @@
+{
+  "cwd": "~/analytics",
+  "model": "claude-sonnet-4-6",
+  "project": "analytics",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Why is my BigQuery query taking 45 seconds from Python?"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"bigquery\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello shows 12 sequential gRPC calls to `bigquery.googleapis.com`. The query itself runs in one call (3.1s), but `client.query()` is followed by 11 `GetQueryResults` polls at 4s intervals. The default polling is slow. Pass `retry=None` and use `result(timeout=10)` for faster retrieval."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "reports/query.py",
+      "diff": {
+        "removed": [
+          "    rows = client.query(sql).result()"
+        ],
+        "added": [
+          "    job = client.query(sql)",
+          "    rows = job.result(timeout=10, retry=None)"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 37s"
+    }
+  ]
+}

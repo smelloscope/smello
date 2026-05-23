@@ -1,4 +1,4 @@
-export type HotkeyGroup = "Navigation" | "Filters" | "Detail" | "General";
+export type HotkeyGroup = "Navigation" | "Filters" | "Detail" | "General" | "Actions";
 
 export type HotkeyEntry = {
   keys: string;

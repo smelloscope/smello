@@ -16,6 +16,9 @@ export const HOTKEYS: HotkeyEntry[] = [
   // Filters
   { keys: "shift+x", label: "Shift+X", description: "Clear all filters", group: "Filters" },
 
+  // Actions
+  { keys: "mod+shift+e", label: "⌘⇧E", description: "Clear all events", group: "Actions" },
+
   // Detail
   { keys: "q", label: "q", description: "Toggle query parameters", group: "Detail" },
   { keys: "h", label: "h", description: "Toggle request headers", group: "Detail" },

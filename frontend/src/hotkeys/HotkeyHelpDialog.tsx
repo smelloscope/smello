@@ -13,7 +13,7 @@ import { HOTKEYS } from "./registry";
 import type { HotkeyGroup } from "./types";
 import Kbd from "../components/Kbd";
 
-const GROUP_ORDER: HotkeyGroup[] = ["General", "Navigation", "Filters", "Detail"];
+const GROUP_ORDER: HotkeyGroup[] = ["General", "Navigation", "Filters", "Detail", "Actions"];
 
 /** Deduplicate entries that share a description within the same group (e.g. j and ArrowDown). */
 function deduplicatedEntries(group: HotkeyGroup) {

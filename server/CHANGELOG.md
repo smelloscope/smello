@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Clear All hotkey**: `⌘⇧E` (Ctrl+Shift+E on Windows) clears all captured events. Shows an "All events cleared" snackbar to confirm the action.
+
 ## [0.7.0] - 2026-05-22
 
 ### Added

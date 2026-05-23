@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useSetAtom } from "jotai";
+import { useHotkeys } from "react-hotkeys-hook";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -14,6 +15,7 @@ import { useListNavigation } from "../hotkeys/useListNavigation";
 import { useGlobalHotkeys } from "../hotkeys/useGlobalHotkeys";
 import { useDetailHotkeys } from "../hotkeys/useDetailHotkeys";
 import { hotkeyHelpOpenAtom } from "../atoms/hotkeyHelp";
+import { snackbarMessageAtom } from "../atoms/snackbar";
 import Kbd from "../components/Kbd";
 import FilterBar from "../components/FilterBar";
 import RequestList from "../components/RequestList";
@@ -86,7 +88,15 @@ export default function SplitView() {
 
   const { data: allEvents = [], isLoading } = useListEvents({}, { refetchInterval: 3_000 });
 
-  const clearMutation = useClearEvents();
+  const setSnackbar = useSetAtom(snackbarMessageAtom);
+  const clearMutation = useClearEvents({
+    onSuccess: () => setSnackbar("All events cleared"),
+  });
+
+  useHotkeys("mod+shift+e", (e) => {
+    e.preventDefault();
+    if (!clearMutation.isPending) clearMutation.mutate();
+  });
 
   if (isLoading) {
     return <SplitViewSkeleton />;

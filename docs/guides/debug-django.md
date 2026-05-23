@@ -53,6 +53,8 @@ def checkout(request):
 
 Open the Smello dashboard. You'll see the incoming request and all the outgoing calls it triggered:
 
+![Smello dashboard showing captured Django requests](assets/debug-django-dashboard.png)
+
 - **Incoming request**: the full `POST /api/checkout` with the request body, headers, and the 500 response. Check the request body to see if the client sent valid data.
 - **Outgoing calls**: the Stripe API call and the email service call appear in the timeline right after the incoming request. Did the Stripe call succeed but the email call fail?
 - **Exception capture**: if the 500 was caused by an unhandled exception, Smello captures the full traceback. You'll see the exception type, message, and stack frames in the dashboard.
@@ -72,6 +74,8 @@ Then ask your agent:
 /smello-debugger
 Why is /api/checkout returning 500?
 ```
+
+![Claude Code session using smello-debugger to diagnose the issue](assets/debug-django-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

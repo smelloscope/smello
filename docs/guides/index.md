@@ -27,3 +27,4 @@ These SDKs use `httpx` or `requests` internally, so Smello captures their traffi
 Explicit middleware for capturing incoming HTTP requests.
 
 - [Debug FastAPI](debug-fastapi.md): incoming request inspection and exception capture
+- [Debug Django](debug-django.md): incoming request inspection and exception capture

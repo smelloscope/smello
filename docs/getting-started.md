@@ -102,6 +102,37 @@ app.add_middleware(SmelloMiddleware, ignore_paths=["/health", "/openapi.json", "
 
 The middleware is a raw ASGI middleware (not Starlette's `BaseHTTPMiddleware`), so it works with streaming responses and background tasks. When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
 
+### Django middleware
+
+To capture incoming HTTP requests in a Django app, add the Smello middleware at the top of your `MIDDLEWARE` list:
+
+```python
+# settings.py
+MIDDLEWARE = [
+    "smello.integrations.django.SmelloMiddleware",  # first — sees the raw request
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    # ...
+]
+```
+
+Then run your server with `smello run`:
+
+```bash
+smello run manage.py runserver
+```
+
+Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. If a view raises an unhandled exception, the middleware captures the traceback via Django's `process_exception` hook.
+
+By default, all paths are captured. Use the `SMELLO_IGNORE_PATHS` setting to skip noisy endpoints. Matching is prefix-based:
+
+```python
+SMELLO_IGNORE_PATHS = ["/health/", "/admin/", "/static/"]
+```
+
+When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
+
 ### Capturing logs
 
 Log capture is opt-in. Enable it to see Python log records alongside your HTTP traffic and exceptions in the same timeline:
@@ -168,7 +199,7 @@ gRPC calls are displayed with a `grpc://` URL scheme. Protobuf request and respo
 
 ### Incoming HTTP requests
 
-When you add the [FastAPI middleware](#fastapi-middleware), Smello captures every request your server handles:
+When you add the [FastAPI](#fastapi-middleware) or [Django](#django-middleware) middleware, Smello captures every request your server handles:
 
 - Method, path, full URL, and route pattern (e.g., `/api/users/{id}`)
 - Request and response headers and bodies

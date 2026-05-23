@@ -78,6 +78,10 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 - **Documentation site** (`docs/`): After significant changes to client or server logic, update the relevant pages (`docs/getting-started.md`, `docs/configuration.md`, `docs/api.md`).
 - **Tech debt** (`docs/tech_debt.md`): When you notice something worth addressing later but out of scope for the current task, add it to the tech debt file instead of fixing it inline.
 - **No verification checklists in PRs.** Don't add "## Verification" or "## Test plan" checkbox lists to PR descriptions. Nobody uses them.
+- **Committing with pre-commit hooks.** When splitting work into multiple commits, pre-commit hooks (ruff check, ruff format) may fail on partial commits because they lint the entire codebase, not just staged files. To avoid fighting the hooks:
+  1. Run `uv run pre-commit run --all-files` and fix any issues it reports.
+  2. Create all commits with `git commit -n` (skip hooks) using `/commit-work`.
+  3. After the last commit, run `uv run pre-commit run --all-files` again to verify the final state passes all hooks. Fix any leftover issues in a follow-up commit (with hooks enabled).
 
 ## Screenshots
 

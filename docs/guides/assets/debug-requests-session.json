@@ -1,0 +1,44 @@
+{
+  "cwd": "~/acme-client",
+  "model": "claude-sonnet-4-6",
+  "project": "acme-client",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Why am I getting 401 from api.acme.com?"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"acme.com\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Found the failing request in Smello. The `GET /v1/users` call sent an `X-Auth-Token` header, but the API expects `Authorization: Bearer <token>`. The header name is wrong."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "client.py",
+      "diff": {
+        "removed": [
+          "    session.headers[\"X-Auth-Token\"] = get_api_token()"
+        ],
+        "added": [
+          "    session.headers[\"Authorization\"] = f\"Bearer {get_api_token()}\""
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 32s"
+    }
+  ]
+}

@@ -34,6 +34,8 @@ response = stub.GetUser(GetUserRequest(user_id="abc-123"))
 
 Open the Smello dashboard. The captured gRPC call shows:
 
+![Smello dashboard showing captured gRPC calls](assets/debug-grpc-dashboard.png)
+
 - **Method path**: the full gRPC method (e.g., `/mypackage.MyService/GetUser`) so you can confirm you're calling the right service and method.
 - **Request payload**: the protobuf message serialized as JSON, so you can inspect the exact fields and values sent.
 - **Response or error**: for failed calls, you'll see the gRPC status code and any error details the server included.
@@ -53,6 +55,8 @@ Then ask your agent:
 /smello-debugger
 My gRPC call to GetUser is returning INTERNAL
 ```
+
+![Claude Code session using smello-debugger to diagnose a gRPC INTERNAL error](assets/debug-grpc-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

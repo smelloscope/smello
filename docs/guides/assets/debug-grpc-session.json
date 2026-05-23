@@ -1,0 +1,44 @@
+{
+  "cwd": "~/user-service",
+  "model": "claude-sonnet-4-6",
+  "project": "user-service",
+  "messages": [
+    {
+      "role": "user",
+      "text": "My gRPC call to GetUser is returning INTERNAL"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"GetUser\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello captured the gRPC call. The request metadata shows `user_id: \"\"` (empty string). Your `get_user` function reads `request.user_id` but the proto field is `request.id`. The wrong field name sends an empty value and the server returns INTERNAL."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "client/users.py",
+      "diff": {
+        "removed": [
+          "    req = user_pb2.GetUserRequest(user_id=uid)"
+        ],
+        "added": [
+          "    req = user_pb2.GetUserRequest(id=uid)"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 22s"
+    }
+  ]
+}

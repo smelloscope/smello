@@ -1,0 +1,44 @@
+{
+  "cwd": "~/crawler",
+  "model": "claude-sonnet-4-6",
+  "project": "crawler",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Some of my aiohttp requests are failing with ClientConnectionError"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"ClientConnectionError\") or (.details.response.status_code == null))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Found 4 failed requests in Smello. All hit the same host with `Connection: close` but your `TCPConnector` has `limit=100`. The connector is exhausting the OS socket limit. Set `limit=20` and add `keepalive_timeout=30`."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "crawler/client.py",
+      "diff": {
+        "removed": [
+          "    connector = aiohttp.TCPConnector(limit=100)"
+        ],
+        "added": [
+          "    connector = aiohttp.TCPConnector(limit=20, keepalive_timeout=30)"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 45s"
+    }
+  ]
+}

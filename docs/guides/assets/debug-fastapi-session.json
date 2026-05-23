@@ -1,0 +1,46 @@
+{
+  "cwd": "~/shop-api",
+  "model": "claude-sonnet-4-6",
+  "project": "shop-api",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Why is /api/checkout returning 500?"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"/api/checkout\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello captured both the incoming `POST /api/checkout` and the outgoing call to `payments.stripe.com`. The incoming request body has `currency: \"usd\"` but the Stripe call sends `currency: null`. The `checkout_schema.currency` field isn't being passed to the payment service."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "routes/checkout.py",
+      "diff": {
+        "removed": [
+          "    charge = await payment_svc.create_charge(amount=order.total)"
+        ],
+        "added": [
+          "    charge = await payment_svc.create_charge(",
+          "        amount=order.total, currency=body.currency",
+          "    )"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 51s"
+    }
+  ]
+}

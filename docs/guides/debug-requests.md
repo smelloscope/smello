@@ -35,6 +35,8 @@ resp = session.get("https://api.acme.com/v1/users")
 
 Open the Smello dashboard at `http://localhost:5110`. Click the failed request to see the full detail view:
 
+![Smello dashboard showing captured HTTP requests](assets/debug-requests-dashboard.png)
+
 - **Request headers**: verify the exact header name and value that was sent. Maybe the API expects `Authorization: Bearer ...` but you sent `X-Auth-Token`.
 - **Request URL**: check for typos, wrong base URL, or missing path segments.
 - **Response body**: many APIs include a helpful error message in the 401 response that `resp.status_code` alone doesn't show you.
@@ -53,6 +55,8 @@ Then ask your agent:
 /smello-debugger
 Why am I getting 401 from api.acme.com?
 ```
+
+![Claude Code session using smello-debugger to diagnose a 401 error](assets/debug-requests-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

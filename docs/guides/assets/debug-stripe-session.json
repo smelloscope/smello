@@ -1,0 +1,46 @@
+{
+  "cwd": "~/billing",
+  "model": "claude-sonnet-4-6",
+  "project": "billing",
+  "messages": [
+    {
+      "role": "user",
+      "text": "My Stripe charge returns 200 but the customer wasn't charged"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"stripe\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello captured the `POST /v1/charges` call. The response body shows `status: \"pending\"` and `capture: false`. You created an uncaptured charge (authorize only). The charge needs to be captured within 7 days or it expires. Set `capture=True` or call `charge.capture()` after."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "payments/stripe_client.py",
+      "diff": {
+        "removed": [
+          "    charge = stripe.Charge.create(amount=amount, currency=currency)"
+        ],
+        "added": [
+          "    charge = stripe.Charge.create(",
+          "        amount=amount, currency=currency, capture=True",
+          "    )"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 31s"
+    }
+  ]
+}

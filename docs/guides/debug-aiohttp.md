@@ -34,6 +34,8 @@ async with aiohttp.ClientSession() as session:
 
 Open the Smello dashboard. You can see every request that succeeded and every one that failed:
 
+![Smello dashboard showing captured aiohttp requests](assets/debug-aiohttp-dashboard.png)
+
 - **Filter by status code**: quickly find the 5xx or failed requests among hundreds.
 - **Timing patterns**: sort by duration to spot requests that hung before failing.
 - **Host filter**: if your code calls multiple services, filter to just `api.example.com` to focus.
@@ -52,6 +54,8 @@ Then ask your agent:
 /smello-debugger
 Some of my aiohttp requests are failing with ClientConnectionError
 ```
+
+![Claude Code session using smello-debugger to diagnose aiohttp connection errors](assets/debug-aiohttp-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

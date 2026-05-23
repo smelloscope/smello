@@ -34,6 +34,8 @@ response = client.chat.completions.create(
 
 Open the Smello dashboard and click the request to `api.openai.com/v1/chat/completions`:
 
+![Smello dashboard showing captured OpenAI API calls](assets/debug-openai-dashboard.png)
+
 - **Request body**: see the full `messages` array that was sent. Is `build_messages()` including the entire conversation history? Is the system prompt larger than you thought?
 - **Response body**: the `usage` object shows `prompt_tokens`, `completion_tokens`, and `total_tokens`. Compare `prompt_tokens` with what you expected from your message array.
 - **Request headers**: confirm which API key and organization are being used (redacted by default, but the `OpenAI-Organization` header is visible).
@@ -52,6 +54,8 @@ Then ask your agent:
 /smello-debugger
 Why is my OpenAI token usage so high?
 ```
+
+![Claude Code session using smello-debugger to diagnose high token usage](assets/debug-openai-claude.png)
 
 The skill is also invoked automatically when your agent recognizes a debugging question, but calling `/smello-debugger` explicitly gives the best results. See [AI Agent Skills](../ai-skills.md) for compatible tools.
 

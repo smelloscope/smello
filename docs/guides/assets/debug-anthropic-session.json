@@ -1,0 +1,47 @@
+{
+  "cwd": "~/ai-assistant",
+  "model": "claude-sonnet-4-6",
+  "project": "ai-assistant",
+  "messages": [
+    {
+      "role": "user",
+      "text": "My Claude tool-use loop is making too many API calls"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"anthropic\"))] | length'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello captured 14 calls to `api.anthropic.com/v1/messages` for a single user query. Each response has `stop_reason: \"tool_use\"` and the model keeps calling the same `get_weather` tool in a loop. Your tool result is missing the `type: \"tool_result\"` field, so Claude doesn't recognize it as a response."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "agent/loop.py",
+      "diff": {
+        "removed": [
+          "    messages.append({\"role\": \"user\", \"content\": tool_output})"
+        ],
+        "added": [
+          "    messages.append({\"role\": \"user\", \"content\": [{",
+          "        \"type\": \"tool_result\", \"tool_use_id\": call.id,",
+          "        \"content\": tool_output",
+          "    }]})"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 1m 03s"
+    }
+  ]
+}

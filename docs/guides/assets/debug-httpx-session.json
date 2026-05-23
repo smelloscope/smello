@@ -1,0 +1,44 @@
+{
+  "cwd": "~/stream-client",
+  "model": "claude-sonnet-4-6",
+  "project": "stream-client",
+  "messages": [
+    {
+      "role": "user",
+      "text": "My streaming response from api.example.com is getting truncated"
+    },
+    {
+      "role": "tool_call",
+      "tool": "Skill",
+      "header": "smello-debugger",
+      "collapsed": true
+    },
+    {
+      "role": "tool_call",
+      "tool": "Bash",
+      "header": "curl -s localhost:5110/api/events | jq '[.[] | select(.summary | contains(\"example.com\"))]'",
+      "collapsed": true
+    },
+    {
+      "role": "assistant",
+      "text": "Smello captured the request. The response has `transfer-encoding: chunked` and a `content-length: 524288` header, but the captured body is only 65536 bytes. Your `httpx.Client` has `timeout=5.0` (the default read timeout), which cuts the stream short. Increase `read` timeout for streaming."
+    },
+    {
+      "role": "tool_call",
+      "tool": "Edit",
+      "header": "client/stream.py",
+      "diff": {
+        "removed": [
+          "    client = httpx.Client(timeout=5.0)"
+        ],
+        "added": [
+          "    client = httpx.Client(timeout=httpx.Timeout(5.0, read=120.0))"
+        ]
+      }
+    },
+    {
+      "role": "end",
+      "text": "Sautéed for 40s"
+    }
+  ]
+}

@@ -66,3 +66,4 @@ nav:
     - guides/debug-anthropic.md
     - guides/debug-stripe.md
     - guides/debug-fastapi.md
+    - guides/debug-django.md

@@ -45,9 +45,11 @@ import smello
 smello.init()  # activates only when SMELLO_URL is set
 ```
 
-### FastAPI middleware
+### Framework middleware
 
-To capture incoming requests, add the Smello middleware to your FastAPI app and run with `smello run`:
+To capture incoming requests, add the Smello middleware to your web framework:
+
+**FastAPI:**
 
 ```python
 from smello.integrations.fastapi import SmelloMiddleware
@@ -57,8 +59,22 @@ app = FastAPI()
 app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
 ```
 
+**Django:**
+
+```python
+# settings.py
+MIDDLEWARE = [
+    "smello.integrations.django.SmelloMiddleware",
+    ...
+]
+SMELLO_IGNORE_PATHS = ["/health/", "/admin/"]
+```
+
+Then run with `smello run`:
+
 ```bash
-smello run uvicorn app:app
+smello run uvicorn app:app        # FastAPI
+smello run manage.py runserver    # Django
 ```
 
 The middleware captures method, path, status code, duration, route pattern, client IP, and request/response bodies. Unhandled exceptions are captured with full tracebacks. When Smello is inactive (no server URL configured), the middleware passes requests through without capturing anything.
@@ -77,7 +93,7 @@ Any library that calls `grpc.secure_channel()` or `grpc.insecure_channel()` is a
 
 **Outgoing HTTP requests** — method, URL, headers, body, response status/headers/body, duration, and library used (requests, httpx, aiohttp, grpc, or botocore).
 
-**Incoming HTTP requests** (via FastAPI middleware) — method, path, route pattern, status code, duration, client IP, request/response headers and bodies, plus exception tracebacks if a handler raises.
+**Incoming HTTP requests** (via FastAPI or Django middleware) — method, path, route pattern, status code, duration, client IP, request/response headers and bodies, plus exception tracebacks if a handler raises.
 
 **Unhandled exceptions** (enabled by default) — exception type, message, full traceback, and stack frames with source context.
 

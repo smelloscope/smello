@@ -50,9 +50,11 @@ import smello
 smello.init()  # activates only when SMELLO_URL is set
 ```
 
-### FastAPI middleware
+### Framework middleware
 
-To capture incoming requests in a FastAPI app, add the Smello middleware and run with `smello run`:
+To capture incoming requests, add the Smello middleware to your web framework and run with `smello run`:
+
+**FastAPI:**
 
 ```python
 from smello.integrations.fastapi import SmelloMiddleware
@@ -64,6 +66,21 @@ app.add_middleware(SmelloMiddleware, ignore_paths=["/health"])
 
 ```bash
 smello run uvicorn app:app
+```
+
+**Django:**
+
+```python
+# settings.py
+MIDDLEWARE = [
+    "smello.integrations.django.SmelloMiddleware",
+    ...
+]
+SMELLO_IGNORE_PATHS = ["/health/", "/admin/"]
+```
+
+```bash
+smello run manage.py runserver
 ```
 
 Every request your server handles appears in the dashboard with method, path, status code, duration, route pattern, and client IP. Unhandled exceptions are captured with full tracebacks.
@@ -96,7 +113,7 @@ gRPC calls are displayed with a `grpc://` URL scheme. Protobuf bodies are automa
 
 ### Incoming HTTP requests
 
-With the FastAPI middleware, Smello captures every request your server handles:
+With the FastAPI or Django middleware, Smello captures every request your server handles:
 
 - Method, path, full URL, and route pattern
 - Request and response headers and bodies
@@ -266,7 +283,7 @@ smello run my_app.py ──→ Smello Server ──→ Web Dashboard
                          (FastAPI+SQLite)   (localhost:5110)
 ```
 
-- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Includes a FastAPI middleware for incoming request capture. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.
+- **smello** (client SDK): Monkey-patches `requests`, `httpx`, `aiohttp`, `grpc`, and `botocore` to capture outgoing traffic. Includes FastAPI and Django middleware for incoming request capture. Hooks `sys.excepthook` for exceptions and `logging.Logger.callHandlers` for log records. Sends everything to the server in a background thread.
 - **smello-server**: FastAPI app with SQLite. Receives captured events and serves a JSON API plus a React web dashboard with a unified timeline.
 
 ## Project structure

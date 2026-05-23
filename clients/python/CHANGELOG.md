@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Django incoming request middleware**: New `SmelloMiddleware` in `smello.integrations.django` captures incoming HTTP requests handled by a Django app. Captures request/response headers, bodies (up to 1 MB), timing, matched URL pattern, client IP, and exception info via Django's `process_exception` hook. Add it to `MIDDLEWARE` in your settings. Supports `SMELLO_IGNORE_PATHS` setting to skip noisy paths like `/admin/` or `/static/`.
+
 ## [0.11.0] - 2026-05-22
 
 ### Added

@@ -334,7 +334,7 @@
       </div>
       <div class="feature">
         <h3>Full-stack visibility</h3>
-        <p>Outgoing calls to any API (<code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, <code>botocore</code>), incoming requests via the FastAPI middleware, plus Python logs and unhandled exceptions.</p>
+        <p>Outgoing calls to any API (<code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, <code>botocore</code>), incoming requests via the FastAPI or Django middleware, plus Python logs and unhandled exceptions.</p>
       </div>
     </div>
   </section>
@@ -406,6 +406,9 @@
       <a class="integration-card" href="guides/debug-fastapi/">
         <img class="ic-icon" src="assets/logos/fastapi.svg" alt="FastAPI"> FastAPI
       </a>
+      <a class="integration-card" href="guides/debug-django/">
+        <img class="ic-icon" src="assets/logos/django.svg" alt="Django"> Django
+      </a>
     </div>
   </section>
 
@@ -468,7 +471,7 @@
       </details>
       <details>
         <summary>What does it capture exactly?</summary>
-        <p>Outgoing HTTP requests and responses (method, URL, headers, body, status, duration), incoming HTTP requests via the FastAPI middleware (path, status, route, client IP), Python log records (level, logger, message, source location), and unhandled exceptions (type, traceback, stack frames). Everything appears in a single unified timeline.</p>
+        <p>Outgoing HTTP requests and responses (method, URL, headers, body, status, duration), incoming HTTP requests via the FastAPI or Django middleware (path, status, route, client IP), Python log records (level, logger, message, source location), and unhandled exceptions (type, traceback, stack frames). Everything appears in a single unified timeline.</p>
       </details>
       <details>
         <summary>Does it capture sensitive data?</summary>
@@ -476,11 +479,11 @@
       </details>
       <details>
         <summary>Do I need to modify my code?</summary>
-        <p>No. <code>smello run my_app.py</code> activates Smello before your code runs. No imports or init calls needed. The only exception is FastAPI incoming request capture, which requires adding one middleware line. Instrumentation propagates to subprocesses, so <code>smello run gunicorn app:app</code> also captures traffic from worker processes.</p>
+        <p>No. <code>smello run my_app.py</code> activates Smello before your code runs. No imports or init calls needed. The only exception is incoming request capture (FastAPI or Django), which requires adding one middleware line. Instrumentation propagates to subprocesses, so <code>smello run gunicorn app:app</code> also captures traffic from worker processes.</p>
       </details>
       <details>
         <summary>Does it work with async code?</summary>
-        <p>Yes. Smello patches <code>httpx.AsyncClient</code>, <code>aiohttp.ClientSession</code>, and async gRPC channels. The FastAPI middleware is a native ASGI middleware, so it handles async request handlers without blocking.</p>
+        <p>Yes. Smello patches <code>httpx.AsyncClient</code>, <code>aiohttp.ClientSession</code>, and async gRPC channels. The FastAPI middleware is a native ASGI middleware. Django middleware works with both sync and async views.</p>
       </details>
       <details>
         <summary>What about production use?</summary>

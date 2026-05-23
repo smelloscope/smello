@@ -1,5 +1,5 @@
 ---
-name: add-landing-icons
+name: smello-add-landing-icons
 description: >
   Find and add technology logos/icons to the Smello docs landing page.
   Use when the user wants to add a new integration card, update an existing icon,

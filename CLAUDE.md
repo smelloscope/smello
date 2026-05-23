@@ -85,7 +85,7 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 
 ## Screenshots
 
-Landing page screenshots (dashboard hero + Claude Code session) are generated via scripts in `scripts/`. Use the `/screenshot-maker` skill for full instructions, options, and session format.
+Landing page screenshots (dashboard hero + Claude Code session) are generated via scripts in `scripts/`. Use the `/smello-screenshot-maker` skill for full instructions, options, and session format.
 
 ## Brand Color Palette
 

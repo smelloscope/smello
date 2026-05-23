@@ -1,5 +1,5 @@
 ---
-name: screenshot-maker
+name: smello-screenshot-maker
 description: >
   Generate or regenerate screenshots for the Smello landing page and docs.
   Covers both the dashboard screenshot (Smello UI) and the Claude Code session

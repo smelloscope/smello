@@ -1,5 +1,5 @@
 ---
-name: maintain-docs
+name: smello-maintain-docs
 description: >
   Maintain Smello documentation: add or update integration guides, edit the landing page,
   update getting-started and configuration pages, and ensure consistency across all docs.
@@ -119,7 +119,7 @@ Every guide ends with a shared CTA via `pymdownx.snippets`. The include file liv
 3. Add it to `docs/guides/index.md` under the appropriate category
 4. Add it to the `nav:` section in `mkdocs.yml` under Guides
 5. Check `examples/python/` for a matching example script to link
-6. If there's a landing page card, add it to `docs/overrides/home.html` in the `.integrations-grid` div (use the `add-landing-icons` skill for the logo)
+6. If there's a landing page card, add it to `docs/overrides/home.html` in the `.integrations-grid` div (use the `smello-add-landing-icons` skill for the logo)
 7. Build and verify: `uv run zensical build`
 
 ## Landing page conventions
@@ -137,7 +137,7 @@ Every guide should include screenshots for both debugging workflows:
 1. **Dashboard screenshot** after the "Debug in the dashboard" heading
 2. **Claude Code screenshot** after the `/smello-debugger` example
 
-Use the `/screenshot-maker` skill to generate them. Screenshots go in `docs/guides/assets/`
+Use the `/smello-screenshot-maker` skill to generate them. Screenshots go in `docs/guides/assets/`
 and session JSON files live alongside them. Reference with relative paths:
 
 ```markdown
@@ -146,7 +146,7 @@ and session JSON files live alongside them. Reference with relative paths:
 ```
 
 When creating or updating a guide, generate both screenshots as part of the work.
-See `/screenshot-maker` for the full workflow (two-step approach for dashboard,
+See `/smello-screenshot-maker` for the full workflow (two-step approach for dashboard,
 `--session` flag for Claude Code).
 
 ## Key messaging

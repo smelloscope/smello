@@ -90,6 +90,10 @@ def _smello_env_overrides(args: argparse.Namespace) -> dict[str, str]:
         overrides["SMELLO_LOG_LEVEL"] = str(args.log_level)
     if args.ignore_logger:
         overrides["SMELLO_IGNORE_LOGGERS"] = ",".join(args.ignore_logger)
+    if args.app is not None:
+        overrides["SMELLO_APP"] = args.app
+    if args.session is not None:
+        overrides["SMELLO_SESSION"] = args.session
 
     return overrides
 
@@ -214,6 +218,16 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         metavar="LOGGER",
         help="Ignore this logger name for log capture (repeatable). Sets SMELLO_IGNORE_LOGGERS.",
+    )
+    run.add_argument(
+        "--app",
+        metavar="NAME",
+        help="Application name tag. Sets SMELLO_APP.",
+    )
+    run.add_argument(
+        "--session",
+        metavar="ID",
+        help="Session ID tag. Sets SMELLO_SESSION.",
     )
     run.add_argument(
         "command",

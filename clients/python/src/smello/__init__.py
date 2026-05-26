@@ -34,6 +34,8 @@ def init(
     capture_logs: bool | None = None,
     log_level: int | str | None = None,
     ignore_loggers: list[str] | None = None,
+    app: str | None = None,
+    session: str | None = None,
 ) -> None:
     """Initialize Smello. Patches HTTP libraries, logging, and exception hooks.
 
@@ -59,7 +61,13 @@ def init(
     capture_logs          ``SMELLO_CAPTURE_LOGS``         ``False``
     log_level             ``SMELLO_LOG_LEVEL``            ``30`` (WARNING)
     ignore_loggers        ``SMELLO_IGNORE_LOGGERS``       ``[]``
+    app                   ``SMELLO_APP``                  ``""``
+    session               ``SMELLO_SESSION``              ``""``
     ====================  ==============================  ==========================
+
+    ``app`` tags every captured event with an application name, useful when
+    multiple services share a single Smello server. ``session`` tags events
+    with a debugging session identifier so you can isolate a specific run.
 
     ``log_level`` accepts an integer (``10``, ``20``, ``30``) or a standard
     level name (``"DEBUG"``, ``"INFO"``, ``"WARNING"``), case-insensitive.
@@ -138,6 +146,12 @@ def init(
         else:
             log_level = parsed
 
+    if app is None:
+        app = env_str("APP") or ""
+
+    if session is None:
+        session = env_str("SESSION") or ""
+
     resolved_url = server_url.rstrip("/")
     normalized_redact_headers = [h.lower() for h in redact_headers]
     normalized_redact_query_params = [p.lower() for p in redact_query_params]
@@ -154,6 +168,8 @@ def init(
             capture_logs=capture_logs,
             log_level=log_level,
             ignore_loggers=ignore_loggers,
+            app=app,
+            session=session,
         )
     else:
         # Mutate in place so closures captured by the existing patches see
@@ -168,6 +184,8 @@ def init(
         _config.capture_logs = capture_logs
         _config.log_level = log_level
         _config.ignore_loggers = ignore_loggers
+        _config.app = app
+        _config.session = session
 
     # Always ignore the smello server itself
     server_host = urlparse(_config.server_url).hostname
@@ -175,7 +193,7 @@ def init(
         _config.ignore_hosts.append(server_host)
 
     # Start transport worker (idempotent — start_worker guards against re-start)
-    _start_worker(_config.server_url)
+    _start_worker(_config.server_url, app=_config.app, session=_config.session)
 
     # Apply patches once. Re-applying nests wrappers, which would double-capture
     # every request (the second patch's `original_send` is the first patch's

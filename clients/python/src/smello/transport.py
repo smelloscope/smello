@@ -12,13 +12,17 @@ logger = logging.getLogger(__name__)
 # the typed capture endpoint.
 _queue: queue.Queue[tuple[str, dict]] = queue.Queue(maxsize=1000)
 _server_url: str = ""
+_app: str = ""
+_session: str = ""
 _started: bool = False
 
 
-def start_worker(server_url: str) -> None:
+def start_worker(server_url: str, *, app: str = "", session: str = "") -> None:
     """Start the background worker thread."""
-    global _server_url, _started
+    global _server_url, _app, _session, _started
     _server_url = server_url
+    _app = app
+    _session = session
 
     if _started:
         return
@@ -79,7 +83,7 @@ def shutdown(timeout: float = 2.0) -> bool:
 
 def _enqueue(path: str, payload: dict) -> None:
     try:
-        _queue.put_nowait((path, payload))
+        _queue.put_nowait((path, {**payload, "app": _app, "session": _session}))
     except queue.Full:
         logger.warning("Payload dropped: capture queue is full")
 

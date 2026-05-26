@@ -24,7 +24,7 @@ def hydrate_event_data(event_type: str, data: dict[str, Any]) -> EventData:
 
     Injects ``event_type`` from the column into ``data`` if missing, so rows
     written before the typed-output refactor still round-trip without a
-    migration. New writes already include ``event_type`` inside ``data``.
+    migration.
     """
     if "event_type" not in data:
         data = {**data, "event_type": event_type}

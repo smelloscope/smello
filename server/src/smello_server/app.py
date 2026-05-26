@@ -36,6 +36,7 @@ def _get_frontend_dir() -> Path | None:
 
 def create_app(db_url: str | None = None) -> FastAPI:
     """Create and configure the FastAPI application."""
+
     application = FastAPI(title="Smello")
 
     application.include_router(api_router)

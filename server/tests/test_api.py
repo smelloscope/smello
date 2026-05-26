@@ -214,8 +214,8 @@ def test_capture_log_with_app_and_session(client, log_payload):
     events = client.get("/api/events").json()
     event_id = events[0]["id"]
     detail = client.get(f"/api/events/{event_id}").json()
-    assert detail["data"]["app"] == "backend"
-    assert detail["data"]["session"] == "sess-2"
+    assert detail["app"] == "backend"
+    assert detail["session"] == "sess-2"
 
 
 def test_filter_events_by_app(client, http_payload):

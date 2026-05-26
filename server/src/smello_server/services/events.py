@@ -42,10 +42,12 @@ async def list_events(
     method: str | None = None,
     status: int | None = None,
     search: str | None = None,
+    app: str | None = None,
+    session: str | None = None,
     limit: int = 50,
 ) -> list[EventSummary]:
     """Return event summaries matching the filters, newest first."""
-    if search or host or method or status:
+    if search or host or method or status or app is not None or session is not None:
         where_parts: list[str] = []
         params: list[str | int] = []
 
@@ -69,10 +71,19 @@ async def list_events(
             )
             params.extend([like_pattern, like_pattern])
 
+        if app is not None:
+            where_parts.append("COALESCE(json_extract(data, '$.app'), '') = ?")
+            params.append(app)
+        if session is not None:
+            where_parts.append("COALESCE(json_extract(data, '$.session'), '') = ?")
+            params.append(session)
+
         where_clause = " AND ".join(where_parts) if where_parts else "1=1"
         db = connections.get("default")
         _, rows = await db.execute_query(
-            f"SELECT id, timestamp, event_type, summary"
+            f"SELECT id, timestamp, event_type, summary,"
+            " COALESCE(json_extract(data, '$.app'), '') as app,"
+            " COALESCE(json_extract(data, '$.session'), '') as session"
             f" FROM captured_events WHERE {where_clause}"
             " ORDER BY timestamp DESC LIMIT ?",
             [*params, limit],
@@ -83,6 +94,8 @@ async def list_events(
                 timestamp=_coerce_timestamp(r["timestamp"]),
                 event_type=cast(EventType, r["event_type"]),
                 summary=r["summary"],
+                app=r["app"],
+                session=r["session"],
             )
             for r in rows
         ]
@@ -97,6 +110,8 @@ async def list_events(
             timestamp=e.timestamp,
             event_type=cast(EventType, e.event_type),
             summary=e.summary,
+            app=e.data.get("app", ""),
+            session=e.data.get("session", ""),
         )
         for e in events
     ]
@@ -116,6 +131,8 @@ async def get_event(event_id: str) -> EventDetail | None:
         timestamp=event.timestamp,
         event_type=cast(EventType, event.event_type),
         summary=event.summary,
+        app=event.data.get("app", ""),
+        session=event.data.get("session", ""),
         data=hydrate_event_data(event.event_type, event.data),
     )
 
@@ -141,10 +158,24 @@ async def get_meta() -> MetaResponse:
         await CapturedEvent.all().distinct().values_list("event_type", flat=True)
     )  # type: ignore[assignment]
 
+    _, app_rows = await db.execute_query(
+        "SELECT DISTINCT COALESCE(json_extract(data, '$.app'), '') as app"
+        " FROM captured_events"
+    )
+    apps = sorted({r["app"] for r in app_rows})
+
+    _, session_rows = await db.execute_query(
+        "SELECT DISTINCT COALESCE(json_extract(data, '$.session'), '') as session"
+        " FROM captured_events"
+    )
+    sessions = sorted({r["session"] for r in session_rows})
+
     return MetaResponse(
         hosts=hosts,
         methods=methods,
         event_types=sorted({cast(EventType, t) for t in event_types}),
+        apps=apps,
+        sessions=sessions,
     )
 
 

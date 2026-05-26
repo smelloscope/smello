@@ -35,10 +35,14 @@ async def create_http_event(
     request: HttpRequestData,
     response: HttpResponseData,
     meta: HttpMeta,
+    app: str = "",
+    session: str = "",
 ) -> CapturedEvent:
     host = urlparse(request.url).hostname or "unknown"
     summary = _build_http_summary(request.method, request.url, response.status_code)
     event_data = HttpEventData(
+        app=app,
+        session=session,
         duration_ms=duration_ms,
         method=request.method.upper(),
         url=request.url,
@@ -77,6 +81,8 @@ async def create_http_incoming_event(
     request: HttpIncomingRequestData,
     response: HttpIncomingResponseData,
     meta: HttpIncomingMeta,
+    app: str = "",
+    session: str = "",
 ) -> CapturedEvent:
     host = next(
         (v for k, v in request.headers.items() if k.lower() == "host"),
@@ -86,6 +92,8 @@ async def create_http_incoming_event(
         request.method, request.path, response.status_code
     )
     event_data = HttpIncomingEventData(
+        app=app,
+        session=session,
         duration_ms=duration_ms,
         method=request.method.upper(),
         path=request.path,
@@ -124,9 +132,13 @@ async def create_log_event(
     event_id: str | None,
     timestamp: datetime | None = None,
     data: LogData,
+    app: str = "",
+    session: str = "",
 ) -> CapturedEvent:
     summary = _build_log_summary(data.level, data.logger_name, data.message)
     event_data = LogEventData(
+        app=app,
+        session=session,
         level=data.level,
         logger_name=data.logger_name,
         message=data.message,
@@ -156,9 +168,13 @@ async def create_exception_event(
     event_id: str | None,
     timestamp: datetime | None = None,
     data: ExceptionData,
+    app: str = "",
+    session: str = "",
 ) -> CapturedEvent:
     summary = _build_exception_summary(data.exc_type, data.exc_value)
     event_data = ExceptionEventData(
+        app=app,
+        session=session,
         exc_type=data.exc_type,
         exc_value=data.exc_value,
         exc_module=data.exc_module,

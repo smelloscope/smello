@@ -34,7 +34,13 @@ That's it. Smello activates before your code runs and monkey-patches `requests`,
 
 Subprocess instrumentation propagates automatically through `PYTHONPATH`, so `smello run gunicorn app:app` also captures traffic from worker processes.
 
-CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-logs`, `--log-level`.
+CLI flags map 1:1 to the `SMELLO_*` env vars: `--server`, `--capture-host`, `--ignore-host`, `--capture-all` / `--no-capture-all`, `--redact-header`, `--redact-query-param`, `--capture-logs`, `--log-level`, `--app`, `--session`.
+
+Tag events with `--app` and `--session` to isolate a debugging run:
+
+```bash
+smello run --app myapp --session debug-payment python scripts/checkout.py
+```
 
 ### Using `smello.init()` instead
 
@@ -119,6 +125,10 @@ smello.init(
     capture_logs=False,                        # capture log records (opt-in)
     log_level=30,                              # minimum log level to capture (WARNING)
     ignore_loggers=["uvicorn.access"],         # suppress noisy framework loggers
+
+    # Tagging
+    app="myapp",                               # tag events with an application name
+    session="debug-payment",                   # tag events with a session ID
 )
 ```
 
@@ -136,6 +146,8 @@ All parameters fall back to `SMELLO_*` environment variables when not passed exp
 | `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
 | `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
 | `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `[]` |
+| `app` | `SMELLO_APP` | `""` |
+| `session` | `SMELLO_SESSION` | `""` |
 
 The server URL is the activation signal — `init()` does nothing unless `server_url` is passed or `SMELLO_URL` is set. Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 

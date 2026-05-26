@@ -1,7 +1,7 @@
 ---
 name: smello
-description: Debug HTTP requests, logs, and exceptions captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, check captured logs or exceptions, or understand what their code is doing. Also use when the user pastes a Smello dashboard URL like http://localhost:5110/#<uuid> or http://localhost:5111/#<uuid> — extract the UUID after the hash as the event ID. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
-allowed-tools: Bash(curl *), Read, Grep, Glob
+description: Debug HTTP requests, logs, and exceptions captured by Smello. Use when the user asks to inspect traffic, debug API calls, troubleshoot failed requests, analyze response bodies, check captured logs or exceptions, or understand what their code is doing. Also use when the user wants to run a script or app with Smello instrumentation to start a debugging session. Also use when the user pastes a Smello dashboard URL like http://localhost:5110/#<uuid> or http://localhost:5111/#<uuid> — extract the UUID after the hash as the event ID. Supports gRPC calls from Google Cloud libraries. Requires a running Smello server.
+allowed-tools: Bash(curl *), Bash(smello *), Read, Grep, Glob
 ---
 
 # HTTP Debugger (Smello)
@@ -34,6 +34,8 @@ Query parameters (all optional, combine as needed):
 - `method=POST` — filter by HTTP method (HTTP events only)
 - `status=500` — filter by response status code (HTTP events only)
 - `search=checkout` — full-text search across summaries and event data
+- `app=myapp` — filter by application name
+- `session=debug-payment` — filter by session ID
 - `limit=100` — max results (default 50, max 200)
 
 Each item in the response contains: `id`, `timestamp`, `event_type`, `summary`.
@@ -63,7 +65,7 @@ Returns `id`, `timestamp`, `event_type`, `summary`, and `data` (type-specific pa
 curl -s http://localhost:5110/api/meta | python -m json.tool
 ```
 
-Returns `hosts`, `methods`, and `event_types` for understanding what's been captured.
+Returns `hosts`, `methods`, `event_types`, `apps`, and `sessions` for understanding what's been captured.
 
 ### Clear all captured events
 
@@ -85,25 +87,59 @@ If this doesn't return 200, tell the user the server isn't running and suggest:
 - `smello-server` (if installed)
 - `docker run -p 5110:5110 ghcr.io/smelloscope/smello` (Docker)
 
-### 2. Get an overview
+### 2. Start a debugging session (if the user wants to run something)
 
-Fetch recent events to understand the activity:
+When the user wants to debug a script or app, wrap it with `smello run` using `--app` and `--session` to tag the captured events. Pick a descriptive session name based on what the user is investigating:
+
+```bash
+smello run --app myapp --session debug-issue-123 python scripts/my_script.py
+```
+
+You can also pass `--capture-logs` to include log records:
+
+```bash
+smello run --app myapp --session debug-issue-123 --capture-logs python scripts/my_script.py
+```
+
+After the script finishes, query only the events from this session:
+
+```bash
+curl -s 'http://localhost:5110/api/events?app=myapp&session=debug-issue-123' | python -m json.tool
+```
+
+The session tag isolates this run from any other traffic on the Smello server, so there's no need to clear events first.
+
+### 3. Get an overview (if inspecting existing events)
+
+If the user already has captured events and wants to explore them, start with an overview:
 
 ```bash
 curl -s 'http://localhost:5110/api/events?limit=20'
 ```
 
+Check `/api/meta` to see what apps, sessions, hosts, and event types are present:
+
+```bash
+curl -s http://localhost:5110/api/meta | python -m json.tool
+```
+
+If the data contains multiple apps or sessions, ask the user which one to focus on, then filter:
+
+```bash
+curl -s 'http://localhost:5110/api/events?app=myapp&session=debug-issue-123&limit=20'
+```
+
 Summarize what you see: how many events by type, which hosts, any errors (4xx/5xx), any exceptions or error-level logs.
 
-### 3. Drill into specific events
+### 4. Drill into specific events
 
 When investigating an issue, fetch full details:
 
 ```bash
-curl -s http://localhost:5110/api/events/{id}
+curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 ```
 
-### 4. Filter by type
+### 5. Filter by type
 
 To focus on a specific kind of event:
 
@@ -118,7 +154,9 @@ curl -s 'http://localhost:5110/api/events?event_type=exception'
 curl -s 'http://localhost:5110/api/events?event_type=log'
 ```
 
-### 5. Analyze and report
+These can be combined with `app` and `session` filters.
+
+### 6. Analyze and report
 
 When reporting findings, cover:
 
@@ -127,6 +165,20 @@ When reporting findings, cover:
 - **Logs**: level and message, logger name, source location, any extra attributes that provide context
 
 ## Common debugging scenarios
+
+### Run and debug a script
+
+When the user says "debug this script" or "run this and see what happens":
+
+```bash
+smello run --app myapp --session debug-checkout-flow --capture-logs python the_script.py
+```
+
+Then inspect the captured events from that session:
+
+```bash
+curl -s 'http://localhost:5110/api/events?session=debug-checkout-flow' | python -m json.tool
+```
 
 ### Failed API calls
 Filter by error status codes to find failures:
@@ -171,4 +223,4 @@ curl -s 'http://localhost:5110/api/events?search=ValueError'
 - If no events appear, check: (1) `smello.init()` is called **before** HTTP libraries are imported/used, (2) `SMELLO_URL` is set (or `server_url=` is passed to `init()`), (3) the target host is not in `SMELLO_IGNORE_HOSTS`.
 - Log capture is opt-in: the user must set `capture_logs=True` in `smello.init()` or `SMELLO_CAPTURE_LOGS=true`. Exception capture is on by default.
 - The web dashboard at http://localhost:5110 provides a visual interface with a unified timeline showing all event types. Suggest the user open it in a browser.
-- Smello is configured via `SMELLO_*` environment variables: `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`, `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`.
+- Smello is configured via `SMELLO_*` environment variables: `SMELLO_URL`, `SMELLO_CAPTURE_ALL`, `SMELLO_CAPTURE_HOSTS`, `SMELLO_IGNORE_HOSTS`, `SMELLO_REDACT_HEADERS`, `SMELLO_CAPTURE_EXCEPTIONS`, `SMELLO_CAPTURE_LOGS`, `SMELLO_LOG_LEVEL`, `SMELLO_APP`, `SMELLO_SESSION`.

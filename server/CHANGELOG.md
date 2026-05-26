@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- `app` and `session` fields on all capture endpoints and event data models. Events can be filtered by app or session via `GET /api/events?app=...&session=...`. The `/api/meta` endpoint now returns distinct `apps` and `sessions` lists.
+
 ## [0.7.1] - 2026-05-23
 
 ### Added

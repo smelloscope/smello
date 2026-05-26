@@ -55,6 +55,11 @@ CLI flags map 1:1 to the [environment variables](configuration.md):
 | `--capture-all` / `--no-capture-all` | `SMELLO_CAPTURE_ALL` |
 | `--redact-header`       | `SMELLO_REDACT_HEADERS`       |
 | `--redact-query-param`  | `SMELLO_REDACT_QUERY_PARAMS`  |
+| `--capture-logs` / `--no-capture-logs` | `SMELLO_CAPTURE_LOGS` |
+| `--log-level`           | `SMELLO_LOG_LEVEL`            |
+| `--ignore-logger`       | `SMELLO_IGNORE_LOGGERS`       |
+| `--app`                 | `SMELLO_APP`                  |
+| `--session`             | `SMELLO_SESSION`              |
 
 ### Using `smello.init()` instead
 
@@ -161,6 +166,22 @@ Matching is hierarchical: `"uvicorn"` suppresses `uvicorn`, `uvicorn.access`, `u
 Unhandled exceptions are captured by default. No configuration needed. When your program crashes, Smello captures the full traceback with stack frames and source context, then flushes the event before the process exits.
 
 To disable exception capture: `smello run --no-capture-exceptions my_app.py` or `smello.init(capture_exceptions=False)`.
+
+### Debugging sessions
+
+Tag events with `--app` and `--session` to isolate a debugging run without clearing existing data:
+
+```bash
+smello run --app myapp --session debug-payment python scripts/checkout.py
+```
+
+Then filter the dashboard or API to see only events from that session:
+
+```bash
+curl -s 'http://localhost:5110/api/events?app=myapp&session=debug-payment'
+```
+
+This is useful when you have multiple services or scripts running at the same time — give each its own `--app` name and a shared `--session` to see the full picture. See [configuration](configuration.md#app) for more.
 
 ### Google Cloud libraries
 

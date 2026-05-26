@@ -431,9 +431,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "title": "CaptureResponse"
       },
       "EventDetail": {
@@ -449,12 +447,7 @@
           },
           "event_type": {
             "type": "string",
-            "enum": [
-              "http",
-              "http_incoming",
-              "log",
-              "exception"
-            ],
+            "enum": ["http", "http_incoming", "log", "exception"],
             "title": "Event Type"
           },
           "summary": {
@@ -499,13 +492,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id",
-          "timestamp",
-          "event_type",
-          "summary",
-          "data"
-        ],
+        "required": ["id", "timestamp", "event_type", "summary", "data"],
         "title": "EventDetail"
       },
       "EventSummary": {
@@ -521,12 +508,7 @@
           },
           "event_type": {
             "type": "string",
-            "enum": [
-              "http",
-              "http_incoming",
-              "log",
-              "exception"
-            ],
+            "enum": ["http", "http_incoming", "log", "exception"],
             "title": "Event Type"
           },
           "summary": {
@@ -545,12 +527,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id",
-          "timestamp",
-          "event_type",
-          "summary"
-        ],
+        "required": ["id", "timestamp", "event_type", "summary"],
         "title": "EventSummary"
       },
       "ExceptionCapturePayload": {
@@ -593,9 +570,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "title": "ExceptionCapturePayload"
       },
       "ExceptionData": {
@@ -636,9 +611,7 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": [
-          "exc_type"
-        ],
+        "required": ["exc_type"],
         "title": "ExceptionData"
       },
       "ExceptionEventData": {
@@ -694,9 +667,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "exc_type"
-        ],
+        "required": ["exc_type"],
         "title": "ExceptionEventData"
       },
       "ExceptionFrame": {
@@ -756,9 +727,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "filename"
-        ],
+        "required": ["filename"],
         "title": "ExceptionFrame"
       },
       "HTTPValidationError": {
@@ -830,10 +799,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "request",
-          "response"
-        ],
+        "required": ["request", "response"],
         "title": "HttpCapturePayload"
       },
       "HttpEventData": {
@@ -1005,10 +971,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "request",
-          "response"
-        ],
+        "required": ["request", "response"],
         "title": "HttpIncomingCapturePayload"
       },
       "HttpIncomingEventData": {
@@ -1277,12 +1240,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "method",
-          "path",
-          "url",
-          "headers"
-        ],
+        "required": ["method", "path", "url", "headers"],
         "title": "HttpIncomingRequestData"
       },
       "HttpIncomingResponseData": {
@@ -1316,10 +1274,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "status_code",
-          "headers"
-        ],
+        "required": ["status_code", "headers"],
         "title": "HttpIncomingResponseData"
       },
       "HttpMeta": {
@@ -1378,11 +1333,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "method",
-          "url",
-          "headers"
-        ],
+        "required": ["method", "url", "headers"],
         "title": "HttpRequestData"
       },
       "HttpResponseData": {
@@ -1416,10 +1367,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "status_code",
-          "headers"
-        ],
+        "required": ["status_code", "headers"],
         "title": "HttpResponseData"
       },
       "LogCapturePayload": {
@@ -1462,9 +1410,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "title": "LogCapturePayload"
       },
       "LogData": {
@@ -1540,11 +1486,7 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": [
-          "level",
-          "logger_name",
-          "message"
-        ],
+        "required": ["level", "logger_name", "message"],
         "title": "LogData"
       },
       "LogEventData": {
@@ -1635,11 +1577,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "level",
-          "logger_name",
-          "message"
-        ],
+        "required": ["level", "logger_name", "message"],
         "title": "LogEventData"
       },
       "MetaResponse": {
@@ -1661,12 +1599,7 @@
           "event_types": {
             "items": {
               "type": "string",
-              "enum": [
-                "http",
-                "http_incoming",
-                "log",
-                "exception"
-              ]
+              "enum": ["http", "http_incoming", "log", "exception"]
             },
             "type": "array",
             "title": "Event Types"
@@ -1687,13 +1620,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "hosts",
-          "methods",
-          "event_types",
-          "apps",
-          "sessions"
-        ],
+        "required": ["hosts", "methods", "event_types", "apps", "sessions"],
         "title": "MetaResponse"
       },
       "ValidationError": {
@@ -1729,11 +1656,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       }
     }

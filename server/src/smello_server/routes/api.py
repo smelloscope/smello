@@ -49,18 +49,24 @@ class HttpCapturePayload(BaseModel):
     request: HttpRequestData
     response: HttpResponseData
     meta: HttpMeta = HttpMeta()
+    app: str = ""
+    session: str = ""
 
 
 class LogCapturePayload(BaseModel):
     id: str | None = None
     timestamp: datetime | None = None
     data: LogData
+    app: str = ""
+    session: str = ""
 
 
 class ExceptionCapturePayload(BaseModel):
     id: str | None = None
     timestamp: datetime | None = None
     data: ExceptionData
+    app: str = ""
+    session: str = ""
 
 
 class HttpIncomingCapturePayload(BaseModel):
@@ -70,6 +76,8 @@ class HttpIncomingCapturePayload(BaseModel):
     request: HttpIncomingRequestData
     response: HttpIncomingResponseData
     meta: HttpIncomingMeta = HttpIncomingMeta()
+    app: str = ""
+    session: str = ""
 
 
 class CaptureResponse(BaseModel):
@@ -91,6 +99,8 @@ async def capture_http_api(payload: HttpCapturePayload) -> CaptureResponse:
         request=payload.request,
         response=payload.response,
         meta=payload.meta,
+        app=payload.app,
+        session=payload.session,
     )
     return OK
 
@@ -106,6 +116,8 @@ async def capture_http_incoming_api(
         request=payload.request,
         response=payload.response,
         meta=payload.meta,
+        app=payload.app,
+        session=payload.session,
     )
     return OK
 
@@ -113,7 +125,11 @@ async def capture_http_incoming_api(
 @router.post("/capture/log", status_code=201, response_model=CaptureResponse)
 async def capture_log_api(payload: LogCapturePayload) -> CaptureResponse:
     await create_log_event(
-        event_id=payload.id, timestamp=payload.timestamp, data=payload.data
+        event_id=payload.id,
+        timestamp=payload.timestamp,
+        data=payload.data,
+        app=payload.app,
+        session=payload.session,
     )
     return OK
 
@@ -121,7 +137,11 @@ async def capture_log_api(payload: LogCapturePayload) -> CaptureResponse:
 @router.post("/capture/exception", status_code=201, response_model=CaptureResponse)
 async def capture_exception_api(payload: ExceptionCapturePayload) -> CaptureResponse:
     await create_exception_event(
-        event_id=payload.id, timestamp=payload.timestamp, data=payload.data
+        event_id=payload.id,
+        timestamp=payload.timestamp,
+        data=payload.data,
+        app=payload.app,
+        session=payload.session,
     )
     return OK
 
@@ -154,6 +174,8 @@ async def list_events_api(
     method: str | None = Query(None),
     status: int | None = Query(None),
     search: str | None = Query(None),
+    app: str | None = Query(None),
+    session: str | None = Query(None),
     limit: int = Query(50, le=200),
 ) -> list[EventSummary]:
     return await list_events(
@@ -162,6 +184,8 @@ async def list_events_api(
         method=method,
         status=status,
         search=search,
+        app=app,
+        session=session,
         limit=limit,
     )
 

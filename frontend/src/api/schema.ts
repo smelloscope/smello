@@ -4,926 +4,1028 @@
  */
 
 export interface paths {
-  "/api/capture/http": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/capture/http": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Http Api */
+        post: operations["capture_http_api_api_capture_http_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Capture Http Api */
-    post: operations["capture_http_api_api_capture_http_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/capture/http_incoming": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/capture/http_incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Http Incoming Api */
+        post: operations["capture_http_incoming_api_api_capture_http_incoming_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Capture Http Incoming Api */
-    post: operations["capture_http_incoming_api_api_capture_http_incoming_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/capture/log": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/capture/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Log Api */
+        post: operations["capture_log_api_api_capture_log_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Capture Log Api */
-    post: operations["capture_log_api_api_capture_log_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/capture/exception": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/capture/exception": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Exception Api */
+        post: operations["capture_exception_api_api_capture_exception_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Capture Exception Api */
-    post: operations["capture_exception_api_api_capture_exception_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/capture": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/capture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deprecated: use /api/capture/http
+         * @deprecated
+         * @description Deprecated HTTP capture endpoint.
+         *
+         *     Kept for backwards compatibility with old smello client wheels in the wild,
+         *     which only ever posted HTTP captures here. New clients should use the
+         *     typed endpoints `/api/capture/http`, `/api/capture/log`,
+         *     `/api/capture/exception`.
+         */
+        post: operations["capture_legacy_api_api_capture_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Deprecated: use /api/capture/http
-     * @deprecated
-     * @description Deprecated HTTP capture endpoint.
-     *
-     *     Kept for backwards compatibility with old smello client wheels in the wild,
-     *     which only ever posted HTTP captures here. New clients should use the
-     *     typed endpoints `/api/capture/http`, `/api/capture/log`,
-     *     `/api/capture/exception`.
-     */
-    post: operations["capture_legacy_api_api_capture_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/events": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Events Api */
+        get: operations["list_events_api_api_events_get"];
+        put?: never;
+        post?: never;
+        /** Clear Events Api */
+        delete: operations["clear_events_api_api_events_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List Events Api */
-    get: operations["list_events_api_api_events_get"];
-    put?: never;
-    post?: never;
-    /** Clear Events Api */
-    delete: operations["clear_events_api_api_events_delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/events/{event_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Event Api */
+        get: operations["get_event_api_api_events__event_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Event Api */
-    get: operations["get_event_api_api_events__event_id__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/meta": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Meta Api */
+        get: operations["get_meta_api_api_meta_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Meta Api */
-    get: operations["get_meta_api_api_meta_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** CaptureResponse */
-    CaptureResponse: {
-      /** Status */
-      status: string;
+    schemas: {
+        /** CaptureResponse */
+        CaptureResponse: {
+            /** Status */
+            status: string;
+        };
+        /** EventDetail */
+        EventDetail: {
+            /** Id */
+            id: string;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+            /**
+             * Event Type
+             * @enum {string}
+             */
+            event_type: "http" | "http_incoming" | "log" | "exception";
+            /** Summary */
+            summary: string;
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+            /** Data */
+            data: components["schemas"]["HttpEventData"] | components["schemas"]["HttpIncomingEventData"] | components["schemas"]["LogEventData"] | components["schemas"]["ExceptionEventData"];
+        };
+        /** EventSummary */
+        EventSummary: {
+            /** Id */
+            id: string;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+            /**
+             * Event Type
+             * @enum {string}
+             */
+            event_type: "http" | "http_incoming" | "log" | "exception";
+            /** Summary */
+            summary: string;
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+        };
+        /** ExceptionCapturePayload */
+        ExceptionCapturePayload: {
+            /** Id */
+            id?: string | null;
+            /** Timestamp */
+            timestamp?: string | null;
+            data: components["schemas"]["ExceptionData"];
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+        };
+        /** ExceptionData */
+        ExceptionData: {
+            /** Exc Type */
+            exc_type: string;
+            /**
+             * Exc Value
+             * @default
+             */
+            exc_value: string;
+            /** Exc Module */
+            exc_module?: string | null;
+            /**
+             * Traceback Text
+             * @default
+             */
+            traceback_text: string;
+            /**
+             * Frames
+             * @default []
+             */
+            frames: components["schemas"]["ExceptionFrame"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExceptionEventData */
+        ExceptionEventData: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: "exception";
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+            /** Exc Type */
+            exc_type: string;
+            /**
+             * Exc Value
+             * @default
+             */
+            exc_value: string;
+            /** Exc Module */
+            exc_module?: string | null;
+            /**
+             * Traceback Text
+             * @default
+             */
+            traceback_text: string;
+            /**
+             * Frames
+             * @default []
+             */
+            frames: components["schemas"]["ExceptionFrame"][];
+        };
+        /** ExceptionFrame */
+        ExceptionFrame: {
+            /** Filename */
+            filename: string;
+            /** Lineno */
+            lineno?: number | null;
+            /** Function */
+            function?: string | null;
+            /** Context Line */
+            context_line?: string | null;
+            /**
+             * Pre Context
+             * @default []
+             */
+            pre_context: string[];
+            /**
+             * Post Context
+             * @default []
+             */
+            post_context: string[];
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HttpCapturePayload */
+        HttpCapturePayload: {
+            /** Id */
+            id?: string | null;
+            /** Timestamp */
+            timestamp?: string | null;
+            /**
+             * Duration Ms
+             * @default 0
+             */
+            duration_ms: number;
+            request: components["schemas"]["HttpRequestData"];
+            response: components["schemas"]["HttpResponseData"];
+            /**
+             * @default {
+             *       "library": "unknown",
+             *       "python_version": "",
+             *       "smello_version": ""
+             *     }
+             */
+            meta: components["schemas"]["HttpMeta"];
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+        };
+        /**
+         * HttpEventData
+         * @description HTTP capture as stored and served. Flat by convention.
+         */
+        HttpEventData: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: "http";
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Method */
+            method: string;
+            /** Url */
+            url: string;
+            /** Host */
+            host: string;
+            /** Request Headers */
+            request_headers: {
+                [key: string]: string;
+            };
+            /** Request Body */
+            request_body?: string | null;
+            /**
+             * Request Body Size
+             * @default 0
+             */
+            request_body_size: number;
+            /** Status Code */
+            status_code: number;
+            /** Response Headers */
+            response_headers: {
+                [key: string]: string;
+            };
+            /** Response Body */
+            response_body?: string | null;
+            /**
+             * Response Body Size
+             * @default 0
+             */
+            response_body_size: number;
+            /**
+             * Library
+             * @default unknown
+             */
+            library: string;
+            /**
+             * Python Version
+             * @default
+             */
+            python_version: string;
+            /**
+             * Smello Version
+             * @default
+             */
+            smello_version: string;
+        };
+        /** HttpIncomingCapturePayload */
+        HttpIncomingCapturePayload: {
+            /** Id */
+            id?: string | null;
+            /** Timestamp */
+            timestamp?: string | null;
+            /**
+             * Duration Ms
+             * @default 0
+             */
+            duration_ms: number;
+            request: components["schemas"]["HttpIncomingRequestData"];
+            response: components["schemas"]["HttpIncomingResponseData"];
+            /**
+             * @default {
+             *       "framework": "unknown",
+             *       "python_version": "",
+             *       "smello_version": ""
+             *     }
+             */
+            meta: components["schemas"]["HttpIncomingMeta"];
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+        };
+        /**
+         * HttpIncomingEventData
+         * @description Incoming HTTP request as stored and served.
+         */
+        HttpIncomingEventData: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: "http_incoming";
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Method */
+            method: string;
+            /** Path */
+            path: string;
+            /** Url */
+            url: string;
+            /** Host */
+            host: string;
+            /** Route */
+            route?: string | null;
+            /** Client Ip */
+            client_ip?: string | null;
+            /** Request Headers */
+            request_headers: {
+                [key: string]: string;
+            };
+            /** Request Body */
+            request_body?: string | null;
+            /**
+             * Request Body Size
+             * @default 0
+             */
+            request_body_size: number;
+            /** Status Code */
+            status_code: number;
+            /** Response Headers */
+            response_headers: {
+                [key: string]: string;
+            };
+            /** Response Body */
+            response_body?: string | null;
+            /**
+             * Response Body Size
+             * @default 0
+             */
+            response_body_size: number;
+            /** Exc Type */
+            exc_type?: string | null;
+            /** Exc Value */
+            exc_value?: string | null;
+            /**
+             * Framework
+             * @default unknown
+             */
+            framework: string;
+            /**
+             * Python Version
+             * @default
+             */
+            python_version: string;
+            /**
+             * Smello Version
+             * @default
+             */
+            smello_version: string;
+        };
+        /** HttpIncomingMeta */
+        HttpIncomingMeta: {
+            /**
+             * Framework
+             * @default unknown
+             */
+            framework: string;
+            /** Route */
+            route?: string | null;
+            /** Client Ip */
+            client_ip?: string | null;
+            /** Exc Type */
+            exc_type?: string | null;
+            /** Exc Value */
+            exc_value?: string | null;
+            /**
+             * Python Version
+             * @default
+             */
+            python_version: string;
+            /**
+             * Smello Version
+             * @default
+             */
+            smello_version: string;
+        };
+        /** HttpIncomingRequestData */
+        HttpIncomingRequestData: {
+            /** Method */
+            method: string;
+            /** Path */
+            path: string;
+            /** Url */
+            url: string;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Body */
+            body?: string | null;
+            /**
+             * Body Size
+             * @default 0
+             */
+            body_size: number;
+        };
+        /** HttpIncomingResponseData */
+        HttpIncomingResponseData: {
+            /** Status Code */
+            status_code: number;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Body */
+            body?: string | null;
+            /**
+             * Body Size
+             * @default 0
+             */
+            body_size: number;
+        };
+        /** HttpMeta */
+        HttpMeta: {
+            /**
+             * Library
+             * @default unknown
+             */
+            library: string;
+            /**
+             * Python Version
+             * @default
+             */
+            python_version: string;
+            /**
+             * Smello Version
+             * @default
+             */
+            smello_version: string;
+        };
+        /** HttpRequestData */
+        HttpRequestData: {
+            /** Method */
+            method: string;
+            /** Url */
+            url: string;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Body */
+            body?: string | null;
+            /**
+             * Body Size
+             * @default 0
+             */
+            body_size: number;
+        };
+        /** HttpResponseData */
+        HttpResponseData: {
+            /** Status Code */
+            status_code: number;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Body */
+            body?: string | null;
+            /**
+             * Body Size
+             * @default 0
+             */
+            body_size: number;
+        };
+        /** LogCapturePayload */
+        LogCapturePayload: {
+            /** Id */
+            id?: string | null;
+            /** Timestamp */
+            timestamp?: string | null;
+            data: components["schemas"]["LogData"];
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+        };
+        /** LogData */
+        LogData: {
+            /** Level */
+            level: string;
+            /** Logger Name */
+            logger_name: string;
+            /** Message */
+            message: string;
+            /** Pathname */
+            pathname?: string | null;
+            /** Lineno */
+            lineno?: number | null;
+            /** Func Name */
+            func_name?: string | null;
+            /** Exc Text */
+            exc_text?: string | null;
+            /** Extra */
+            extra?: {
+                [key: string]: unknown;
+            } | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** LogEventData */
+        LogEventData: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: "log";
+            /**
+             * App
+             * @default
+             */
+            app: string;
+            /**
+             * Session
+             * @default
+             */
+            session: string;
+            /** Level */
+            level: string;
+            /** Logger Name */
+            logger_name: string;
+            /** Message */
+            message: string;
+            /** Pathname */
+            pathname?: string | null;
+            /** Lineno */
+            lineno?: number | null;
+            /** Func Name */
+            func_name?: string | null;
+            /** Exc Text */
+            exc_text?: string | null;
+            /** Extra */
+            extra?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** MetaResponse */
+        MetaResponse: {
+            /** Hosts */
+            hosts: string[];
+            /** Methods */
+            methods: string[];
+            /** Event Types */
+            event_types: ("http" | "http_incoming" | "log" | "exception")[];
+            /** Apps */
+            apps: string[];
+            /** Sessions */
+            sessions: string[];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
     };
-    /** EventDetail */
-    EventDetail: {
-      /** Id */
-      id: string;
-      /**
-       * Timestamp
-       * Format: date-time
-       */
-      timestamp: string;
-      /**
-       * Event Type
-       * @enum {string}
-       */
-      event_type: "http" | "http_incoming" | "log" | "exception";
-      /** Summary */
-      summary: string;
-      /** Data */
-      data:
-        | components["schemas"]["HttpEventData"]
-        | components["schemas"]["HttpIncomingEventData"]
-        | components["schemas"]["LogEventData"]
-        | components["schemas"]["ExceptionEventData"];
-    };
-    /** EventSummary */
-    EventSummary: {
-      /** Id */
-      id: string;
-      /**
-       * Timestamp
-       * Format: date-time
-       */
-      timestamp: string;
-      /**
-       * Event Type
-       * @enum {string}
-       */
-      event_type: "http" | "http_incoming" | "log" | "exception";
-      /** Summary */
-      summary: string;
-    };
-    /** ExceptionCapturePayload */
-    ExceptionCapturePayload: {
-      /** Id */
-      id?: string | null;
-      /** Timestamp */
-      timestamp?: string | null;
-      data: components["schemas"]["ExceptionData"];
-    };
-    /** ExceptionData */
-    ExceptionData: {
-      /** Exc Type */
-      exc_type: string;
-      /**
-       * Exc Value
-       * @default
-       */
-      exc_value: string;
-      /** Exc Module */
-      exc_module?: string | null;
-      /**
-       * Traceback Text
-       * @default
-       */
-      traceback_text: string;
-      /**
-       * Frames
-       * @default []
-       */
-      frames: components["schemas"]["ExceptionFrame"][];
-    } & {
-      [key: string]: unknown;
-    };
-    /** ExceptionEventData */
-    ExceptionEventData: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      event_type: "exception";
-      /** Exc Type */
-      exc_type: string;
-      /**
-       * Exc Value
-       * @default
-       */
-      exc_value: string;
-      /** Exc Module */
-      exc_module?: string | null;
-      /**
-       * Traceback Text
-       * @default
-       */
-      traceback_text: string;
-      /**
-       * Frames
-       * @default []
-       */
-      frames: components["schemas"]["ExceptionFrame"][];
-    };
-    /** ExceptionFrame */
-    ExceptionFrame: {
-      /** Filename */
-      filename: string;
-      /** Lineno */
-      lineno?: number | null;
-      /** Function */
-      function?: string | null;
-      /** Context Line */
-      context_line?: string | null;
-      /**
-       * Pre Context
-       * @default []
-       */
-      pre_context: string[];
-      /**
-       * Post Context
-       * @default []
-       */
-      post_context: string[];
-    };
-    /** HTTPValidationError */
-    HTTPValidationError: {
-      /** Detail */
-      detail?: components["schemas"]["ValidationError"][];
-    };
-    /** HttpCapturePayload */
-    HttpCapturePayload: {
-      /** Id */
-      id?: string | null;
-      /** Timestamp */
-      timestamp?: string | null;
-      /**
-       * Duration Ms
-       * @default 0
-       */
-      duration_ms: number;
-      request: components["schemas"]["HttpRequestData"];
-      response: components["schemas"]["HttpResponseData"];
-      /**
-       * @default {
-       *       "library": "unknown",
-       *       "python_version": "",
-       *       "smello_version": ""
-       *     }
-       */
-      meta: components["schemas"]["HttpMeta"];
-    };
-    /**
-     * HttpEventData
-     * @description HTTP capture as stored and served. Flat by convention.
-     */
-    HttpEventData: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      event_type: "http";
-      /** Duration Ms */
-      duration_ms: number;
-      /** Method */
-      method: string;
-      /** Url */
-      url: string;
-      /** Host */
-      host: string;
-      /** Request Headers */
-      request_headers: {
-        [key: string]: string;
-      };
-      /** Request Body */
-      request_body?: string | null;
-      /**
-       * Request Body Size
-       * @default 0
-       */
-      request_body_size: number;
-      /** Status Code */
-      status_code: number;
-      /** Response Headers */
-      response_headers: {
-        [key: string]: string;
-      };
-      /** Response Body */
-      response_body?: string | null;
-      /**
-       * Response Body Size
-       * @default 0
-       */
-      response_body_size: number;
-      /**
-       * Library
-       * @default unknown
-       */
-      library: string;
-      /**
-       * Python Version
-       * @default
-       */
-      python_version: string;
-      /**
-       * Smello Version
-       * @default
-       */
-      smello_version: string;
-    };
-    /** HttpIncomingCapturePayload */
-    HttpIncomingCapturePayload: {
-      /** Id */
-      id?: string | null;
-      /** Timestamp */
-      timestamp?: string | null;
-      /**
-       * Duration Ms
-       * @default 0
-       */
-      duration_ms: number;
-      request: components["schemas"]["HttpIncomingRequestData"];
-      response: components["schemas"]["HttpIncomingResponseData"];
-      /**
-       * @default {
-       *       "framework": "unknown",
-       *       "python_version": "",
-       *       "smello_version": ""
-       *     }
-       */
-      meta: components["schemas"]["HttpIncomingMeta"];
-    };
-    /**
-     * HttpIncomingEventData
-     * @description Incoming HTTP request as stored and served.
-     */
-    HttpIncomingEventData: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      event_type: "http_incoming";
-      /** Duration Ms */
-      duration_ms: number;
-      /** Method */
-      method: string;
-      /** Path */
-      path: string;
-      /** Url */
-      url: string;
-      /** Host */
-      host: string;
-      /** Route */
-      route?: string | null;
-      /** Client Ip */
-      client_ip?: string | null;
-      /** Request Headers */
-      request_headers: {
-        [key: string]: string;
-      };
-      /** Request Body */
-      request_body?: string | null;
-      /**
-       * Request Body Size
-       * @default 0
-       */
-      request_body_size: number;
-      /** Status Code */
-      status_code: number;
-      /** Response Headers */
-      response_headers: {
-        [key: string]: string;
-      };
-      /** Response Body */
-      response_body?: string | null;
-      /**
-       * Response Body Size
-       * @default 0
-       */
-      response_body_size: number;
-      /** Exc Type */
-      exc_type?: string | null;
-      /** Exc Value */
-      exc_value?: string | null;
-      /**
-       * Framework
-       * @default unknown
-       */
-      framework: string;
-      /**
-       * Python Version
-       * @default
-       */
-      python_version: string;
-      /**
-       * Smello Version
-       * @default
-       */
-      smello_version: string;
-    };
-    /** HttpIncomingMeta */
-    HttpIncomingMeta: {
-      /**
-       * Framework
-       * @default unknown
-       */
-      framework: string;
-      /** Route */
-      route?: string | null;
-      /** Client Ip */
-      client_ip?: string | null;
-      /** Exc Type */
-      exc_type?: string | null;
-      /** Exc Value */
-      exc_value?: string | null;
-      /**
-       * Python Version
-       * @default
-       */
-      python_version: string;
-      /**
-       * Smello Version
-       * @default
-       */
-      smello_version: string;
-    };
-    /** HttpIncomingRequestData */
-    HttpIncomingRequestData: {
-      /** Method */
-      method: string;
-      /** Path */
-      path: string;
-      /** Url */
-      url: string;
-      /** Headers */
-      headers: {
-        [key: string]: string;
-      };
-      /** Body */
-      body?: string | null;
-      /**
-       * Body Size
-       * @default 0
-       */
-      body_size: number;
-    };
-    /** HttpIncomingResponseData */
-    HttpIncomingResponseData: {
-      /** Status Code */
-      status_code: number;
-      /** Headers */
-      headers: {
-        [key: string]: string;
-      };
-      /** Body */
-      body?: string | null;
-      /**
-       * Body Size
-       * @default 0
-       */
-      body_size: number;
-    };
-    /** HttpMeta */
-    HttpMeta: {
-      /**
-       * Library
-       * @default unknown
-       */
-      library: string;
-      /**
-       * Python Version
-       * @default
-       */
-      python_version: string;
-      /**
-       * Smello Version
-       * @default
-       */
-      smello_version: string;
-    };
-    /** HttpRequestData */
-    HttpRequestData: {
-      /** Method */
-      method: string;
-      /** Url */
-      url: string;
-      /** Headers */
-      headers: {
-        [key: string]: string;
-      };
-      /** Body */
-      body?: string | null;
-      /**
-       * Body Size
-       * @default 0
-       */
-      body_size: number;
-    };
-    /** HttpResponseData */
-    HttpResponseData: {
-      /** Status Code */
-      status_code: number;
-      /** Headers */
-      headers: {
-        [key: string]: string;
-      };
-      /** Body */
-      body?: string | null;
-      /**
-       * Body Size
-       * @default 0
-       */
-      body_size: number;
-    };
-    /** LogCapturePayload */
-    LogCapturePayload: {
-      /** Id */
-      id?: string | null;
-      /** Timestamp */
-      timestamp?: string | null;
-      data: components["schemas"]["LogData"];
-    };
-    /** LogData */
-    LogData: {
-      /** Level */
-      level: string;
-      /** Logger Name */
-      logger_name: string;
-      /** Message */
-      message: string;
-      /** Pathname */
-      pathname?: string | null;
-      /** Lineno */
-      lineno?: number | null;
-      /** Func Name */
-      func_name?: string | null;
-      /** Exc Text */
-      exc_text?: string | null;
-      /** Extra */
-      extra?: {
-        [key: string]: unknown;
-      } | null;
-    } & {
-      [key: string]: unknown;
-    };
-    /** LogEventData */
-    LogEventData: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      event_type: "log";
-      /** Level */
-      level: string;
-      /** Logger Name */
-      logger_name: string;
-      /** Message */
-      message: string;
-      /** Pathname */
-      pathname?: string | null;
-      /** Lineno */
-      lineno?: number | null;
-      /** Func Name */
-      func_name?: string | null;
-      /** Exc Text */
-      exc_text?: string | null;
-      /** Extra */
-      extra?: {
-        [key: string]: unknown;
-      } | null;
-    };
-    /** MetaResponse */
-    MetaResponse: {
-      /** Hosts */
-      hosts: string[];
-      /** Methods */
-      methods: string[];
-      /** Event Types */
-      event_types: ("http" | "http_incoming" | "log" | "exception")[];
-    };
-    /** ValidationError */
-    ValidationError: {
-      /** Location */
-      loc: (string | number)[];
-      /** Message */
-      msg: string;
-      /** Error Type */
-      type: string;
-      /** Input */
-      input?: unknown;
-      /** Context */
-      ctx?: Record<string, never>;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  capture_http_api_api_capture_http_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    capture_http_api_api_capture_http_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HttpCapturePayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["HttpCapturePayload"];
-      };
+    capture_http_incoming_api_api_capture_http_incoming_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HttpIncomingCapturePayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    capture_log_api_api_capture_log_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["CaptureResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogCapturePayload"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  capture_http_incoming_api_api_capture_http_incoming_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    capture_exception_api_api_capture_exception_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExceptionCapturePayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["HttpIncomingCapturePayload"];
-      };
+    capture_legacy_api_api_capture_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HttpCapturePayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    list_events_api_api_events_get: {
+        parameters: {
+            query?: {
+                event_type?: string | null;
+                host?: string | null;
+                method?: string | null;
+                status?: number | null;
+                search?: string | null;
+                app?: string | null;
+                session?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["CaptureResponse"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  capture_log_api_api_capture_log_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    clear_events_api_api_events_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["LogCapturePayload"];
-      };
+    get_event_api_api_events__event_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    get_meta_api_api_meta_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["CaptureResponse"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetaResponse"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  capture_exception_api_api_capture_exception_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ExceptionCapturePayload"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CaptureResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  capture_legacy_api_api_capture_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["HttpCapturePayload"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CaptureResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  list_events_api_api_events_get: {
-    parameters: {
-      query?: {
-        event_type?: string | null;
-        host?: string | null;
-        method?: string | null;
-        status?: number | null;
-        search?: string | null;
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["EventSummary"][];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  clear_events_api_api_events_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  get_event_api_api_events__event_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        event_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["EventDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_meta_api_api_meta_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["MetaResponse"];
-        };
-      };
-    };
-  };
 }

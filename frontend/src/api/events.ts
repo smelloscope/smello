@@ -28,6 +28,8 @@ export interface ListEventsParams {
   method?: string;
   status?: number;
   search?: string;
+  app?: string;
+  session?: string;
   limit?: number;
 }
 
@@ -44,7 +46,7 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
   const url = new URL(path, window.location.origin);
   if (params) {
     for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
+      if (v !== undefined) url.searchParams.set(k, String(v));
     }
   }
   return url.toString();

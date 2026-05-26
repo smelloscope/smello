@@ -1,6 +1,13 @@
 import { useAtom, useSetAtom } from "jotai";
 import { useHotkeys } from "react-hotkeys-hook";
-import { hostFilterAtom, methodFilterAtom, searchFilterAtom } from "../atoms/filters";
+import {
+  hostFilterAtom,
+  methodFilterAtom,
+  searchFilterAtom,
+  eventTypeFilterAtom,
+  appFilterAtom,
+  sessionFilterAtom,
+} from "../atoms/filters";
 import { hotkeyHelpOpenAtom } from "../atoms/hotkeyHelp";
 import { useSelectedRequestId } from "../hooks/useSelectedRequestId";
 
@@ -8,6 +15,9 @@ export function useGlobalHotkeys() {
   const setHost = useSetAtom(hostFilterAtom);
   const setMethod = useSetAtom(methodFilterAtom);
   const setSearch = useSetAtom(searchFilterAtom);
+  const setEventType = useSetAtom(eventTypeFilterAtom);
+  const setApp = useSetAtom(appFilterAtom);
+  const setSession = useSetAtom(sessionFilterAtom);
   const [helpOpen, setHelpOpen] = useAtom(hotkeyHelpOpenAtom);
   const [selectedId, setSelectedId] = useSelectedRequestId();
 
@@ -48,6 +58,9 @@ export function useGlobalHotkeys() {
     setHost("");
     setMethod("");
     setSearch("");
+    setEventType("");
+    setApp(undefined);
+    setSession(undefined);
   });
 
   // Backspace = deselect

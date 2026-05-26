@@ -19,12 +19,16 @@ curl -s http://localhost:5110/api/events | python -m json.tool
 | `host`       | `api.stripe.com` | Filter by hostname (HTTP events only)         |
 | `status`     | `500`            | Filter by response status code (HTTP events only) |
 | `search`     | `ValueError`     | Full-text search across summaries and event data |
+| `app`        | `myapp`          | Filter by application name                     |
+| `session`    | `debug-payment`  | Filter by session ID                           |
 | `limit`      | `10`             | Max results (default: 50, max: 200)           |
+
+Note: `?app=` (empty value) returns only untagged events. Omitting `app` returns all events regardless of tag. The same applies to `session`.
 
 Combine filters:
 
 ```bash
-curl -s 'http://localhost:5110/api/events?event_type=http&method=POST&host=api.stripe.com&limit=5'
+curl -s 'http://localhost:5110/api/events?app=myapp&session=debug-payment&event_type=http&limit=5'
 ```
 
 ### Response format
@@ -106,7 +110,7 @@ curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 
 ## Get filter metadata
 
-Returns distinct hosts, methods, and event types for populating filter dropdowns.
+Returns distinct hosts, methods, event types, apps, and sessions for populating filter dropdowns.
 
 ```bash
 curl -s http://localhost:5110/api/meta | python -m json.tool
@@ -116,7 +120,9 @@ curl -s http://localhost:5110/api/meta | python -m json.tool
 {
   "hosts": ["api.openai.com", "api.stripe.com"],
   "methods": ["GET", "POST"],
-  "event_types": ["exception", "http", "log"]
+  "event_types": ["exception", "http", "log"],
+  "apps": ["payment-service", "web-frontend"],
+  "sessions": ["debug-payment-flow"]
 }
 ```
 
@@ -135,6 +141,8 @@ The Smello client SDK posts captured events to typed endpoints, one per event ty
 ```json
 {
   "id": "optional-uuid",
+  "app": "myapp",
+  "session": "debug-session",
   "duration_ms": 142,
   "request": {
     "method": "GET",
@@ -158,6 +166,8 @@ The Smello client SDK posts captured events to typed endpoints, one per event ty
 ```json
 {
   "id": "optional-uuid",
+  "app": "myapp",
+  "session": "debug-session",
   "data": {
     "level": "WARNING",
     "logger_name": "myapp.auth",
@@ -174,6 +184,8 @@ The Smello client SDK posts captured events to typed endpoints, one per event ty
 ```json
 {
   "id": "optional-uuid",
+  "app": "myapp",
+  "session": "debug-session",
   "data": {
     "exc_type": "ValueError",
     "exc_value": "invalid literal for int()",

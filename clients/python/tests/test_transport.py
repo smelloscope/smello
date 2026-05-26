@@ -177,3 +177,43 @@ def test_send_http_payload_with_bytes(capture_server):
     _wait(captured, 1)
     assert len(captured) == 1
     assert captured[0]["body"]["id"] == "bytes-test"
+
+
+def test_app_and_session_injected_into_payload(capture_server):
+    url, captured = capture_server
+    start_worker(url, app="myapp", session="sess-1")
+
+    send_http({"id": "app-test", "request": {}, "response": {}})
+    _wait(captured, 1)
+
+    body = captured[0]["body"]
+    assert body["app"] == "myapp"
+    assert body["session"] == "sess-1"
+
+
+def test_app_and_session_injected_into_all_event_types(capture_server):
+    url, captured = capture_server
+    start_worker(url, app="multi", session="s2")
+
+    send_http({"id": "h1"})
+    send_log(
+        {"id": "l1", "data": {"level": "INFO", "logger_name": "x", "message": "m"}}
+    )
+    send_exception({"id": "e1", "data": {"exc_type": "E", "exc_value": "v"}})
+
+    _wait(captured, 3)
+
+    for item in captured:
+        assert item["body"]["app"] == "multi"
+        assert item["body"]["session"] == "s2"
+
+
+def test_app_and_session_default_to_empty(capture_server):
+    url, captured = capture_server
+    start_worker(url)
+
+    send_http({"id": "default-test"})
+    _wait(captured, 1)
+
+    assert captured[0]["body"]["app"] == ""
+    assert captured[0]["body"]["session"] == ""

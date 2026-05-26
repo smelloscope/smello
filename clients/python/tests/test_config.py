@@ -68,3 +68,15 @@ def test_ignore_takes_precedence_over_capture_all():
     )
     assert config.should_capture("secret.internal") is False
     assert config.should_capture("anything.else") is True
+
+
+def test_app_and_session_default_to_empty():
+    config = SmelloConfig(server_url="http://test:5110")
+    assert config.app == ""
+    assert config.session == ""
+
+
+def test_app_and_session_accept_values():
+    config = SmelloConfig(server_url="http://test:5110", app="myapp", session="sess-1")
+    assert config.app == "myapp"
+    assert config.session == "sess-1"

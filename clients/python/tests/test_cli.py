@@ -40,6 +40,8 @@ def _make_args(**overrides) -> argparse.Namespace:
         "capture_logs": None,
         "log_level": None,
         "ignore_logger": None,
+        "app": None,
+        "session": None,
     }
     defaults.update(overrides)
     return argparse.Namespace(**defaults)
@@ -140,6 +142,22 @@ def test_overrides_ignore_loggers():
 def test_overrides_capture_logs_with_level():
     overrides = cli._smello_env_overrides(_make_args(capture_logs=True, log_level=10))
     assert overrides == {"SMELLO_CAPTURE_LOGS": "true", "SMELLO_LOG_LEVEL": "10"}
+
+
+def test_overrides_app():
+    overrides = cli._smello_env_overrides(_make_args(app="myapp"))
+    assert overrides == {"SMELLO_APP": "myapp"}
+
+
+def test_overrides_session():
+    overrides = cli._smello_env_overrides(_make_args(session="debug-session"))
+    assert overrides == {"SMELLO_SESSION": "debug-session"}
+
+
+def test_overrides_app_and_session():
+    overrides = cli._smello_env_overrides(_make_args(app="frontend", session="sess-42"))
+    assert overrides["SMELLO_APP"] == "frontend"
+    assert overrides["SMELLO_SESSION"] == "sess-42"
 
 
 def test_log_level_accepts_name():

@@ -78,6 +78,8 @@ class HttpEventData(BaseModel):
     """HTTP capture as stored and served. Flat by convention."""
 
     event_type: Literal["http"] = "http"
+    app: str = ""
+    session: str = ""
     duration_ms: int
     method: str
     url: str
@@ -96,6 +98,8 @@ class HttpEventData(BaseModel):
 
 class LogEventData(BaseModel):
     event_type: Literal["log"] = "log"
+    app: str = ""
+    session: str = ""
     level: str
     logger_name: str
     message: str
@@ -108,6 +112,8 @@ class LogEventData(BaseModel):
 
 class ExceptionEventData(BaseModel):
     event_type: Literal["exception"] = "exception"
+    app: str = ""
+    session: str = ""
     exc_type: str
     exc_value: str = ""
     exc_module: str | None = None
@@ -145,6 +151,8 @@ class HttpIncomingEventData(BaseModel):
     """Incoming HTTP request as stored and served."""
 
     event_type: Literal["http_incoming"] = "http_incoming"
+    app: str = ""
+    session: str = ""
     duration_ms: int
     method: str
     path: str
@@ -182,6 +190,8 @@ class EventSummary(BaseModel):
     timestamp: datetime
     event_type: EventType
     summary: str
+    app: str = ""
+    session: str = ""
 
 
 class EventDetail(EventSummary):
@@ -201,3 +211,5 @@ class MetaResponse(BaseModel):
     hosts: list[str]
     methods: list[str]
     event_types: list[EventType]
+    apps: list[str]
+    sessions: list[str]

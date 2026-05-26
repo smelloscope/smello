@@ -18,6 +18,10 @@ smello.init(
     capture_logs=False,                        # capture log records (opt-in)
     log_level=30,                              # minimum log level to capture (WARNING)
     ignore_loggers=["uvicorn.access"],         # suppress noisy framework loggers
+
+    # Tagging
+    app="payment-service",                     # tag events with an application name
+    session="debug-payment-flow",              # tag events with a session ID
 )
 ```
 
@@ -37,6 +41,8 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 | `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
 | `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
 | `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `[]` |
+| `app` | `SMELLO_APP` | `""` |
+| `session` | `SMELLO_SESSION` | `""` |
 
 **Precedence**: explicit parameter > environment variable > hardcoded default. The same env vars are also surfaced as flags on the [`smello run`](#client-cli-smello-run) wrapper.
 
@@ -114,6 +120,18 @@ Matching is hierarchical: `ignore_loggers=["uvicorn"]` suppresses `uvicorn`, `uv
     logging.basicConfig(level=logging.DEBUG)
     ```
 
+### `app`
+
+Application name tag. Tags every captured event so you can filter by app on the dashboard or via the API query parameter `?app=payment-service`. Useful when multiple services share a single Smello server.
+
+Set via env var: `SMELLO_APP=payment-service`.
+
+### `session`
+
+Session ID tag. Tags events with a debugging session identifier so you can isolate a specific investigation from everything else. Use a mnemonic name (e.g. `debug-payment-flow`) or a UUID.
+
+Set via env var: `SMELLO_SESSION=debug-payment-flow`.
+
 ## Environment-only configuration
 
 For zero code changes, use `smello run` and control everything via environment variables:
@@ -134,6 +152,17 @@ smello run --ignore-host localhost --capture-logs --log-level INFO my_app.py
 ```
 
 Without `SMELLO_URL`, Smello is inactive: no patching, no side effects. Useful for Docker Compose, CI, and `.env` files.
+
+## Debugging sessions
+
+Tag events with `--app` and `--session` to isolate a debugging run:
+
+```bash
+smello run --app payment-service --session debug-payment-flow python scripts/checkout.py
+curl 'http://localhost:5110/api/events?app=payment-service&session=debug-payment-flow'
+```
+
+Multiple services can share the same session to see the full picture in one filtered view.
 
 ## Body capture limits
 
@@ -217,6 +246,8 @@ Each flag maps 1:1 to a `SMELLO_*` environment variable documented above. The fl
 | `--capture-logs` / `--no-capture-logs` | `SMELLO_CAPTURE_LOGS`        | `False`                |
 | `--log-level LEVEL`                   | `SMELLO_LOG_LEVEL`           | `30` (WARNING)         |
 | `--ignore-logger LOGGER` (repeatable) | `SMELLO_IGNORE_LOGGERS`      | `[]`                   |
+| `--app NAME`                          | `SMELLO_APP`                 | `""`                   |
+| `--session ID`                        | `SMELLO_SESSION`             | `""`                   |
 
 CLI-specific behavior worth knowing:
 

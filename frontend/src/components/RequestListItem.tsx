@@ -19,6 +19,24 @@ function formatTime(ts: string): string {
   return d.toLocaleTimeString("en-US", { hour12: false });
 }
 
+function AppLabel({ app }: { app: string }) {
+  if (!app) return null;
+  return (
+    <Typography
+      component="span"
+      sx={{
+        fontSize: 10,
+        fontWeight: 600,
+        color: "#FFB833",
+        flexShrink: 0,
+        ml: 0.5,
+      }}
+    >
+      · {app}
+    </Typography>
+  );
+}
+
 const httpSummaryRe = /^(?:←\s+)?(\w+)\s+(.+?)\s+→\s+(\d+)$/;
 
 function HttpRow({ item }: { item: EventSummary }) {
@@ -60,12 +78,15 @@ function HttpRow({ item }: { item: EventSummary }) {
         </Typography>
       </Stack>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-        <Typography
-          component="span"
-          sx={{ fontSize: 11, color: dark.textSecondary, flex: 1, mr: 1 }}
-        >
-          {formatTime(item.timestamp)}
-        </Typography>
+        <Stack direction="row" alignItems="center" sx={{ flex: 1, mr: 1, minWidth: 0 }}>
+          <Typography
+            component="span"
+            sx={{ fontSize: 11, color: dark.textSecondary, flexShrink: 0 }}
+          >
+            {formatTime(item.timestamp)}
+          </Typography>
+          <AppLabel app={item.app} />
+        </Stack>
         <StatusBadge status={status} />
       </Stack>
     </Box>
@@ -110,20 +131,21 @@ function LogRow({ item }: { item: EventSummary }) {
         </Typography>
       </Stack>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-        <Typography
-          component="span"
-          sx={{
-            fontSize: 11,
-            color: dark.textSecondary,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            flex: 1,
-            mr: 1,
-          }}
-        >
-          {logger}
-        </Typography>
+        <Stack direction="row" alignItems="center" sx={{ flex: 1, mr: 1, minWidth: 0 }}>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: 11,
+              color: dark.textSecondary,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {logger}
+          </Typography>
+          <AppLabel app={item.app} />
+        </Stack>
         <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled, flexShrink: 0 }}>
           {formatTime(item.timestamp)}
         </Typography>
@@ -158,20 +180,21 @@ function ExceptionRow({ item }: { item: EventSummary }) {
         </Typography>
       </Stack>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-        <Typography
-          component="span"
-          sx={{
-            fontSize: 11,
-            color: dark.textSecondary,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            flex: 1,
-            mr: 1,
-          }}
-        >
-          {excValue}
-        </Typography>
+        <Stack direction="row" alignItems="center" sx={{ flex: 1, mr: 1, minWidth: 0 }}>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: 11,
+              color: dark.textSecondary,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {excValue}
+          </Typography>
+          <AppLabel app={item.app} />
+        </Stack>
         <Typography component="span" sx={{ fontSize: 11, color: dark.textDisabled, flexShrink: 0 }}>
           {formatTime(item.timestamp)}
         </Typography>

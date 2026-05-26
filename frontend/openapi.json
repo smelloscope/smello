@@ -283,6 +283,38 @@
             }
           },
           {
+            "name": "app",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -399,7 +431,9 @@
           }
         },
         "type": "object",
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "title": "CaptureResponse"
       },
       "EventDetail": {
@@ -415,12 +449,27 @@
           },
           "event_type": {
             "type": "string",
-            "enum": ["http", "http_incoming", "log", "exception"],
+            "enum": [
+              "http",
+              "http_incoming",
+              "log",
+              "exception"
+            ],
             "title": "Event Type"
           },
           "summary": {
             "type": "string",
             "title": "Summary"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "data": {
             "oneOf": [
@@ -450,7 +499,13 @@
           }
         },
         "type": "object",
-        "required": ["id", "timestamp", "event_type", "summary", "data"],
+        "required": [
+          "id",
+          "timestamp",
+          "event_type",
+          "summary",
+          "data"
+        ],
         "title": "EventDetail"
       },
       "EventSummary": {
@@ -466,16 +521,36 @@
           },
           "event_type": {
             "type": "string",
-            "enum": ["http", "http_incoming", "log", "exception"],
+            "enum": [
+              "http",
+              "http_incoming",
+              "log",
+              "exception"
+            ],
             "title": "Event Type"
           },
           "summary": {
             "type": "string",
             "title": "Summary"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
-        "required": ["id", "timestamp", "event_type", "summary"],
+        "required": [
+          "id",
+          "timestamp",
+          "event_type",
+          "summary"
+        ],
         "title": "EventSummary"
       },
       "ExceptionCapturePayload": {
@@ -505,10 +580,22 @@
           },
           "data": {
             "$ref": "#/components/schemas/ExceptionData"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "ExceptionCapturePayload"
       },
       "ExceptionData": {
@@ -549,7 +636,9 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": ["exc_type"],
+        "required": [
+          "exc_type"
+        ],
         "title": "ExceptionData"
       },
       "ExceptionEventData": {
@@ -559,6 +648,16 @@
             "const": "exception",
             "title": "Event Type",
             "default": "exception"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "exc_type": {
             "type": "string",
@@ -595,7 +694,9 @@
           }
         },
         "type": "object",
-        "required": ["exc_type"],
+        "required": [
+          "exc_type"
+        ],
         "title": "ExceptionEventData"
       },
       "ExceptionFrame": {
@@ -655,7 +756,9 @@
           }
         },
         "type": "object",
-        "required": ["filename"],
+        "required": [
+          "filename"
+        ],
         "title": "ExceptionFrame"
       },
       "HTTPValidationError": {
@@ -714,10 +817,23 @@
               "python_version": "",
               "smello_version": ""
             }
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
-        "required": ["request", "response"],
+        "required": [
+          "request",
+          "response"
+        ],
         "title": "HttpCapturePayload"
       },
       "HttpEventData": {
@@ -727,6 +843,16 @@
             "const": "http",
             "title": "Event Type",
             "default": "http"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "duration_ms": {
             "type": "integer",
@@ -866,10 +992,23 @@
               "python_version": "",
               "smello_version": ""
             }
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
-        "required": ["request", "response"],
+        "required": [
+          "request",
+          "response"
+        ],
         "title": "HttpIncomingCapturePayload"
       },
       "HttpIncomingEventData": {
@@ -879,6 +1018,16 @@
             "const": "http_incoming",
             "title": "Event Type",
             "default": "http_incoming"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "duration_ms": {
             "type": "integer",
@@ -1128,7 +1277,12 @@
           }
         },
         "type": "object",
-        "required": ["method", "path", "url", "headers"],
+        "required": [
+          "method",
+          "path",
+          "url",
+          "headers"
+        ],
         "title": "HttpIncomingRequestData"
       },
       "HttpIncomingResponseData": {
@@ -1162,7 +1316,10 @@
           }
         },
         "type": "object",
-        "required": ["status_code", "headers"],
+        "required": [
+          "status_code",
+          "headers"
+        ],
         "title": "HttpIncomingResponseData"
       },
       "HttpMeta": {
@@ -1221,7 +1378,11 @@
           }
         },
         "type": "object",
-        "required": ["method", "url", "headers"],
+        "required": [
+          "method",
+          "url",
+          "headers"
+        ],
         "title": "HttpRequestData"
       },
       "HttpResponseData": {
@@ -1255,7 +1416,10 @@
           }
         },
         "type": "object",
-        "required": ["status_code", "headers"],
+        "required": [
+          "status_code",
+          "headers"
+        ],
         "title": "HttpResponseData"
       },
       "LogCapturePayload": {
@@ -1285,10 +1449,22 @@
           },
           "data": {
             "$ref": "#/components/schemas/LogData"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "LogCapturePayload"
       },
       "LogData": {
@@ -1364,7 +1540,11 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": ["level", "logger_name", "message"],
+        "required": [
+          "level",
+          "logger_name",
+          "message"
+        ],
         "title": "LogData"
       },
       "LogEventData": {
@@ -1374,6 +1554,16 @@
             "const": "log",
             "title": "Event Type",
             "default": "log"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "level": {
             "type": "string",
@@ -1445,7 +1635,11 @@
           }
         },
         "type": "object",
-        "required": ["level", "logger_name", "message"],
+        "required": [
+          "level",
+          "logger_name",
+          "message"
+        ],
         "title": "LogEventData"
       },
       "MetaResponse": {
@@ -1467,14 +1661,39 @@
           "event_types": {
             "items": {
               "type": "string",
-              "enum": ["http", "http_incoming", "log", "exception"]
+              "enum": [
+                "http",
+                "http_incoming",
+                "log",
+                "exception"
+              ]
             },
             "type": "array",
             "title": "Event Types"
+          },
+          "apps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Apps"
+          },
+          "sessions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sessions"
           }
         },
         "type": "object",
-        "required": ["hosts", "methods", "event_types"],
+        "required": [
+          "hosts",
+          "methods",
+          "event_types",
+          "apps",
+          "sessions"
+        ],
         "title": "MetaResponse"
       },
       "ValidationError": {
@@ -1510,7 +1729,11 @@
           }
         },
         "type": "object",
-        "required": ["loc", "msg", "type"],
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
         "title": "ValidationError"
       }
     }

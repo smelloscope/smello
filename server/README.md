@@ -44,6 +44,9 @@ curl -s 'http://localhost:5110/api/events?event_type=exception'
 # Filter by method, host, status, or full-text search
 curl -s 'http://localhost:5110/api/events?method=POST&host=api.stripe.com'
 
+# Filter by app or session
+curl -s 'http://localhost:5110/api/events?app=myapp&session=debug-payment'
+
 # Get full event details
 curl -s http://localhost:5110/api/events/{id} | python -m json.tool
 

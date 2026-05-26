@@ -427,3 +427,45 @@ def test_init_second_call_updates_config_in_place():
         assert "b.com" in smello._config.ignore_hosts
         assert "a.com" not in smello._config.ignore_hosts
         assert smello._config.capture_all is False
+
+
+def test_init_app_from_env():
+    with (
+        patch.dict(
+            os.environ,
+            {"SMELLO_URL": "http://test:5110", "SMELLO_APP": "myapp"},
+        ),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello.init()
+        assert smello._config.app == "myapp"
+
+
+def test_init_session_from_env():
+    with (
+        patch.dict(
+            os.environ,
+            {"SMELLO_URL": "http://test:5110", "SMELLO_SESSION": "debug-payment"},
+        ),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello.init()
+        assert smello._config.session == "debug-payment"
+
+
+def test_init_app_explicit_overrides_env():
+    with (
+        patch.dict(
+            os.environ,
+            {"SMELLO_URL": "http://test:5110", "SMELLO_APP": "env-app"},
+        ),
+        patch("smello._start_worker"),
+        patch("smello._apply_all"),
+    ):
+        smello._config = None
+        smello.init(app="explicit-app")
+        assert smello._config.app == "explicit-app"

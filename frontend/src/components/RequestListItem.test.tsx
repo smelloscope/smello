@@ -8,6 +8,8 @@ const httpItem: EventSummary = {
   timestamp: "2025-01-15T14:30:45.123Z",
   event_type: "http",
   summary: "GET /users?page=1 → 200",
+  app: "",
+  session: "",
 };
 
 const logItem: EventSummary = {
@@ -15,6 +17,8 @@ const logItem: EventSummary = {
   timestamp: "2025-01-15T14:30:45.123Z",
   event_type: "log",
   summary: "WARNING myapp.auth: Token expired for user 42",
+  app: "",
+  session: "",
 };
 
 const exceptionItem: EventSummary = {
@@ -22,6 +26,8 @@ const exceptionItem: EventSummary = {
   timestamp: "2025-01-15T14:30:45.123Z",
   event_type: "exception",
   summary: "ValueError: invalid literal for int()",
+  app: "",
+  session: "",
 };
 
 function renderItem(item: EventSummary, onClick = () => {}) {
@@ -60,5 +66,16 @@ describe("RequestListItem", () => {
     const view = renderItem(httpItem, onClick);
     view.getByRole("button").click();
     expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("shows app label when app is set", () => {
+    const item = { ...httpItem, app: "myapp" };
+    const view = renderItem(item);
+    expect(view.getByText("· myapp")).toBeInTheDocument();
+  });
+
+  it("hides app label when app is empty", () => {
+    const view = renderItem(httpItem);
+    expect(view.queryByText(/^·/)).not.toBeInTheDocument();
   });
 });

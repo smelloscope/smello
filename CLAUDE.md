@@ -54,6 +54,12 @@ This is a **uv workspace monorepo** with two packages plus a React frontend:
 
 **Data flow:** Patched library / excepthook / logging → `smello.transport.send_http()` / `send_log()` / `send_exception()` → background queue → `POST /api/capture/{http,log,exception}` → `services/capture.py` → `CapturedEvent` (Tortoise ORM) → SQLite → `services/events.py` → JSON API (`/api/events`) → React SPA.
 
+### CapturedEvent data model
+
+The `CapturedEvent` table has **top-level columns** (`id`, `timestamp`, `event_type`, `summary`) and a **`data` JSON blob**. Top-level columns are structural fields needed for ordering, discrimination, and list display. Everything else — including filterable fields like `host`, `method`, `app`, `session` — lives in `data` and is queried via `json_extract()` when needed. This avoids schema migrations entirely: Tortoise ORM's `generate_schemas=True` handles table creation, and new fields in `data` require no DDL.
+
+**Rule**: Keep new fields in `data` by default. Only promote to a top-level column when `json_extract()` is a proven bottleneck — which for a local dev tool is likely never.
+
 ## Key Patterns
 
 - **Server routes** are in `routes/api.py` (JSON API with Pydantic response models). Routes are thin wrappers — persistence and queries live in `services/capture.py` and `services/events.py`. New persistence behavior or filter logic should land in the service layer with a corresponding `tests/test_services_*.py` test; routes should only own HTTP concerns (status codes, 404 mapping, OpenAPI shape).

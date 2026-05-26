@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-05-26
+
 ### Added
 
 - `app` and `session` parameters for tagging events by application name and debugging session. Configurable via `smello.init(app=..., session=...)`, env vars (`SMELLO_APP`, `SMELLO_SESSION`), or CLI flags (`--app`, `--session`).

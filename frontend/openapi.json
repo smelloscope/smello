@@ -283,6 +283,38 @@
             }
           },
           {
+            "name": "app",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -422,6 +454,16 @@
             "type": "string",
             "title": "Summary"
           },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
+          },
           "data": {
             "oneOf": [
               {
@@ -472,6 +514,16 @@
           "summary": {
             "type": "string",
             "title": "Summary"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
@@ -505,6 +557,16 @@
           },
           "data": {
             "$ref": "#/components/schemas/ExceptionData"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
@@ -559,6 +621,16 @@
             "const": "exception",
             "title": "Event Type",
             "default": "exception"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "exc_type": {
             "type": "string",
@@ -714,6 +786,16 @@
               "python_version": "",
               "smello_version": ""
             }
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
@@ -727,6 +809,16 @@
             "const": "http",
             "title": "Event Type",
             "default": "http"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "duration_ms": {
             "type": "integer",
@@ -866,6 +958,16 @@
               "python_version": "",
               "smello_version": ""
             }
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
@@ -879,6 +981,16 @@
             "const": "http_incoming",
             "title": "Event Type",
             "default": "http_incoming"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "duration_ms": {
             "type": "integer",
@@ -1285,6 +1397,16 @@
           },
           "data": {
             "$ref": "#/components/schemas/LogData"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           }
         },
         "type": "object",
@@ -1374,6 +1496,16 @@
             "const": "log",
             "title": "Event Type",
             "default": "log"
+          },
+          "app": {
+            "type": "string",
+            "title": "App",
+            "default": ""
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "default": ""
           },
           "level": {
             "type": "string",
@@ -1471,10 +1603,24 @@
             },
             "type": "array",
             "title": "Event Types"
+          },
+          "apps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Apps"
+          },
+          "sessions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sessions"
           }
         },
         "type": "object",
-        "required": ["hosts", "methods", "event_types"],
+        "required": ["hosts", "methods", "event_types", "apps", "sessions"],
         "title": "MetaResponse"
       },
       "ValidationError": {

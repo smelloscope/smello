@@ -175,6 +175,16 @@ export interface components {
       event_type: "http" | "http_incoming" | "log" | "exception";
       /** Summary */
       summary: string;
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
       /** Data */
       data:
         | components["schemas"]["HttpEventData"]
@@ -198,6 +208,16 @@ export interface components {
       event_type: "http" | "http_incoming" | "log" | "exception";
       /** Summary */
       summary: string;
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
     };
     /** ExceptionCapturePayload */
     ExceptionCapturePayload: {
@@ -206,6 +226,16 @@ export interface components {
       /** Timestamp */
       timestamp?: string | null;
       data: components["schemas"]["ExceptionData"];
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
     };
     /** ExceptionData */
     ExceptionData: {
@@ -238,6 +268,16 @@ export interface components {
        * @enum {string}
        */
       event_type: "exception";
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
       /** Exc Type */
       exc_type: string;
       /**
@@ -305,6 +345,16 @@ export interface components {
        *     }
        */
       meta: components["schemas"]["HttpMeta"];
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
     };
     /**
      * HttpEventData
@@ -316,6 +366,16 @@ export interface components {
        * @enum {string}
        */
       event_type: "http";
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
       /** Duration Ms */
       duration_ms: number;
       /** Method */
@@ -385,6 +445,16 @@ export interface components {
        *     }
        */
       meta: components["schemas"]["HttpIncomingMeta"];
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
     };
     /**
      * HttpIncomingEventData
@@ -396,6 +466,16 @@ export interface components {
        * @enum {string}
        */
       event_type: "http_incoming";
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
       /** Duration Ms */
       duration_ms: number;
       /** Method */
@@ -575,6 +655,16 @@ export interface components {
       /** Timestamp */
       timestamp?: string | null;
       data: components["schemas"]["LogData"];
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
     };
     /** LogData */
     LogData: {
@@ -606,6 +696,16 @@ export interface components {
        * @enum {string}
        */
       event_type: "log";
+      /**
+       * App
+       * @default
+       */
+      app: string;
+      /**
+       * Session
+       * @default
+       */
+      session: string;
       /** Level */
       level: string;
       /** Logger Name */
@@ -633,6 +733,10 @@ export interface components {
       methods: string[];
       /** Event Types */
       event_types: ("http" | "http_incoming" | "log" | "exception")[];
+      /** Apps */
+      apps: string[];
+      /** Sessions */
+      sessions: string[];
     };
     /** ValidationError */
     ValidationError: {
@@ -829,6 +933,8 @@ export interface operations {
         method?: string | null;
         status?: number | null;
         search?: string | null;
+        app?: string | null;
+        session?: string | null;
         limit?: number;
       };
       header?: never;

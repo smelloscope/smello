@@ -11,6 +11,8 @@ import {
   methodFilterAtom,
   searchFilterAtom,
   eventTypeFilterAtom,
+  appFilterAtom,
+  sessionFilterAtom,
 } from "../atoms/filters";
 import { useGetMeta } from "../api/events";
 import EventTypeIcon from "./EventTypeIcon";
@@ -21,6 +23,8 @@ export default function FilterBar() {
   const [method, setMethod] = useAtom(methodFilterAtom);
   const [search, setSearch] = useAtom(searchFilterAtom);
   const [eventType, setEventType] = useAtom(eventTypeFilterAtom);
+  const [app, setApp] = useAtom(appFilterAtom);
+  const [session, setSession] = useAtom(sessionFilterAtom);
 
   const { data: meta } = useGetMeta({ refetchInterval: 10_000 });
 
@@ -95,6 +99,57 @@ export default function FilterBar() {
             {h}
           </MenuItem>
         ))}
+      </Select>
+      <Select
+        size="small"
+        displayEmpty
+        value={app ?? "__all__"}
+        onChange={(e) => {
+          const v = e.target.value;
+          setApp(v === "__all__" ? undefined : v);
+        }}
+        sx={{ minWidth: 100, ...darkSelect }}
+        renderValue={(v) => {
+          if (v === "__all__") return "App";
+          if (v === "") return "(no app)";
+          return v;
+        }}
+      >
+        <MenuItem value="__all__">All apps</MenuItem>
+        {meta?.apps?.includes("") && <MenuItem value="">(no app)</MenuItem>}
+        {meta?.apps
+          ?.filter((a) => a !== "")
+          .map((a) => (
+            <MenuItem key={a} value={a}>
+              {a}
+            </MenuItem>
+          ))}
+      </Select>
+      <Select
+        size="small"
+        displayEmpty
+        value={session ?? "__all__"}
+        onChange={(e) => {
+          const v = e.target.value;
+          setSession(v === "__all__" ? undefined : v);
+        }}
+        sx={{ minWidth: 110, ...darkSelect }}
+        renderValue={(v) => {
+          if (v === "__all__") return "Session";
+          if (v === "") return "(no session)";
+          return v.length > 12 ? v.slice(0, 8) + "…" : v;
+        }}
+        title={session ?? ""}
+      >
+        <MenuItem value="__all__">All sessions</MenuItem>
+        {meta?.sessions?.includes("") && <MenuItem value="">(no session)</MenuItem>}
+        {meta?.sessions
+          ?.filter((s) => s !== "")
+          .map((s) => (
+            <MenuItem key={s} value={s} title={s}>
+              {s.length > 24 ? s.slice(0, 20) + "…" : s}
+            </MenuItem>
+          ))}
       </Select>
       <TextField
         size="small"

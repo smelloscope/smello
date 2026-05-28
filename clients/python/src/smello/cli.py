@@ -12,6 +12,7 @@ Modeled on ``ddtrace-run`` and ``opentelemetry-instrument``.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -94,8 +95,59 @@ def _smello_env_overrides(args: argparse.Namespace) -> dict[str, str]:
         overrides["SMELLO_APP"] = args.app
     if args.session is not None:
         overrides["SMELLO_SESSION"] = args.session
+    if args.debug is not None:
+        overrides["SMELLO_DEBUG"] = "true" if args.debug else "false"
 
     return overrides
+
+
+_ENV_TO_FLAG: dict[str, str] = {
+    "SMELLO_URL": "--server",
+    "SMELLO_CAPTURE_HOSTS": "--capture-host",
+    "SMELLO_IGNORE_HOSTS": "--ignore-host",
+    "SMELLO_REDACT_HEADERS": "--redact-header",
+    "SMELLO_REDACT_QUERY_PARAMS": "--redact-query-param",
+    "SMELLO_LOG_LEVEL": "--log-level",
+    "SMELLO_IGNORE_LOGGERS": "--ignore-logger",
+    "SMELLO_APP": "--app",
+    "SMELLO_SESSION": "--session",
+}
+
+
+def _cli_provenance(
+    args: argparse.Namespace, overrides: dict[str, str]
+) -> dict[str, str | None]:
+    """Map SMELLO_* env vars set by the CLI to the flag that produced them.
+
+    Returns a dict of ``{env_var_name: flag_name_or_None}``.  A string
+    value means the user explicitly passed that flag; ``None`` means the
+    CLI injected a default (e.g. ``SMELLO_URL`` when ``--server`` was
+    not given).
+    """
+    provenance: dict[str, str | None] = {}
+    for env_var in overrides:
+        if env_var in _ENV_TO_FLAG:
+            provenance[env_var] = _ENV_TO_FLAG[env_var]
+        elif env_var == "SMELLO_CAPTURE_ALL":
+            if args.capture_all is not None:
+                provenance[env_var] = (
+                    "--capture-all" if args.capture_all is True else "--no-capture-all"
+                )
+            else:
+                provenance[env_var] = "--capture-host"
+        elif env_var == "SMELLO_CAPTURE_EXCEPTIONS":
+            provenance[env_var] = (
+                "--capture-exceptions"
+                if args.capture_exceptions is True
+                else "--no-capture-exceptions"
+            )
+        elif env_var == "SMELLO_CAPTURE_LOGS":
+            provenance[env_var] = (
+                "--capture-logs" if args.capture_logs is True else "--no-capture-logs"
+            )
+        elif env_var == "SMELLO_DEBUG":
+            provenance[env_var] = "--debug" if args.debug is True else "--no-debug"
+    return provenance
 
 
 def _build_child_env(args: argparse.Namespace) -> dict[str, str]:
@@ -106,13 +158,21 @@ def _build_child_env(args: argparse.Namespace) -> dict[str, str]:
     neither flag nor env var supplied one.
     """
     env = os.environ.copy()
-    env.update(_smello_env_overrides(args))
+    overrides = _smello_env_overrides(args)
+    env.update(overrides)
 
     bootstrap = _bootstrap_dir()
     existing = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{bootstrap}{os.pathsep}{existing}" if existing else bootstrap
 
-    env.setdefault("SMELLO_URL", DEFAULT_SERVER_URL)
+    provenance = _cli_provenance(args, overrides)
+
+    # Default server URL when neither --server nor SMELLO_URL is set.
+    if "SMELLO_URL" not in env:
+        env["SMELLO_URL"] = DEFAULT_SERVER_URL
+        provenance["SMELLO_URL"] = None
+
+    env["_SMELLO_CLI_PROVENANCE"] = json.dumps(provenance)
     return env
 
 
@@ -218,6 +278,19 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         metavar="LOGGER",
         help="Ignore this logger name for log capture (repeatable). Sets SMELLO_IGNORE_LOGGERS.",
+    )
+    run.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=None,
+        help="Enable debug logging to stderr.",
+    )
+    run.add_argument(
+        "--no-debug",
+        dest="debug",
+        action="store_false",
+        help="Disable debug logging.",
     )
     run.add_argument(
         "--app",

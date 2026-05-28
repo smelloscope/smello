@@ -1,9 +1,17 @@
 """Smello - Capture outgoing HTTP requests, logs, and exceptions automatically."""
 
 import atexit
+import json
 import logging
+import os
 from urllib.parse import urlparse
 
+from smello._debug import (
+    check_connectivity,
+    log_resolved_config,
+    setup_debug_logging,
+    teardown_debug_logging,
+)
 from smello._env import env_bool, env_list, env_log_level, env_str, parse_log_level
 from smello.config import SmelloConfig
 from smello.patches import apply_all as _apply_all
@@ -23,6 +31,34 @@ _patched: bool = False
 _atexit_registered: bool = False
 
 
+def _load_cli_provenance() -> dict[str, str | None]:
+    """Read and consume ``_SMELLO_CLI_PROVENANCE`` set by ``smello run``.
+
+    The env var is removed after reading so it does not leak to
+    grandchild processes that call ``init()`` independently.
+    """
+    raw = os.environ.pop("_SMELLO_CLI_PROVENANCE", None)
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
+def _env_provenance(env_var_name: str, cli_prov: dict[str, str | None]) -> str:
+    """Return the provenance label for a value resolved from an env var.
+
+    If the CLI set this var, return the flag name (e.g. ``"--debug"``)
+    or ``"default"`` for CLI-injected defaults.  Otherwise return the
+    env var name (e.g. ``"SMELLO_URL"``).
+    """
+    if env_var_name in cli_prov:
+        flag = cli_prov[env_var_name]
+        return flag if flag is not None else "default"
+    return env_var_name
+
+
 def init(
     server_url: str | None = None,
     capture_hosts: list[str] | None = None,
@@ -36,6 +72,7 @@ def init(
     ignore_loggers: list[str] | None = None,
     app: str | None = None,
     session: str | None = None,
+    debug: bool | None = None,
 ) -> None:
     """Initialize Smello. Patches HTTP libraries, logging, and exception hooks.
 
@@ -52,6 +89,7 @@ def init(
     Parameter             Environment variable            Default
     ====================  ==============================  ==========================
     server_url            ``SMELLO_URL``                  ``None`` (inactive)
+    debug                 ``SMELLO_DEBUG``                ``False``
     capture_all           ``SMELLO_CAPTURE_ALL``          ``True``
     capture_hosts         ``SMELLO_CAPTURE_HOSTS``        ``[]``
     ignore_hosts          ``SMELLO_IGNORE_HOSTS``         ``[]``
@@ -64,6 +102,12 @@ def init(
     app                   ``SMELLO_APP``                  ``""``
     session               ``SMELLO_SESSION``              ``""``
     ====================  ==============================  ==========================
+
+    When ``debug`` is enabled, Smello logs its resolved configuration,
+    library patching, capture decisions, and transport activity to stderr
+    via the ``"smello"`` Python logger.  You can also configure this logger
+    manually (e.g. ``logging.getLogger("smello").setLevel(logging.DEBUG)``)
+    without setting the ``debug`` flag.
 
     ``app`` tags every captured event with an application name, useful when
     multiple services share a single Smello server. ``session`` tags events
@@ -93,9 +137,35 @@ def init(
     """
     global _config, _patched, _atexit_registered
 
+    provenance: dict[str, str] = {}
+    cli_prov = _load_cli_provenance()
+
+    # Resolve debug first so logging is active for subsequent resolution.
+    if debug is not None:
+        provenance["debug"] = "param"
+    else:
+        env_val = env_bool("DEBUG")
+        if env_val is not None:
+            debug = env_val
+            provenance["debug"] = _env_provenance("SMELLO_DEBUG", cli_prov)
+        else:
+            debug = False
+            provenance["debug"] = "default"
+
+    if debug:
+        setup_debug_logging()
+    elif _config is not None and _config.debug:
+        teardown_debug_logging()
+
     # Resolve: explicit param > env var
-    if server_url is None:
+    if server_url is not None:
+        provenance["server_url"] = "param"
+    else:
         server_url = env_str("URL")
+        if server_url:
+            provenance["server_url"] = _env_provenance("SMELLO_URL", cli_prov)
+        else:
+            provenance["server_url"] = "default"
     if not server_url:
         logger.warning(
             "smello.init() called without a server URL. "
@@ -103,58 +173,152 @@ def init(
         )
         return
 
-    if capture_all is None:
+    if capture_all is not None:
+        provenance["capture_all"] = "param"
+    else:
         env_val = env_bool("CAPTURE_ALL")
-        capture_all = env_val if env_val is not None else True
+        if env_val is not None:
+            capture_all = env_val
+            provenance["capture_all"] = _env_provenance("SMELLO_CAPTURE_ALL", cli_prov)
+        else:
+            capture_all = True
+            provenance["capture_all"] = "default"
 
-    if capture_hosts is None:
-        capture_hosts = env_list("CAPTURE_HOSTS") or []
+    if capture_hosts is not None:
+        provenance["capture_hosts"] = "param"
+    else:
+        env_val = env_list("CAPTURE_HOSTS")
+        capture_hosts = env_val or []
+        provenance["capture_hosts"] = (
+            _env_provenance("SMELLO_CAPTURE_HOSTS", cli_prov) if env_val else "default"
+        )
 
-    if ignore_hosts is None:
-        ignore_hosts = env_list("IGNORE_HOSTS") or []
+    if ignore_hosts is not None:
+        provenance["ignore_hosts"] = "param"
+    else:
+        env_val = env_list("IGNORE_HOSTS")
+        ignore_hosts = env_val or []
+        provenance["ignore_hosts"] = (
+            _env_provenance("SMELLO_IGNORE_HOSTS", cli_prov) if env_val else "default"
+        )
 
-    if redact_headers is None:
+    if redact_headers is not None:
+        provenance["redact_headers"] = "param"
+    else:
         env_headers = env_list("REDACT_HEADERS")
         redact_headers = (
             env_headers if env_headers is not None else list(DEFAULT_REDACT_HEADERS)
         )
+        provenance["redact_headers"] = (
+            _env_provenance("SMELLO_REDACT_HEADERS", cli_prov)
+            if env_headers is not None
+            else "default"
+        )
 
-    if redact_query_params is None:
-        redact_query_params = env_list("REDACT_QUERY_PARAMS") or []
+    if redact_query_params is not None:
+        provenance["redact_query_params"] = "param"
+    else:
+        env_val = env_list("REDACT_QUERY_PARAMS")
+        redact_query_params = env_val or []
+        provenance["redact_query_params"] = (
+            _env_provenance("SMELLO_REDACT_QUERY_PARAMS", cli_prov)
+            if env_val
+            else "default"
+        )
 
-    if capture_exceptions is None:
+    if capture_exceptions is not None:
+        provenance["capture_exceptions"] = "param"
+    else:
         env_val = env_bool("CAPTURE_EXCEPTIONS")
-        capture_exceptions = env_val if env_val is not None else True
-
-    if capture_logs is None:
-        env_val = env_bool("CAPTURE_LOGS")
-        capture_logs = env_val if env_val is not None else False
-
-    if ignore_loggers is None:
-        ignore_loggers = env_list("IGNORE_LOGGERS") or []
-
-    if log_level is None:
-        env_val = env_log_level("LOG_LEVEL")
-        log_level = env_val if env_val is not None else logging.WARNING
-    elif isinstance(log_level, str):
-        parsed = parse_log_level(log_level)
-        if parsed is None:
-            logger.warning(
-                "Unrecognised log_level %r, falling back to WARNING", log_level
+        if env_val is not None:
+            capture_exceptions = env_val
+            provenance["capture_exceptions"] = _env_provenance(
+                "SMELLO_CAPTURE_EXCEPTIONS", cli_prov
             )
-            log_level = logging.WARNING
         else:
-            log_level = parsed
+            capture_exceptions = True
+            provenance["capture_exceptions"] = "default"
 
-    if app is None:
-        app = env_str("APP") or ""
+    if capture_logs is not None:
+        provenance["capture_logs"] = "param"
+    else:
+        env_val = env_bool("CAPTURE_LOGS")
+        if env_val is not None:
+            capture_logs = env_val
+            provenance["capture_logs"] = _env_provenance(
+                "SMELLO_CAPTURE_LOGS", cli_prov
+            )
+        else:
+            capture_logs = False
+            provenance["capture_logs"] = "default"
 
-    if session is None:
-        session = env_str("SESSION") or ""
+    if ignore_loggers is not None:
+        provenance["ignore_loggers"] = "param"
+    else:
+        env_val = env_list("IGNORE_LOGGERS")
+        ignore_loggers = env_val or []
+        provenance["ignore_loggers"] = (
+            _env_provenance("SMELLO_IGNORE_LOGGERS", cli_prov) if env_val else "default"
+        )
+
+    if log_level is not None:
+        provenance["log_level"] = "param"
+        if isinstance(log_level, str):
+            parsed = parse_log_level(log_level)
+            if parsed is None:
+                logger.warning(
+                    "Unrecognised log_level %r, falling back to WARNING", log_level
+                )
+                log_level = logging.WARNING
+            else:
+                log_level = parsed
+    else:
+        env_val = env_log_level("LOG_LEVEL")
+        if env_val is not None:
+            log_level = env_val
+            provenance["log_level"] = _env_provenance("SMELLO_LOG_LEVEL", cli_prov)
+        else:
+            log_level = logging.WARNING
+            provenance["log_level"] = "default"
+
+    if app is not None:
+        provenance["app"] = "param"
+    else:
+        env_val = env_str("APP")
+        app = env_val or ""
+        provenance["app"] = (
+            _env_provenance("SMELLO_APP", cli_prov) if env_val else "default"
+        )
+
+    if session is not None:
+        provenance["session"] = "param"
+    else:
+        env_val = env_str("SESSION")
+        session = env_val or ""
+        provenance["session"] = (
+            _env_provenance("SMELLO_SESSION", cli_prov) if env_val else "default"
+        )
 
     resolved_url = server_url.rstrip("/")
     normalized_redact_headers = [h.lower() for h in redact_headers]
     normalized_redact_query_params = [p.lower() for p in redact_query_params]
+
+    log_resolved_config(
+        provenance,
+        server_url=resolved_url,
+        debug=debug,
+        capture_all=capture_all,
+        capture_hosts=capture_hosts,
+        ignore_hosts=ignore_hosts,
+        redact_headers=redact_headers,
+        redact_query_params=redact_query_params,
+        capture_exceptions=capture_exceptions,
+        capture_logs=capture_logs,
+        log_level=log_level,
+        ignore_loggers=ignore_loggers,
+        app=app,
+        session=session,
+    )
 
     if _config is None:
         _config = SmelloConfig(
@@ -170,6 +334,7 @@ def init(
             ignore_loggers=ignore_loggers,
             app=app,
             session=session,
+            debug=debug,
         )
     else:
         # Mutate in place so closures captured by the existing patches see
@@ -186,6 +351,7 @@ def init(
         _config.ignore_loggers = ignore_loggers
         _config.app = app
         _config.session = session
+        _config.debug = debug
 
     # Always ignore the smello server itself
     server_host = urlparse(_config.server_url).hostname
@@ -206,3 +372,6 @@ def init(
     if not _atexit_registered:
         atexit.register(shutdown)
         _atexit_registered = True
+
+    if _config.debug:
+        check_connectivity(_config.server_url)

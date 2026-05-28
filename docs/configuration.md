@@ -5,6 +5,7 @@
 ```python
 smello.init(
     server_url="http://localhost:5110",       # where to send captured data
+    debug=True,                                # log config, patches, and captures to stderr
 
     # HTTP capture
     capture_hosts=["api.stripe.com"],         # only capture these hosts
@@ -29,28 +30,39 @@ Every parameter falls back to a **`SMELLO_*` environment variable** when not pas
 
 ## Parameters
 
-| Parameter | Env variable | Default |
-|-----------|-------------|---------|
-| `server_url` | `SMELLO_URL` | `None` (inactive) |
-| `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
-| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
-| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
-| `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
-| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `[]` |
-| `capture_exceptions` | `SMELLO_CAPTURE_EXCEPTIONS` | `True` |
-| `capture_logs` | `SMELLO_CAPTURE_LOGS` | `False` |
-| `log_level` | `SMELLO_LOG_LEVEL` | `30` (WARNING) |
-| `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `[]` |
-| `app` | `SMELLO_APP` | `""` |
-| `session` | `SMELLO_SESSION` | `""` |
+| Parameter | Env variable | CLI flag | Default |
+|-----------|-------------|----------|---------|
+| `server_url` | `SMELLO_URL` | `--server URL` | `None` (inactive) |
+| `debug` | `SMELLO_DEBUG` | `--debug` / `--no-debug` | `False` |
+| `capture_all` | `SMELLO_CAPTURE_ALL` | `--capture-all` / `--no-capture-all` | `True` |
+| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `--capture-host HOST` | `[]` |
+| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `--ignore-host HOST` | `[]` |
+| `redact_headers` | `SMELLO_REDACT_HEADERS` | `--redact-header HEADER` | `["Authorization", "X-Api-Key"]` |
+| `redact_query_params` | `SMELLO_REDACT_QUERY_PARAMS` | `--redact-query-param PARAM` | `[]` |
+| `capture_exceptions` | `SMELLO_CAPTURE_EXCEPTIONS` | `--capture-exceptions` / `--no-...` | `True` |
+| `capture_logs` | `SMELLO_CAPTURE_LOGS` | `--capture-logs` / `--no-capture-logs` | `False` |
+| `log_level` | `SMELLO_LOG_LEVEL` | `--log-level LEVEL` | `30` (WARNING) |
+| `ignore_loggers` | `SMELLO_IGNORE_LOGGERS` | `--ignore-logger LOGGER` | `[]` |
+| `app` | `SMELLO_APP` | `--app NAME` | `""` |
+| `session` | `SMELLO_SESSION` | `--session ID` | `""` |
 
-**Precedence**: explicit parameter > environment variable > hardcoded default. The same env vars are also surfaced as flags on the [`smello run`](#client-cli-smello-run) wrapper.
+CLI flags marked with `HOST`, `HEADER`, `LOGGER`, or `PARAM` are repeatable (pass multiple times).
+
+**Precedence**: explicit `init()` parameter > CLI flag > environment variable > hardcoded default.
 
 ### `server_url`
 
 URL of the Smello server and the activation signal. Without a URL, `init()` does nothing. No patching, no background threads, no side effects.
 
 Set via env var: `SMELLO_URL=http://smello:5110`.
+
+### `debug`
+
+Enable debug logging to stderr. When active, Smello logs its resolved configuration (with provenance showing where each value came from), which libraries were patched, every capture decision, and transport activity. This is the first thing to turn on when Smello appears to be running but you don't see events in the dashboard.
+
+Set via env var: `SMELLO_DEBUG=1`.
+
+You can also configure the `"smello"` Python logger manually for more control — see [Logging](#logging) below.
 
 ### `capture_hosts`
 
@@ -194,20 +206,47 @@ In test suites or scripts where you need to verify captures arrived, call `smell
 
 Smello uses Python's standard `logging` module for its own diagnostics. By default it is silent. A `NullHandler` is attached to the `smello` logger so no output is produced unless you opt in.
 
-To see warnings (dropped payloads, server connectivity issues):
+The quickest way to see debug output is `debug=True`:
 
 ```python
-import logging
-logging.basicConfig()
-logging.getLogger("smello").setLevel(logging.WARNING)
+smello.init(server_url="http://localhost:5110", debug=True)
 ```
 
-To see all debug output (every capture attempt):
+Or via environment: `SMELLO_DEBUG=1`. Or via CLI: `smello run --debug ...`.
+
+This attaches a `StreamHandler(stderr)` to the `"smello"` logger at DEBUG level. Example output:
+
+```
+smello: resolved config:
+  server_url = http://localhost:5110 (default)
+  debug = True (--debug)
+  capture_all = True (default)
+  capture_hosts = [] (default)
+  ignore_hosts = [] (default)
+  redact_headers = ['authorization', 'x-api-key'] (default)
+  redact_query_params = [] (default)
+  capture_exceptions = True (default)
+  capture_logs = False (default)
+  log_level = 30 (default)
+  ignore_loggers = [] (default)
+  app =  (default)
+  session =  (default)
+smello: patched requests.Session.send
+smello: patched httpx.Client and httpx.AsyncClient
+smello: skipped grpc patch (not installed)
+smello: connected to http://localhost:5110 (200)
+smello: captured GET https://api.example.com/users via requests (200)
+smello: sent /api/capture/http (201)
+```
+
+Each field shows its value and where it came from: `(--debug)` for a CLI flag, `(SMELLO_URL)` for a user-set env var, `(param)` for an `init()` parameter, or `(default)` for the hardcoded default.
+
+For more control, configure the `"smello"` logger directly:
 
 ```python
 import logging
-logging.basicConfig()
 logging.getLogger("smello").setLevel(logging.DEBUG)
+logging.getLogger("smello").addHandler(logging.FileHandler("smello-debug.log"))
 ```
 
 You can also route Smello logs to a file or integrate them with your application's existing logging configuration. Just configure the `"smello"` logger however you like.
@@ -232,22 +271,7 @@ smello run gunicorn app:app
 smello run --server http://localhost:5110 -- python -m my_module --debug
 ```
 
-Each flag maps 1:1 to a `SMELLO_*` environment variable documented above. The flag wins when both are set:
-
-| Flag                                  | Env variable                  | Default                |
-| ------------------------------------- | ----------------------------- | ---------------------- |
-| `--server URL`                        | `SMELLO_URL`                  | `http://localhost:5110` |
-| `--capture-host HOST` (repeatable)    | `SMELLO_CAPTURE_HOSTS`        | `[]`                   |
-| `--ignore-host HOST` (repeatable)     | `SMELLO_IGNORE_HOSTS`         | `[]`                   |
-| `--capture-all` / `--no-capture-all`  | `SMELLO_CAPTURE_ALL`          | `True`                 |
-| `--redact-header HEADER` (repeatable) | `SMELLO_REDACT_HEADERS`       | `Authorization,X-Api-Key` |
-| `--redact-query-param PARAM` (repeatable) | `SMELLO_REDACT_QUERY_PARAMS` | `[]`                  |
-| `--capture-exceptions` / `--no-capture-exceptions` | `SMELLO_CAPTURE_EXCEPTIONS`  | `True`                 |
-| `--capture-logs` / `--no-capture-logs` | `SMELLO_CAPTURE_LOGS`        | `False`                |
-| `--log-level LEVEL`                   | `SMELLO_LOG_LEVEL`           | `30` (WARNING)         |
-| `--ignore-logger LOGGER` (repeatable) | `SMELLO_IGNORE_LOGGERS`      | `[]`                   |
-| `--app NAME`                          | `SMELLO_APP`                 | `""`                   |
-| `--session ID`                        | `SMELLO_SESSION`             | `""`                   |
+Each flag maps 1:1 to a `SMELLO_*` environment variable — see the [Parameters](#parameters) table for the full list. The flag wins when both are set. `smello run` also defaults `server_url` to `http://localhost:5110` when neither `--server` nor `SMELLO_URL` is set.
 
 CLI-specific behavior worth knowing:
 

@@ -1582,6 +1582,10 @@
       },
       "MetaResponse": {
         "properties": {
+          "server_version": {
+            "type": "string",
+            "title": "Server Version"
+          },
           "hosts": {
             "items": {
               "type": "string"
@@ -1620,7 +1624,14 @@
           }
         },
         "type": "object",
-        "required": ["hosts", "methods", "event_types", "apps", "sessions"],
+        "required": [
+          "server_version",
+          "hosts",
+          "methods",
+          "event_types",
+          "apps",
+          "sessions"
+        ],
         "title": "MetaResponse"
       },
       "ValidationError": {

@@ -727,6 +727,8 @@ export interface components {
     };
     /** MetaResponse */
     MetaResponse: {
+      /** Server Version */
+      server_version: string;
       /** Hosts */
       hosts: string[];
       /** Methods */

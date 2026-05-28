@@ -170,7 +170,10 @@ async def get_meta() -> MetaResponse:
     )
     sessions = sorted({r["session"] for r in session_rows})
 
+    import smello_server  # noqa: PLC0415
+
     return MetaResponse(
+        server_version=smello_server.__version__,
         hosts=hosts,
         methods=methods,
         event_types=sorted({cast(EventType, t) for t in event_types}),

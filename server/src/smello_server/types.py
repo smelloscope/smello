@@ -208,6 +208,7 @@ class EventDetail(EventSummary):
 
 
 class MetaResponse(BaseModel):
+    server_version: str
     hosts: list[str]
     methods: list[str]
     event_types: list[EventType]

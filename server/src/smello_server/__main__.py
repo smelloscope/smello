@@ -20,10 +20,19 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
+import smello_server
+
 logger = logging.getLogger("smello_server")
 
 DEFAULT_DB_DIR = Path.home() / ".smello"
 DEFAULT_DB_PATH = DEFAULT_DB_DIR / "smello.db"
+
+
+def _version_callback(value: bool):
+    if value:
+        typer.echo(f"smello-server {smello_server.__version__}")
+        raise typer.Exit()
+
 
 app = typer.Typer(add_completion=False)
 
@@ -107,6 +116,15 @@ def main_callback(
     db_path: DB_PATH_OPT = None,
     reload: RELOAD_OPT = False,
     open_browser: OPEN_BROWSER_OPT = True,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show version and exit.",
+        ),
+    ] = False,
 ):
     """Start the Smello server."""
     if ctx.invoked_subcommand is not None:

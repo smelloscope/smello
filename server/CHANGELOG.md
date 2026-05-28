@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- `--version` flag for the `smello-server` CLI.
+- `server_version` field in the `/api/meta` response.
+- Empty state page now shows docs and GitHub links, responsive `smello run` quickstart, and server version.
+
 ## [0.8.0] - 2026-05-26
 
 ### Added

@@ -5,7 +5,6 @@ the unified timeline of HTTP requests, log records, and the unhandled exception.
 """
 
 import logging
-import time
 
 import smello
 
@@ -54,7 +53,7 @@ def checkout(order_id: int) -> None:
     process_payment(order_id, amount_cents=4999)
 
 
-time.sleep(1)  # let the background thread flush HTTP + log events first
+smello.flush()
 print("\nOpen http://localhost:5110 to see HTTP requests, logs, and the exception.")
 
 checkout(order_id=42)

@@ -27,10 +27,8 @@ async def main():
             print(f"POST /post (data): {resp.status}")
             await resp.text()
 
+    smello.flush()
     print("\nOpen http://localhost:5110 to see captured requests")
-
-    # Give the background thread time to flush
-    await asyncio.sleep(1)
 
 
 asyncio.run(main())

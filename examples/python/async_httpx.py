@@ -29,10 +29,8 @@ async def main():
                 print(f"  stream line: {line[:60]}...")
         print(f"GET /stream/3 (streaming): {resp.status_code}")
 
+    smello.flush()
     print("\nOpen http://localhost:5110 to see captured requests")
-
-    # Give the background thread time to flush
-    await asyncio.sleep(1)
 
 
 asyncio.run(main())

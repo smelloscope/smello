@@ -4,8 +4,6 @@ The SDK uses httpx under the hood, so smello's httpx patch
 captures all API calls automatically.
 """
 
-import time
-
 import smello
 
 smello.init(server_url="http://localhost:5110", debug=True)
@@ -21,6 +19,5 @@ message = client.messages.create(
 )
 print(f"Response: {message.content[0].text}")
 
+smello.flush()
 print("\nOpen http://localhost:5110 to see captured requests")
-
-time.sleep(1)

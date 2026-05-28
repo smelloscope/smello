@@ -66,6 +66,5 @@ print(f"POST /anything     → {resp.status_code}  (response contains timestamps
 resp = requests.get("https://httpbin.org/delay/1")
 print(f"GET  /delay/1      → {resp.status_code}  (check duration in dashboard)")
 
-# Give the background thread time to flush
-time.sleep(2)
+smello.flush()
 print("\nDone. Open http://localhost:5110 to browse captured requests.")

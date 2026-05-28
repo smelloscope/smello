@@ -5,8 +5,6 @@ streaming response bodies by wrapping the byte-stream with a tee —
 the capture is sent when the stream is closed.
 """
 
-import time
-
 import smello
 
 smello.init(server_url="http://localhost:5110")
@@ -27,7 +25,5 @@ with httpx.Client() as client:
             print(f"  stream line: {line[:60]}...")
     print(f"GET /stream/3 (streaming): {resp.status_code}")
 
+smello.flush()
 print("\nOpen http://localhost:5110 to see captured requests")
-
-# Give the background thread time to flush
-time.sleep(1)

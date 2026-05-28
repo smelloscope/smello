@@ -29,8 +29,5 @@ bedrock = boto3.client("bedrock", region_name="us-east-1")
 models = bedrock.list_foundation_models()
 print(f"Bedrock foundation models: {len(models['modelSummaries'])}")
 
+smello.flush()
 print("\nOpen http://localhost:5110 to see captured requests")
-
-import time
-
-time.sleep(1)

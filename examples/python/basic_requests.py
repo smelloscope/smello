@@ -16,9 +16,5 @@ print(f"POST /post: {resp.status_code}")
 resp = requests.get("https://httpbin.org/status/404")
 print(f"GET /status/404: {resp.status_code}")
 
+smello.flush()
 print("\nOpen http://localhost:5110 to see captured requests")
-
-# Give the background thread time to flush
-import time
-
-time.sleep(1)

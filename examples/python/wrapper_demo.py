@@ -27,8 +27,6 @@ For console scripts (uvicorn, pytest, gunicorn) just pass the command directly:
 After it finishes, browse captured traffic at http://localhost:5110.
 """
 
-import time
-
 import httpx
 import requests
 
@@ -73,10 +71,6 @@ def main() -> None:
     fetch_with_httpx()
     status_codes()
 
-    # Give the background transport time to flush before the process exits.
-    # The Smello SDK also flushes via atexit, but a short sleep keeps the
-    # output stable when stdout is captured.
-    time.sleep(1)
     print("\nDone. Open http://localhost:5110 to browse captured requests.")
 
 

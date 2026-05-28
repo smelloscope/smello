@@ -60,14 +60,18 @@ def flush(timeout: float = 2.0) -> bool:
     # Queue.join() has no timeout parameter. Access the underlying
     # condition variable directly — same technique Sentry's SDK uses.
     with _queue.all_tasks_done:
-        if _queue.unfinished_tasks:
-            logger.debug("Flushing %d pending capture(s)…", _queue.unfinished_tasks)
-            _queue.all_tasks_done.wait(timeout=timeout)
+        pending = _queue.unfinished_tasks
+        if not pending:
+            return True
+        logger.debug("flushing %d pending capture(s)", pending)
+        _queue.all_tasks_done.wait(timeout=timeout)
 
     drained = _queue.unfinished_tasks == 0
-    if not drained:
+    if drained:
+        logger.debug("flushed %d capture(s)", pending)
+    else:
         logger.warning(
-            "Flush timed out with %d capture(s) still pending",
+            "flush timed out with %d capture(s) still pending",
             _queue.unfinished_tasks,
         )
     return drained
@@ -78,6 +82,7 @@ def shutdown(timeout: float = 2.0) -> bool:
 
     Returns ``True`` if the queue drained in time, ``False`` otherwise.
     """
+    logger.debug("shutting down transport")
     return flush(timeout=timeout)
 
 

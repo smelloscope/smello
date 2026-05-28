@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Changed
+
+- **`x-goog-api-key` header redacted by default**: Google API keys sent via the `X-Goog-Api-Key` header are now automatically masked alongside `Authorization` and `X-Api-Key`.
+
 ## [0.14.1] - 2026-05-28
 
 ### Fixed

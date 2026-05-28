@@ -24,7 +24,7 @@ logger.addHandler(logging.NullHandler())
 __all__ = ["init", "flush", "shutdown"]
 __version__ = "0.14.1"
 
-DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
+DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key", "x-goog-api-key"]
 
 _config: SmelloConfig | None = None
 _patched: bool = False

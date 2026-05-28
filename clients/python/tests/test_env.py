@@ -284,7 +284,11 @@ def test_init_redact_headers_default_without_env():
     ):
         smello._config = None
         smello.init()
-        assert smello._config.redact_headers == ["authorization", "x-api-key"]
+        assert smello._config.redact_headers == [
+            "authorization",
+            "x-api-key",
+            "x-goog-api-key",
+        ]
 
 
 def test_init_capture_all_false_from_env():
@@ -314,7 +318,11 @@ def test_init_defaults_with_explicit_url():
         assert smello._config.capture_all is True
         assert smello._config.capture_hosts == []
         assert "test" in smello._config.ignore_hosts  # auto-added
-        assert smello._config.redact_headers == ["authorization", "x-api-key"]
+        assert smello._config.redact_headers == [
+            "authorization",
+            "x-api-key",
+            "x-goog-api-key",
+        ]
         assert smello._config.redact_query_params == []
 
 

@@ -12,7 +12,8 @@ from smello.utils import MAX_DECOMPRESSED
 @pytest.fixture()
 def config():
     return SmelloConfig(
-        server_url="http://test:5110", redact_headers=["authorization", "x-api-key"]
+        server_url="http://test:5110",
+        redact_headers=["authorization", "x-api-key", "x-goog-api-key"],
     )
 
 
@@ -57,6 +58,7 @@ def test_header_redaction(config):
             "Content-Type": "application/json",
             "Authorization": "Bearer sk-secret",
             "X-Api-Key": "key_12345",
+            "X-Goog-Api-Key": "goog_12345",
             "X-Custom": "keep-this",
         },
         request_body=None,
@@ -70,6 +72,7 @@ def test_header_redaction(config):
     assert headers["Content-Type"] == "application/json"
     assert headers["Authorization"] == "[REDACTED]"
     assert headers["X-Api-Key"] == "[REDACTED]"
+    assert headers["X-Goog-Api-Key"] == "[REDACTED]"
     assert headers["X-Custom"] == "keep-this"
 
 

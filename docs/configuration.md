@@ -223,7 +223,7 @@ smello: resolved config:
   capture_all = True (default)
   capture_hosts = [] (default)
   ignore_hosts = [] (default)
-  redact_headers = ['authorization', 'x-api-key'] (default)
+  redact_headers = ['authorization', 'x-api-key', 'x-goog-api-key'] (default)
   redact_query_params = [] (default)
   capture_exceptions = True (default)
   capture_logs = False (default)

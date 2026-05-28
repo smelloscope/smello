@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
 from smello.transport import send_http
+from smello.utils import redact_query_params
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,8 @@ def patch_requests(config: SmelloConfig) -> None:
     try:
         import requests  # noqa: PLC0415 -- optional dependency
     except ImportError:
-        return  # requests not installed, skip
+        logger.debug("skipped requests patch (not installed)")
+        return
 
     original_send = requests.Session.send
 
@@ -24,6 +26,11 @@ def patch_requests(config: SmelloConfig) -> None:
         host = urlparse(prepared_request.url).hostname or ""
 
         if not config.should_capture(host):
+            logger.debug(
+                "skipped %s %s (ignored host)",
+                prepared_request.method,
+                host,
+            )
             return original_send(self, prepared_request, **kwargs)
 
         start = time.monotonic()
@@ -44,9 +51,16 @@ def patch_requests(config: SmelloConfig) -> None:
                 library="requests",
             )
             send_http(payload)
+            logger.debug(
+                "captured %s %s via requests (%d)",
+                prepared_request.method,
+                redact_query_params(prepared_request.url, config.redact_query_params),
+                response.status_code,
+            )
         except Exception as err:
-            logger.debug("Failed to capture request: %s", err)
+            logger.debug("failed to capture request: %s", err)
 
         return response
 
     requests.Session.send = patched_send  # type: ignore[assignment]
+    logger.debug("patched requests.Session.send")

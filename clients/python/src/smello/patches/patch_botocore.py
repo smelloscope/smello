@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
 from smello.transport import send_http
+from smello.utils import redact_query_params
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,8 @@ def patch_botocore(config: SmelloConfig) -> None:
     try:
         from botocore.httpsession import URLLib3Session  # noqa: PLC0415
     except ImportError:
-        return  # botocore not installed, skip
+        logger.debug("skipped botocore patch (not installed)")
+        return
 
     original_send = URLLib3Session.send
 
@@ -38,6 +40,7 @@ def patch_botocore(config: SmelloConfig) -> None:
         host = urlparse(request.url).hostname or ""
 
         if not config.should_capture(host):
+            logger.debug("skipped %s %s (ignored host)", request.method, host)
             return original_send(self, request)
 
         start = time.monotonic()
@@ -77,9 +80,16 @@ def patch_botocore(config: SmelloConfig) -> None:
                 library="botocore",
             )
             send_http(payload)
+            logger.debug(
+                "captured %s %s via botocore (%d)",
+                request.method,
+                redact_query_params(request.url, config.redact_query_params),
+                response.status_code,
+            )
         except Exception as err:
-            logger.debug("Failed to capture botocore request: %s", err)
+            logger.debug("failed to capture botocore request: %s", err)
 
         return response
 
     URLLib3Session.send = patched_send  # type: ignore[assignment]
+    logger.debug("patched botocore.httpsession.URLLib3Session.send")

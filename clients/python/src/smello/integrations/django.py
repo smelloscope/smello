@@ -175,4 +175,4 @@ def _capture(
         }
         send_http_incoming(payload)
     except Exception as err:
-        logger.debug("Failed to capture incoming request: %s", err)
+        logger.debug("failed to capture incoming request: %s", err)

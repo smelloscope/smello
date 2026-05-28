@@ -23,6 +23,7 @@ from types import SimpleNamespace
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
 from smello.transport import send_http
+from smello.utils import redact_query_params
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class AiohttpTracer:
     async def on_request_start(self, session, ctx, params):
         host = params.url.host or ""
         if not self.config.should_capture(host):
+            logger.debug("skipped %s %s (ignored host)", params.method, host)
             return
         ctx.skip = False
         ctx.start = time.monotonic()
@@ -87,7 +89,7 @@ class AiohttpTracer:
             )
             send_http(payload)
         except Exception as err:
-            logger.debug("Failed to capture redirect hop: %s", err)
+            logger.debug("failed to capture redirect hop: %s", err)
         # Reset for the next hop — body is not resent after redirect.
         ctx.request_headers = dict(params.headers)
         ctx.body_chunks = []
@@ -132,8 +134,16 @@ class AiohttpTracer:
                     library="aiohttp",
                 )
                 send_http(payload)
+                logger.debug(
+                    "captured %s %s via aiohttp (%d)",
+                    params.method,
+                    redact_query_params(
+                        str(params.response.url), config.redact_query_params
+                    ),
+                    params.response.status,
+                )
             except Exception as err:
-                logger.debug("Failed to capture request: %s", err)
+                logger.debug("failed to capture request: %s", err)
 
         # Expose to on_response_chunk_received via the trace context.
         ctx.send_capture = _send_if_not_sent
@@ -183,7 +193,7 @@ class AiohttpTracer:
             )
             send_http(payload)
         except Exception as err:
-            logger.debug("Failed to capture error response: %s", err)
+            logger.debug("failed to capture error response: %s", err)
 
     def create_trace_config(self):
         """Return a frozen-ready TraceConfig wired to this tracer."""
@@ -204,7 +214,8 @@ def patch_aiohttp(config: SmelloConfig) -> None:
     try:
         import aiohttp  # noqa: PLC0415 -- optional dependency
     except ImportError:
-        return  # aiohttp not installed, skip
+        logger.debug("skipped aiohttp patch (not installed)")
+        return
 
     tracer = AiohttpTracer(config)
     original_init = aiohttp.ClientSession.__init__
@@ -216,3 +227,4 @@ def patch_aiohttp(config: SmelloConfig) -> None:
         return original_init(self, *args, **kwargs)
 
     aiohttp.ClientSession.__init__ = patched_init  # type: ignore[assignment]
+    logger.debug("patched aiohttp.ClientSession")

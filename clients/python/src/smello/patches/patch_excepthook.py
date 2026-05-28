@@ -25,6 +25,7 @@ def patch_excepthook(config: SmelloConfig) -> None:
     if _patched:
         return
     if not config.capture_exceptions:
+        logger.debug("skipped excepthook patch (capture_exceptions disabled)")
         return
     _patched = True
 
@@ -48,6 +49,7 @@ def patch_excepthook(config: SmelloConfig) -> None:
         original_threading_excepthook(args)
 
     threading.excepthook = smello_threading_excepthook
+    logger.debug("patched sys.excepthook and threading.excepthook")
 
 
 def capture_exception(exc_type, exc_value, exc_tb):
@@ -92,8 +94,9 @@ def capture_exception(exc_type, exc_value, exc_tb):
                 },
             }
         )
+        logger.debug("captured exception %s: %s", exc_type.__name__, exc_value)
     except Exception:
-        logger.debug("Failed to capture exception", exc_info=True)
+        logger.debug("failed to capture exception", exc_info=True)
 
 
 def _get_frame_source(

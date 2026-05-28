@@ -108,7 +108,8 @@ def _send_to_server(path: str, payload: dict) -> None:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    urllib.request.urlopen(req, timeout=5)
+    resp = urllib.request.urlopen(req, timeout=5)
+    logger.debug("sent %s (%d)", path, resp.status)
 
 
 def _json_default(obj: object) -> str:

@@ -35,7 +35,8 @@ def patch_grpc(config: SmelloConfig) -> None:
     try:
         import grpc  # type: ignore[unresolved-import]  # noqa: PLC0415 -- optional dependency
     except ImportError:
-        return  # grpc not installed, skip
+        logger.debug("skipped grpc patch (not installed)")
+        return
 
     # Define interceptor class here so it can inherit from the real
     # grpc.UnaryUnaryClientInterceptor (required by grpc.intercept_channel).
@@ -56,6 +57,7 @@ def patch_grpc(config: SmelloConfig) -> None:
 
     grpc.insecure_channel = patched_insecure_channel
     grpc.secure_channel = patched_secure_channel
+    logger.debug("patched grpc.insecure_channel and grpc.secure_channel")
 
 
 def _grpc_status_to_http(code_value: int) -> int:
@@ -134,6 +136,7 @@ def _intercept_unary_unary(config, target, continuation, client_call_details, re
     host = _extract_host(target)
 
     if not config.should_capture(host):
+        logger.debug("skipped POST %s (ignored host)", host)
         return continuation(client_call_details, request)
 
     method = client_call_details.method
@@ -194,7 +197,7 @@ def _intercept_unary_unary(config, target, continuation, client_call_details, re
                 duration_s=duration,
             )
         except Exception as capture_err:
-            logger.debug("Failed to capture gRPC request: %s", capture_err)
+            logger.debug("failed to capture gRPC request: %s", capture_err)
 
         raise
 
@@ -211,7 +214,7 @@ def _intercept_unary_unary(config, target, continuation, client_call_details, re
             duration_s=duration,
         )
     except Exception as capture_err:
-        logger.debug("Failed to capture gRPC request: %s", capture_err)
+        logger.debug("failed to capture gRPC request: %s", capture_err)
 
     return response
 
@@ -241,3 +244,4 @@ def _send_capture(
         library="grpc",
     )
     send_http(payload)
+    logger.debug("captured POST %s via grpc (%d)", url, status_code)

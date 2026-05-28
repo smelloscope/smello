@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from smello import transport
 from smello.config import SmelloConfig
 
+logger = logging.getLogger(__name__)
+
 _patched = False
 
 # Logger names to ignore to prevent recursion (smello's own loggers
@@ -48,6 +50,7 @@ def patch_logging(config: SmelloConfig) -> None:
     if _patched:
         return
     if not config.capture_logs:
+        logger.debug("skipped logging patch (capture_logs disabled)")
         return
     _patched = True
 
@@ -73,6 +76,7 @@ def patch_logging(config: SmelloConfig) -> None:
             pass  # never interfere with logging
 
     logging.Logger.callHandlers = patched_callhandlers  # type: ignore[assignment]
+    logger.debug("patched logging.Logger.callHandlers")
 
 
 def _capture_log_record(record: logging.LogRecord) -> None:
@@ -106,3 +110,4 @@ def _capture_log_record(record: logging.LogRecord) -> None:
             },
         }
     )
+    logger.debug("captured log from %s (%s)", record.name, record.levelname)

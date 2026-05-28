@@ -50,6 +50,7 @@ CLI flags map 1:1 to the [environment variables](configuration.md):
 | Flag                    | Env var                       |
 | ----------------------- | ----------------------------- |
 | `--server`              | `SMELLO_URL`                  |
+| `--debug` / `--no-debug` | `SMELLO_DEBUG`               |
 | `--capture-host`        | `SMELLO_CAPTURE_HOSTS`        |
 | `--ignore-host`         | `SMELLO_IGNORE_HOSTS`         |
 | `--capture-all` / `--no-capture-all` | `SMELLO_CAPTURE_ALL` |
@@ -202,6 +203,23 @@ smello run my_aws_script.py
 ```
 
 AWS calls appear at `http://localhost:5110`. XML responses show as a collapsible tree, just like JSON.
+
+## Troubleshooting
+
+If Smello appears to be running but you don't see events in the dashboard, enable debug mode:
+
+```bash
+# Via CLI flag
+smello run --debug my_app.py
+
+# Via environment variable
+SMELLO_DEBUG=1 smello run my_app.py
+
+# In code
+smello.init(server_url="http://localhost:5110", debug=True)
+```
+
+Debug mode logs to stderr: the resolved configuration and where each value came from, which libraries were patched, every capture/skip decision, and whether the server is reachable. See [configuration](configuration.md#debug) for details.
 
 ## What Smello captures
 

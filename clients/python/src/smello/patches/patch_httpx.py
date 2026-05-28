@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
 from smello.transport import send_http
+from smello.utils import redact_query_params
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +29,12 @@ def patch_httpx(config: SmelloConfig) -> None:
     try:
         import httpx  # noqa: PLC0415 -- optional dependency
     except ImportError:
-        return  # httpx not installed, skip
+        logger.debug("skipped httpx patch (not installed)")
+        return
 
     _patch_init(httpx.Client, _make_sync_hooks(config))
     _patch_init(httpx.AsyncClient, _make_async_hooks(config))
+    logger.debug("patched httpx.Client and httpx.AsyncClient")
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +71,7 @@ def _make_sync_hooks(config: SmelloConfig) -> dict:
     def on_response(response):
         host = urlparse(str(response.request.url)).hostname or ""
         if not config.should_capture(host):
+            logger.debug("skipped %s %s (ignored host)", response.request.method, host)
             return
         start = response.request.extensions.pop(_START_KEY, time.monotonic())
         _wrap_sync_stream(response, start, config)
@@ -82,6 +86,7 @@ def _make_async_hooks(config: SmelloConfig) -> dict:
     async def on_response(response):
         host = urlparse(str(response.request.url)).hostname or ""
         if not config.should_capture(host):
+            logger.debug("skipped %s %s (ignored host)", response.request.method, host)
             return
         start = response.request.extensions.pop(_START_KEY, time.monotonic())
         _wrap_async_stream(response, start, config)
@@ -110,8 +115,14 @@ def _send_capture(*, config, request, response, response_body, start):
             library="httpx",
         )
         send_http(payload)
+        logger.debug(
+            "captured %s %s via httpx (%d)",
+            request.method,
+            redact_query_params(str(request.url), config.redact_query_params),
+            response.status_code,
+        )
     except Exception as err:
-        logger.debug("Failed to capture request: %s", err)
+        logger.debug("failed to capture request: %s", err)
 
 
 # ---------------------------------------------------------------------------

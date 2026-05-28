@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **Debug mode**: New `debug` parameter for `smello.init()`, `SMELLO_DEBUG` env var, and `--debug` / `--no-debug` CLI flags. When enabled, Smello logs its resolved configuration, library patching activity, capture decisions, and transport status to stderr via the `"smello"` Python logger. The config dump shows one field per line with provenance — where each value came from (`--debug` for a CLI flag, `SMELLO_URL` for an env var, `param` for an `init()` argument, or `default`). Useful for diagnosing why events are not showing up.
+- **Connectivity check**: On every `smello.init()`, Smello pings the server and logs the result. Visible when debug mode is active or when the `"smello"` logger is configured manually.
+
 ## [0.13.0] - 2026-05-26
 
 ### Added

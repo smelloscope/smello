@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
 import os
 import subprocess
 import sys
@@ -42,6 +43,7 @@ def _make_args(**overrides) -> argparse.Namespace:
         "ignore_logger": None,
         "app": None,
         "session": None,
+        "debug": None,
     }
     defaults.update(overrides)
     return argparse.Namespace(**defaults)
@@ -160,6 +162,31 @@ def test_overrides_app_and_session():
     assert overrides["SMELLO_SESSION"] == "sess-42"
 
 
+def test_overrides_debug_true():
+    overrides = cli._smello_env_overrides(_make_args(debug=True))
+    assert overrides == {"SMELLO_DEBUG": "true"}
+
+
+def test_overrides_debug_false():
+    overrides = cli._smello_env_overrides(_make_args(debug=False))
+    assert overrides == {"SMELLO_DEBUG": "false"}
+
+
+def test_overrides_debug_none():
+    overrides = cli._smello_env_overrides(_make_args(debug=None))
+    assert "SMELLO_DEBUG" not in overrides
+
+
+def test_debug_flag_parsed():
+    c = _capture_execvpe(["run", "--debug", "echo"])
+    assert c["env"]["SMELLO_DEBUG"] == "true"
+
+
+def test_no_debug_flag_parsed():
+    c = _capture_execvpe(["run", "--no-debug", "echo"])
+    assert c["env"]["SMELLO_DEBUG"] == "false"
+
+
 def test_log_level_accepts_name():
     c = _capture_execvpe(["run", "--log-level", "DEBUG", "echo"])
     assert c["env"]["SMELLO_LOG_LEVEL"] == "10"
@@ -173,6 +200,65 @@ def test_log_level_accepts_name_case_insensitive():
 def test_log_level_rejects_invalid(capsys):
     with pytest.raises(SystemExit):
         cli.main(["run", "--log-level", "BOGUS", "echo"])
+
+
+# --- _cli_provenance (maps env vars to their CLI flag origin) ---
+
+
+def test_provenance_debug_flag():
+    overrides = {"SMELLO_DEBUG": "true"}
+    prov = cli._cli_provenance(_make_args(debug=True), overrides)
+    assert prov == {"SMELLO_DEBUG": "--debug"}
+
+
+def test_provenance_no_debug_flag():
+    overrides = {"SMELLO_DEBUG": "false"}
+    prov = cli._cli_provenance(_make_args(debug=False), overrides)
+    assert prov == {"SMELLO_DEBUG": "--no-debug"}
+
+
+def test_provenance_server_flag():
+    overrides = {"SMELLO_URL": "http://x:5110"}
+    prov = cli._cli_provenance(_make_args(server="http://x:5110"), overrides)
+    assert prov == {"SMELLO_URL": "--server"}
+
+
+def test_provenance_capture_host_implies_capture_all():
+    overrides = {
+        "SMELLO_CAPTURE_HOSTS": "a.com",
+        "SMELLO_CAPTURE_ALL": "false",
+    }
+    prov = cli._cli_provenance(_make_args(capture_host=["a.com"]), overrides)
+    assert prov["SMELLO_CAPTURE_ALL"] == "--capture-host"
+    assert prov["SMELLO_CAPTURE_HOSTS"] == "--capture-host"
+
+
+def test_provenance_empty_when_no_flags():
+    prov = cli._cli_provenance(_make_args(), {})
+    assert prov == {}
+
+
+def test_build_child_env_sets_provenance():
+    with patch.dict(os.environ, {}, clear=True):
+        env = cli._build_child_env(_make_args(debug=True))
+    prov = json.loads(env["_SMELLO_CLI_PROVENANCE"])
+    assert prov["SMELLO_DEBUG"] == "--debug"
+    assert prov["SMELLO_URL"] is None  # CLI default
+
+
+def test_build_child_env_provenance_server_flag():
+    with patch.dict(os.environ, {}, clear=True):
+        env = cli._build_child_env(_make_args(server="http://x:5110"))
+    prov = json.loads(env["_SMELLO_CLI_PROVENANCE"])
+    assert prov["SMELLO_URL"] == "--server"
+
+
+def test_build_child_env_provenance_inherits_parent_url():
+    """When SMELLO_URL comes from parent env, no provenance entry for it."""
+    with patch.dict(os.environ, {"SMELLO_URL": "http://parent:9999"}, clear=True):
+        env = cli._build_child_env(_make_args())
+    prov = json.loads(env["_SMELLO_CLI_PROVENANCE"])
+    assert "SMELLO_URL" not in prov
 
 
 # --- _build_child_env (composes os.environ + overrides + PYTHONPATH + URL default) ---

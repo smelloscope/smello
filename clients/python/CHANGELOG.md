@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Fixed
+
+- **Gzip-compressed HTTP responses now captured as readable text**: Responses with `Content-Encoding: gzip` or `deflate` (e.g. from Anthropic, OpenAI, and other APIs via httpx) were shown as `[binary: N bytes]` instead of the actual JSON body. Smello now transparently decompresses gzip, zlib-wrapped, and raw deflate response bodies, with a 1 MB size cap to protect against zip bombs.
+
 ## [0.14.0] - 2026-05-28
 
 ### Added

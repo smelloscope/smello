@@ -1,6 +1,7 @@
 """Tests for smello.patches.patch_httpx — sync and async, streaming and non-streaming."""
 
 import asyncio
+import gzip
 from unittest.mock import patch
 
 import pytest
@@ -273,3 +274,46 @@ def test_user_event_hooks_preserved(captured):
 
     assert seen == [200]
     assert len(captured) == 1
+
+
+# ---- gzip decompression -----------------------------------------------------
+
+
+def _gzip_handler(request: httpx.Request) -> httpx.Response:
+    body = gzip.compress(b'{"message":"hello"}')
+    return httpx.Response(
+        200,
+        headers={"content-type": "application/json", "content-encoding": "gzip"},
+        stream=httpx.ByteStream(body),
+    )
+
+
+def test_gzip_response_decompressed(captured):
+    transport = httpx.MockTransport(_gzip_handler)
+    with httpx.Client(transport=transport) as client:
+        client.get("https://example.com/api")
+
+    assert len(captured) == 1
+    assert captured[0]["response"]["body"] == '{"message":"hello"}'
+
+
+def test_gzip_async_response_decompressed(captured):
+    transport = httpx.MockTransport(_gzip_handler)
+
+    async def run():
+        async with httpx.AsyncClient(transport=transport) as client:
+            return await client.get("https://example.com/api")
+
+    asyncio.run(run())
+    assert len(captured) == 1
+    assert captured[0]["response"]["body"] == '{"message":"hello"}'
+
+
+def test_gzip_streaming_response_decompressed(captured):
+    transport = httpx.MockTransport(_gzip_handler)
+    with httpx.Client(transport=transport) as client:
+        with client.stream("GET", "https://example.com/api") as resp:
+            resp.read()
+
+    assert len(captured) == 1
+    assert captured[0]["response"]["body"] == '{"message":"hello"}'

@@ -1,8 +1,12 @@
 """Tests for smello.capture serialization."""
 
+import gzip
+import zlib
+
 import pytest
 from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
+from smello.utils import MAX_DECOMPRESSED
 
 
 @pytest.fixture()
@@ -241,3 +245,118 @@ def test_duration_rounding(config):
         library="requests",
     )
     assert payload["duration_ms"] == 1567
+
+
+@pytest.mark.parametrize(
+    "compress_fn",
+    [
+        pytest.param(gzip.compress, id="gzip"),
+        pytest.param(zlib.compress, id="deflate"),
+        pytest.param(lambda b: zlib.compress(b)[2:-4], id="raw-deflate"),
+    ],
+)
+def test_compressed_body_auto_decompressed(config, compress_fn):
+    """Compressed bytes (e.g. from httpx raw stream) are decoded transparently."""
+    compressed = compress_fn(b'{"message":"hello"}')
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=compressed,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"] == '{"message":"hello"}'
+
+
+def test_corrupt_compressed_bytes_falls_back_to_binary(config):
+    body = b"\x1f\x8b" + b"\x00" * 20
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=body,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"] == "[binary: 22 bytes]"
+
+
+def test_zip_bomb_capped(config):
+    """A tiny gzip payload expanding to 10x MAX_DECOMPRESSED is rejected via max_length truncation."""
+    bomb = gzip.compress(b"\x00" * (MAX_DECOMPRESSED * 10))
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=bomb,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"].startswith("[binary:")
+
+
+def test_compressed_body_exactly_at_limit(config):
+    """Payload decompressing to exactly MAX_DECOMPRESSED bytes is accepted."""
+    body = gzip.compress(b"x" * MAX_DECOMPRESSED)
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=body,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"] == "x" * MAX_DECOMPRESSED
+
+
+def test_compressed_non_utf8_binary_falls_back(config):
+    """Gzip-compressed binary that isn't valid UTF-8 falls back to [binary:]."""
+    body = gzip.compress(bytes(range(256)))
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=body,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"].startswith("[binary:")
+
+
+def test_truncated_gzip_stream_falls_back_to_binary(config):
+    """A truncated gzip stream is rejected even if partial decompression succeeds."""
+    truncated = gzip.compress(b'{"message":"hello"}')[:-1]
+    payload = serialize_request_response(
+        config=config,
+        method="GET",
+        url="https://example.com",
+        request_headers={},
+        request_body=None,
+        status_code=200,
+        response_headers={},
+        response_body=truncated,
+        duration_s=0.1,
+        library="httpx",
+    )
+    assert payload["response"]["body"].startswith("[binary:")

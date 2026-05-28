@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-05-28
+
 ### Added
 
 - `--version` flag for the `smello-server` CLI.

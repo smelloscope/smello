@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Fixed
+
+- **Path traversal in SPA file serving**: the catch-all route served files outside the frontend directory when the URL contained encoded `../` sequences (e.g. `%2e%2e`). Replaced the custom handler with a `SPAStaticFiles` subclass that inherits Starlette's built-in path containment guard.
+
 ## [0.8.1] - 2026-05-28
 
 ### Added

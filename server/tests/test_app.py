@@ -1,7 +1,10 @@
-"""Tests for _get_frontend_dir() auto-detection logic."""
+"""Tests for _get_frontend_dir() auto-detection logic and SPA serving."""
 
+import pytest
 import smello_server.app as app_module
-from smello_server.app import _get_frontend_dir
+import tortoise.context
+from fastapi.testclient import TestClient
+from smello_server.app import _get_frontend_dir, create_app
 
 
 def test_env_var_with_valid_dir(tmp_path, monkeypatch):
@@ -57,3 +60,53 @@ def test_no_frontend_returns_none(monkeypatch):
     result = _get_frontend_dir()
     # The real package doesn't ship _frontend/ in development
     assert result is None
+
+
+# --- SPA path traversal protection ---
+
+
+@pytest.fixture()
+def spa_client(tmp_path, monkeypatch):
+    """TestClient with a frontend directory and a secret file outside it."""
+    frontend = tmp_path / "frontend"
+    frontend.mkdir()
+    (frontend / "index.html").write_text("<html>index</html>")
+    (frontend / "legit.txt").write_text("legit file")
+    monkeypatch.setenv("SMELLO_FRONTEND_DIR", str(frontend))
+
+    (tmp_path / "secret.txt").write_text("SECRET")
+
+    tortoise.context._global_context = None
+    app = create_app(db_url=f"sqlite://{tmp_path / 'test.db'}")
+    with TestClient(app) as tc:
+        yield tc
+    tortoise.context._global_context = None
+
+
+def test_spa_serves_legit_file(spa_client):
+    """Files inside the frontend directory are served normally."""
+    resp = spa_client.get("/legit.txt")
+    assert resp.status_code == 200
+    assert resp.text == "legit file"
+
+
+def test_spa_path_traversal_percent_encoded(spa_client):
+    """%2e%2e path traversal is blocked."""
+    resp = spa_client.get("/%2e%2e/secret.txt")
+    assert resp.status_code == 200
+    assert "SECRET" not in resp.text
+    assert "index" in resp.text
+
+
+def test_spa_path_traversal_dot_dot(spa_client):
+    """Literal ../ path traversal is blocked."""
+    resp = spa_client.get("/../secret.txt")
+    assert resp.status_code == 200
+    assert "SECRET" not in resp.text
+
+
+def test_spa_unknown_path_returns_index(spa_client):
+    """Unknown paths return index.html (SPA fallback)."""
+    resp = spa_client.get("/nonexistent/page")
+    assert resp.status_code == 200
+    assert "index" in resp.text

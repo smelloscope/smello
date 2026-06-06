@@ -291,3 +291,19 @@ smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
 | `--host`    | `127.0.0.1`         | Bind address         |
 | `--port`    | `5110`               | Port                 |
 | `--db-path` | `~/.smello/smello.db` | SQLite database file |
+
+## Security
+
+Smello is a local development tool. The server binds to `127.0.0.1` by default, so only processes on your machine can reach it.
+
+When running in Docker, use `-p 127.0.0.1:5110:5110` to keep the same localhost-only behavior:
+
+```bash
+docker run -p 127.0.0.1:5110:5110 ghcr.io/smelloscope/smello
+```
+
+Omitting the `127.0.0.1:` prefix (i.e., `-p 5110:5110`) exposes the server to your local network. Anyone who can reach the port can read and delete captured data, including HTTP bodies, exception tracebacks, and headers.
+
+The client SDK redacts `Authorization`, `X-Api-Key`, and `X-Goog-Api-Key` headers by default (configurable via `redact_headers`). Response bodies, cookies, query parameters, and source code in exception frames are captured verbatim.
+
+If you need LAN access, for example to capture traffic from a mobile device, use `--host 0.0.0.0`. The API has no authentication, so anyone on your network will have full access.

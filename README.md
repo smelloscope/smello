@@ -26,7 +26,7 @@ smello-server
 Or run with Docker:
 
 ```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
+docker run -p 127.0.0.1:5110:5110 ghcr.io/smelloscope/smello
 ```
 
 ### 2. Run your code with Smello

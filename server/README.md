@@ -16,7 +16,7 @@ smello-server
 Or run with Docker:
 
 ```bash
-docker run -p 5110:5110 ghcr.io/smelloscope/smello
+docker run -p 127.0.0.1:5110:5110 ghcr.io/smelloscope/smello
 ```
 
 The server listens at `http://localhost:5110`.

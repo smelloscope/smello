@@ -57,7 +57,7 @@ curl -X DELETE http://localhost:5110/api/events
 ## CLI Options
 
 ```bash
-smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
+smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db  # LAN access
 ```
 
 ## Requires

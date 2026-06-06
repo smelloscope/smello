@@ -111,7 +111,7 @@ OPEN_BROWSER_OPT = Annotated[
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
-    host: HOST_OPT = "0.0.0.0",
+    host: HOST_OPT = "127.0.0.1",
     port: PORT_OPT = 5110,
     db_path: DB_PATH_OPT = None,
     reload: RELOAD_OPT = False,
@@ -140,7 +140,7 @@ def main_callback(
 
 @app.command(hidden=True)
 def run(
-    host: HOST_OPT = "0.0.0.0",
+    host: HOST_OPT = "127.0.0.1",
     port: PORT_OPT = 5110,
     db_path: DB_PATH_OPT = None,
     reload: RELOAD_OPT = False,

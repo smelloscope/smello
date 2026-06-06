@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Changed
+
+- Default bind address changed from `0.0.0.0` to `127.0.0.1`. The server now only accepts connections from the local machine. Pass `--host 0.0.0.0` to restore the previous behavior.
+
 ## [0.8.2] - 2026-06-05
 
 ### Fixed

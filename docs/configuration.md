@@ -288,6 +288,6 @@ smello-server --host 0.0.0.0 --port 5110 --db-path /tmp/smello.db
 
 | Flag        | Default              | Description          |
 | ----------- | -------------------- | -------------------- |
-| `--host`    | `0.0.0.0`           | Bind address         |
+| `--host`    | `127.0.0.1`         | Bind address         |
 | `--port`    | `5110`               | Port                 |
 | `--db-path` | `~/.smello/smello.db` | SQLite database file |

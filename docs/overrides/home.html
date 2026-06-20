@@ -7,7 +7,15 @@
     /* Hide default page elements on home */
     .md-main__inner { margin: 0; }
     .md-content { display: none; }
-    .md-sidebar { display: none; }
+    /* Hide the sidebars only where they're inline columns, not where they're
+       slide-in drawers — otherwise the mobile hamburger menu only shows the
+       overlay (dimmed/blurred page) with no navigation drawer behind it. */
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+    @media screen and (min-width: 76.25em) {
+      .md-sidebar--primary { display: none; }
+    }
 
     /* ── Hero ── */
     .hero {

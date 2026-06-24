@@ -1,0 +1,14 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Smello",
+      "description": "Skills for setting up Smello and debugging captured application activity.",
+      "skills": [
+        "smello",
+        "smello-setup"
+      ]
+    }
+  ]
+}

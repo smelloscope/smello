@@ -31,7 +31,9 @@ message = client.messages.create(
             },
         }
     ],
-    messages=[{"role": "user", "content": "What's the weather in Paris? Use the tool."}],
+    messages=[
+        {"role": "user", "content": "What's the weather in Paris? Use the tool."}
+    ],
 )
 
 print(f"Stop reason: {message.stop_reason}")

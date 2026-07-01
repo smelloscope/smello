@@ -51,4 +51,6 @@ print(f"Finish reason: {response.choices[0].finish_reason}")
 print(f"Message: {response.choices[0].message}")
 
 smello.flush()
-print("\nOpen http://localhost:5110 to see the captured call (POST /api/v1/chat/completions)")
+print(
+    "\nOpen http://localhost:5110 to see the captured call (POST /api/v1/chat/completions)"
+)

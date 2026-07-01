@@ -125,6 +125,8 @@ For every outgoing HTTP and gRPC call:
 
 gRPC calls are displayed with a `grpc://` URL scheme. Protobuf bodies are automatically serialized to JSON. Sensitive headers (`Authorization`, `X-Api-Key`) are redacted by default.
 
+Calls to the OpenAI and Anthropic APIs render as a readable conversation in the dashboard, with the system prompt, tool calls, and token usage broken out. The raw JSON stays one tab away.
+
 ### Incoming HTTP requests
 
 With the FastAPI or Django middleware, Smello captures every request your server handles:

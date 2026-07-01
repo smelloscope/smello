@@ -48,6 +48,18 @@ Open the Smello dashboard. You'll see every `POST` to `api.anthropic.com/v1/mess
 - **Token usage**: each response includes `usage.input_tokens` and `usage.output_tokens`. Watch how input tokens grow as the conversation gets longer.
 - **Timeline order**: the dashboard shows requests in order, so you can trace the exact sequence of the agent loop.
 
+### The LLM conversation view
+
+For Messages API calls, Smello detects the shape and defaults to an **LLM** tab that renders the request and response as a conversation instead of raw JSON:
+
+![Smello LLM conversation view for an Anthropic Messages call](assets/debug-anthropic-llm.png)
+
+- **System prompt and tools** are lifted to the top of the view, so a long system prompt or a big `tools` array no longer buries the actual messages.
+- **Messages** render as labeled turns. `tool_use` blocks become tool-call cards with their JSON input, `tool_result` blocks become result cards, and `thinking` blocks render inline (muted), so a whole tool-use loop reads top to bottom.
+- **Model, stop reason, and token usage** (including cache read/write) sit in a compact header strip on the response.
+
+Streaming responses are reassembled into the same view. The **Tree** and **Raw** tabs remain available for the exact payload.
+
 ### Debug with an AI agent
 
 If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:

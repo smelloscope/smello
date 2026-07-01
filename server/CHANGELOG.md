@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+
+- **LLM conversation view**: captured calls to the OpenAI and Anthropic APIs now render as a readable conversation instead of raw JSON. A new **LLM** tab, auto-selected when an LLM request or response is detected, shows the system prompt, tool definitions, and each message's text, reasoning, tool calls, and tool results, plus the model, stop reason, and token usage. The **Tree** and **Raw** tabs remain available as fallbacks. Covers OpenAI Chat Completions and the Responses API, the Anthropic Messages API, and SDKs built on them (OpenAI Agents, Pydantic AI, OpenRouter). Streaming responses are reassembled for Chat Completions and the Messages API. Detection is shape-based, so no configuration or client SDK changes are required.
+
 ## [0.8.3] - 2026-06-06
 
 ### Changed

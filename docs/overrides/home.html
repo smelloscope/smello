@@ -119,6 +119,10 @@
       max-width: 1100px;
       margin: 0 auto;
     }
+    .features.two-col {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 900px;
+    }
     .feature {
       background: var(--md-code-bg-color);
       border-radius: 8px;
@@ -139,7 +143,8 @@
       margin: 0;
     }
     @media (max-width: 768px) {
-      .features { grid-template-columns: 1fr; }
+      .features,
+      .features.two-col { grid-template-columns: 1fr; }
     }
 
     /* ── Steps ── */
@@ -331,7 +336,7 @@
   <!-- Why Smello -->
   <section class="features-section">
     <h2>Why Smello?</h2>
-    <div class="features">
+    <div class="features two-col">
       <div class="feature">
         <h3>Zero code changes</h3>
         <p>Prefix any command with <code>smello run</code>. HTTP requests, exceptions, and logs, all captured. No imports, no init calls.</p>
@@ -344,13 +349,17 @@
         <h3>Full-stack visibility</h3>
         <p>Outgoing calls to any API (<code>requests</code>, <code>httpx</code>, <code>aiohttp</code>, <code>grpc</code>, <code>botocore</code>), incoming requests via the FastAPI or Django middleware, plus Python logs and unhandled exceptions.</p>
       </div>
+      <div class="feature">
+        <h3>LLM-aware</h3>
+        <p>Calls to the OpenAI and Anthropic APIs render as a readable conversation instead of a wall of JSON. You see the system prompt, tool calls, and token usage at a glance.</p>
+      </div>
     </div>
   </section>
 
   <!-- AI Agent Skills -->
   <section class="features-section" style="padding-top: 0;">
     <h2>AI Agent Skills</h2>
-    <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 900px;">
+    <div class="features two-col">
       <div class="feature">
         <h3><a href="ai-skills/#smello-setup-project-integration" style="color: inherit; text-decoration: none;">/smello-setup</a></h3>
         <p>Your AI agent detects your stack, installs Smello, and wires up <code>smello run</code> in your workflow.</p>

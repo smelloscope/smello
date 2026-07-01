@@ -40,6 +40,18 @@ Open the Smello dashboard and click the request to `api.openai.com/v1/chat/compl
 - **Response body**: the `usage` object shows `prompt_tokens`, `completion_tokens`, and `total_tokens`. Compare `prompt_tokens` with what you expected from your message array.
 - **Request headers**: confirm which API key and organization are being used (redacted by default, but the `OpenAI-Organization` header is visible).
 
+### The LLM conversation view
+
+For OpenAI requests and responses, Smello detects the chat shape and defaults to an **LLM** tab that renders the call as a conversation instead of raw JSON:
+
+![Smello LLM conversation view for an OpenAI chat completion](assets/debug-openai-llm.png)
+
+- **System prompt and tools** are pulled out of the payload and shown at the top, so you can see the full instructions and every tool definition at a glance.
+- **Messages** appear as labeled turns (system / user / assistant / tool). Tool calls render as cards with their JSON arguments; tool results render alongside the call that produced them.
+- **Model, stop reason, and token usage** sit in a compact header strip on the response.
+
+This works for the Chat Completions and Responses APIs, and for SDKs built on top of OpenAI (OpenAI Agents, Pydantic AI, OpenRouter). Streaming Chat Completions responses are reassembled into the same view. The **Tree** and **Raw** tabs are always there when you need the exact bytes.
+
 ### Debug with an AI agent
 
 If you use [Claude Code](https://claude.ai/code) or another AI coding tool, the `/smello` skill can query captured events and cross-reference them with your source code. Install it once:
